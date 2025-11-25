@@ -40,8 +40,8 @@
 }
 
 .loading-overlay {
-    color: #2196f3;
-    border-left: 3px solid #2196f3;
+    color: #D84747;
+    border-left: 3px solid #D84747;
 }
 
 .error-overlay {
@@ -76,7 +76,7 @@
     border: none !important;
     font-size: 16px !important;
     font-weight: bold !important;
-    color: #c62828 !important;
+    color: #D84747 !important;
     cursor: pointer !important;
     z-index: 1000 !important;
     width: 20px !important;
@@ -100,7 +100,7 @@
 .leaflet-popup-close-button:visited,
 .leaflet-popup-close-button:link {
     background: transparent !important;
-    color: #c62828 !important;
+    color: #D84747 !important;
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
@@ -113,7 +113,7 @@
 /* Nuclear option - override any Leaflet CSS with maximum specificity */
 .leaflet-container .leaflet-popup-pane .leaflet-popup .leaflet-popup-close-button {
     background: transparent !important;
-    color: #c62828 !important;
+    color: #D84747 !important;
     border: none !important;
     transition: none !important;
 }
@@ -122,7 +122,7 @@
 .leaflet-container .leaflet-popup-pane .leaflet-popup .leaflet-popup-close-button:active,
 .leaflet-container .leaflet-popup-pane .leaflet-popup .leaflet-popup-close-button:focus {
     background: transparent !important;
-    color: #c62828 !important;
+    color: #D84747 !important;
     border: none !important;
     transition: none !important;
 }
@@ -133,14 +133,15 @@
 }
 
 .leaflet-popup-close-button:focus {
-    outline: 2px solid #c62828 !important;
+    outline: 2px solid #D84747 !important;
     outline-offset: 2px !important;
 }
 
 .pin-popup {
     min-width: 280px;
     font-family: 'EB Garamond', serif;
-    background: #d3d3d3;
+    background: white;
+    border: 2px solid #e0e0e0;
     border-radius: 8px;
     padding: 0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -150,8 +151,8 @@
 .pin-popup .popup-header {
     margin-bottom: 0;
     padding: 12px;
-    background-color: #d3d3d3 !important;
-    border-bottom: 1px solid #bbb;
+    background-color: #fafafa !important;
+    border-bottom: 1px solid #e0e0e0;
     border-radius: 8px 8px 0 0;
     display: block;
 }
@@ -160,26 +161,26 @@
     margin: 0;
     font-size: 1.1rem;
     font-weight: bold;
-    color: white;
+    color: #D84747;
     font-family: 'EB Garamond', serif;
 }
 
 .pin-popup .popup-content {
     margin: 0;
     padding: 12px;
-    background-color: #d3d3d3 !important;
+    background-color: white !important;
 }
 
 .notes-section {
     margin-bottom: 16px;
     padding: 8px;
-    background: #d3d3d3;
+    background: #fafafa;
     border-radius: 4px;
-    border-left: 3px solid #c62828;
+    border-left: 3px solid #D84747;
 }
 
 .notes-section strong {
-    color: #c62828;
+    color: #D84747;
     font-size: 0.8rem;
     font-weight: bold;
     font-family: 'EB Garamond', serif;
@@ -204,13 +205,13 @@
     justify-content: space-between;
     align-items: center;
     padding: 4px 6px;
-    background: #d3d3d3;
+    background: #fafafa;
     border-radius: 3px;
     font-size: 0.8rem;
 }
 
 .metadata-item strong {
-    color: #c62828;
+    color: #D84747;
     font-weight: bold;
     min-width: 80px;
     font-family: 'EB Garamond', serif;
@@ -218,7 +219,7 @@
 
 /* Style fruit title to match label colors */
 .pin-popup .fruit-title {
-    color: #c62828 !important;
+    color: #D84747 !important;
     font-weight: bold !important;
     margin: 0 !important;
     font-family: 'EB Garamond', serif !important;
@@ -231,6 +232,100 @@
     font-size: 0.8rem;
 }
 
+/* Season badges */
+.season-badge {
+    margin-top: 8px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: 'EB Garamond', serif;
+    display: inline-block;
+}
 
+.season-badge.in-season {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
 
+.season-badge.upcoming {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
 
+.season-badge.out-of-season {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #e0e0e0;
+}
+
+.season-badge.general {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+/* Pin actions section */
+.pin-actions {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e0e0e0;
+    text-align: center;
+}
+
+.delete-pin-btn {
+    background-color: #d32f2f;
+    color: white;
+    border: 2px outset #d32f2f;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: 'EB Garamond', serif;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.delete-pin-btn:hover {
+    background-color: #b71c1c;
+}
+
+.delete-pin-btn:active {
+    border: 2px inset #d32f2f;
+}
+
+/* Mobile zoom controls positioning - avoid sidebar overlap */
+@media (max-width: 768px) {
+    .leaflet-top.leaflet-left {
+        top: 10px;
+        left: auto;
+        right: 10px;
+    }
+    
+    .leaflet-control-zoom {
+        margin-top: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    
+    /* Move loading/error overlays to bottom to avoid zoom controls */
+    .loading-overlay, .error-overlay {
+        top: auto;
+        bottom: 20px;
+        right: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .leaflet-top.leaflet-left {
+        top: 10px;
+        right: 10px;
+    }
+    
+    .loading-overlay, .error-overlay {
+        bottom: 15px;
+        right: 10px;
+    }
+}

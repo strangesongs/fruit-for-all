@@ -41,13 +41,13 @@ html, body {
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
     flex: 0 0 auto;
     width: 100%;
 }
 
 button, .action-btn {
-    background-color: lightcoral;
+    background-color: #D84747;
     color: white;
     padding: 6px 12px;
     margin: 3px;
@@ -55,7 +55,7 @@ button, .action-btn {
     font-family: 'EB Garamond', serif;
     font-size: 0.8rem;
     font-weight: bold;
-    border: 2px outset lightcoral;
+    border: 2px outset #D84747;
     cursor: pointer;
     width: 90%;
     box-sizing: border-box;
@@ -67,22 +67,22 @@ button, .action-btn {
 }
 
 button:hover, .action-btn:hover {
-    background-color: #e57373;
+    background-color: #C23939;
 }
 
 button:active, .action-btn:active {
-    border: 2px inset lightcoral;
+    border: 2px inset #D84747;
 }
 
 .add-fruit-btn {
-    background-color: lightcoral;
-    border-color: lightcoral;
+    background-color: #D84747;
+    border-color: #D84747;
     font-size: 0.8rem;
     padding: 6px 12px;
 }
 
 .add-fruit-btn:active {
-    border: 2px inset lightcoral;
+    border: 2px inset #D84747;
 }
 
 .saved-pins, .ready-fruit {
@@ -125,7 +125,8 @@ li {
     font-size: 0.6rem;
     color: #888;
     text-align: center;
-    margin-bottom: 15px;
+    margin-bottom: 8px;
+    padding-top: 8px;
     padding-bottom: 10px;
     flex: 0 0 auto;
     border-bottom: 1px solid #e0e0e0;
@@ -138,26 +139,211 @@ li {
 .header-section p:first-child {
     font-size: 1.2rem;
     font-weight: bold;
-    color: white;
+    color: #C23939;
+    margin-top: 4px;
 }
 
 .header-section p:nth-child(2) {
     font-size: 0.9rem;
+    margin-top: 6px;
+}
+
+/* Auth section styles */
+.auth-section {
+    width: 100%;
+    padding: 10px 0;
+    margin-bottom: 20px;
+}
+
+.auth-section h3 {
+    font-size: 1.1rem;
+    color: #D84747;
+    margin: 10px 0 15px 0;
+}
+
+.auth-section .form-group {
+    margin-bottom: 6px;
+    text-align: center;
+}
+
+.auth-section .form-group input {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 0.9rem;
+    font-family: 'EB Garamond', serif;
+    border: 2px solid #e0e0e0;
+    border-radius: 4px;
+    background: #fafafa;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.auth-section .form-group input::placeholder {
+    text-align: center;
+    color: #999;
+}
+    border-radius: 4px;
+    background: #fafafa;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.auth-section .form-group input:focus {
+    outline: none;
+    border-color: #D84747;
+    background-color: white;
+}
+
+.auth-section .form-group input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.password-hint {
+    font-size: 0.75rem;
+    color: #666;
+    margin: 4px 0 0 0;
+    font-style: italic;
+}
+
+.auth-submit-btn {
+    width: 90%;
+    padding: 8px 12px;
+    margin-top: 6px;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 0.8rem;
+    background-color: #D84747;
+    color: white;
+    border: 2px outset #D84747;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'EB Garamond', serif;
+    font-weight: bold;
+    display: block;
+}
+
+.auth-submit-btn:hover {
+    background-color: #C23939;
+}
+
+.auth-submit-btn:active {
+    border: 2px inset #D84747;
+}
+
+.auth-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.toggle-auth {
+    margin-top: 6px;
+    margin-bottom: 2px;
+    font-size: 0.85rem;
+    color: #666;
+    text-align: center;
+}
+
+.toggle-link {
+    color: #D84747;
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.toggle-link:hover {
+    color: #C23939;
+}
+
+.user-info {
+    width: 100%;
+    padding: 8px 0;
+    margin-bottom: 10px;
+}
+
+.welcome-text {
+    font-size: 0.95rem;
+    color: #a52a2a;
+    margin: 0;
+    font-weight: 500;
 }
 
 .bottom-section {
     margin-top: auto;
-    padding-top: 15px;
+    padding-top: 0;
+    padding-bottom: 0;
     flex: 0 0 auto;
     width: 100%;
     display: flex;
     justify-content: center;
 }
 
+.logout-btn {
+    background-color: #D84747;
+    border-color: #D84747;
+}
+
+.logout-btn:hover {
+    background-color: #C23939;
+}
+
+.logout-btn:active {
+    border: 2px inset #D84747;
+}
+
 .lil-fruit {
     width: 24px;
     height: 24px;
     margin-top: 4px;
+    margin-bottom: 8px;
+}
+
+/* Fruit type filter section */
+.filter-section {
+    width: 100%;
+    padding: 12px 0;
+    margin-bottom: 12px;
+    border-top: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.filter-section label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #C23939;
+    font-family: 'EB Garamond', serif;
+}
+
+.fruit-filter-select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 4px;
+    background-color: #fafafa;
+    font-size: 0.9rem;
+    font-family: 'EB Garamond', serif;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.fruit-filter-select:hover {
+    border-color: #C23939;
+}
+
+.fruit-filter-select:focus {
+    outline: none;
+    border-color: #C23939;
+    background-color: white;
+}
+
+.fruit-filter-select option {
+    padding: 8px;
+    font-family: 'EB Garamond', serif;
+    font-size: 0.9rem;
 }
 
 
@@ -188,7 +374,7 @@ li {
 
 .notes-popup h4 {
     margin-top: 0;
-    color: #c62828;
+    color: #D84747;
     font-size: 0.9rem;
 }
 
@@ -196,7 +382,7 @@ li {
     width: 100%;
     min-height: 120px;
     padding: 8px;
-    border: 2px inset lightcoral;
+    border: 2px inset #d3d3d3;
     font-family: 'EB Garamond', serif;
     font-size: 0.8rem;
     resize: vertical;
@@ -235,7 +421,7 @@ li {
     background-color: white;
     padding: 0;
     border-radius: 8px;
-    border: 2px solid #ccc;
+    border: 2px solid #e0e0e0;
     max-width: 400px;
     width: 90%;
     max-height: 80vh;
@@ -247,17 +433,17 @@ li {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
-    border-bottom: 1px solid #ddd;
-    background-color: #f5f5f5;
+    padding: 12px 15px;
+    border-bottom: 1px solid #e0e0e0;
+    background-color: #fafafa;
     border-radius: 6px 6px 0 0;
 }
 
 .popup-header h4 {
     margin: 0;
-    color: #c62828;
+    color: #D84747;
     font-size: 1rem;
-    font-weight: bold;
+    font-weight: 600;
 }
 
 .close-btn {
@@ -277,32 +463,41 @@ li {
 }
 
 .popup-content {
-    padding: 20px;
+    padding: 12px 15px;
 }
 
 .popup-section {
-    margin-bottom: 20px;
+    margin-bottom: 6px;
 }
 
 .popup-section label {
     display: block;
-    font-size: 0.9rem;
-    color: #c62828;
-    margin-bottom: 8px;
-    font-weight: bold;
+    font-size: 0.8rem;
+    color: #D84747;
+    margin-bottom: 4px;
+    font-weight: 600;
     text-align: left;
+    font-family: 'EB Garamond', serif;
 }
 
 .popup-section input,
 .popup-section textarea {
     width: 100%;
-    padding: 8px 12px;
-    border: 2px inset #d3d3d3;
+    padding: 8px 10px;
+    border: 2px solid #e0e0e0;
     font-family: 'EB Garamond', serif;
     font-size: 0.9rem;
     box-sizing: border-box;
-    border-radius: 0;
-    background: white;
+    border-radius: 4px;
+    background: #fafafa;
+    transition: all 0.2s ease;
+}
+
+.popup-section input:focus,
+.popup-section textarea:focus {
+    outline: none;
+    border-color: #D84747;
+    background-color: white;
 }
 
 .popup-section textarea {
@@ -311,26 +506,34 @@ li {
 }
 
 .location-btn {
-    background-color: #2196f3;
-    border-color: #2196f3;
+    background-color: #D84747;
+    border: 2px outset #D84747;
     color: white;
-    padding: 8px 12px;
+    padding: 8px 10px;
     font-size: 0.8rem;
+    font-weight: 600;
     width: auto;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
+    border-radius: 4px;
+    font-family: 'EB Garamond', serif;
+    cursor: pointer;
+}
+
+.location-btn:hover {
+    background-color: #C23939;
 }
 
 .location-btn:active {
-    border: 2px inset #2196f3;
+    border: 2px inset #D84747;
 }
 
 .location-display {
-    background-color: #f0f0f0;
-    padding: 8px 12px;
-    border: 2px inset #d3d3d3;
-    border-radius: 0;
+    background-color: #fafafa;
+    padding: 8px 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 4px;
     text-align: left;
-    margin-top: 8px;
+    margin-top: 6px;
 }
 
 .location-display small {
@@ -341,10 +544,10 @@ li {
 
 .popup-footer {
     display: flex;
-    gap: 10px;
-    padding: 15px 20px;
-    border-top: 1px solid #ddd;
-    background-color: #f5f5f5;
+    gap: 8px;
+    padding: 8px 15px;
+    border-top: 1px solid #e0e0e0;
+    background-color: #fafafa;
     border-radius: 0 0 6px 6px;
     justify-content: flex-end;
 }
@@ -353,32 +556,33 @@ li {
     width: auto;
     min-width: 80px;
     margin: 0;
+    font-weight: 600;
 }
 
 .cancel-btn {
-    background-color: #666;
-    border-color: #666;
+    background-color: #888;
+    border-color: #888;
 }
 
 .cancel-btn:hover {
-    background-color: #777;
+    background-color: #999;
 }
 
 .cancel-btn:active {
-    border: 2px inset #666;
+    border: 2px inset #888;
 }
 
 .submit-btn {
-    background-color: #4caf50;
-    border-color: #4caf50;
+    background-color: #D84747;
+    border-color: #D84747;
 }
 
 .submit-btn:hover {
-    background-color: #66bb6a;
+    background-color: #C23939;
 }
 
 .submit-btn:active {
-    border: 2px inset #4caf50;
+    border: 2px inset #D84747;
 }
 
 .submit-btn:disabled {
@@ -387,5 +591,117 @@ li {
     cursor: not-allowed;
 }
 
+/* Hamburger menu button */
+.hamburger-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: transparent;
+    border: none;
+    width: 20px;
+    height: 16px;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: stretch;
+    z-index: 10;
+}
 
+.hamburger-btn span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: #C23939;
+    border-radius: 1px;
+    transition: all 0.3s ease;
+}
+
+.hamburger-btn:hover span {
+    background-color: #a52a2a;
+}
+
+/* Collapsed sidebar state */
+.sidebar.collapsed {
+    width: 50px;
+    height: 50px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.sidebar.collapsed .hamburger-btn {
+    position: static;
+    margin: 12px auto;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 260px;
+        max-height: calc(100vh - 30px);
+        top: 15px;
+        left: 15px;
+        padding: 10px;
+    }
+    
+    .add-fruit-popup {
+        max-width: 90%;
+        width: 90%;
+    }
+    
+    .popup-header h4 {
+        font-size: 0.9rem;
+    }
+    
+    .popup-content {
+        padding: 10px 12px;
+    }
+    
+    .popup-section label {
+        font-size: 0.75rem;
+    }
+    
+    .popup-section input,
+    .popup-section textarea {
+        font-size: 0.85rem;
+        padding: 6px 8px;
+    }
+    
+    .popup-footer {
+        padding: 6px 12px;
+    }
+    
+    .header-section p:first-child {
+        font-size: 1rem;
+    }
+    
+    .header-section p:nth-child(2) {
+        font-size: 0.8rem;
+    }
+    
+    button, .action-btn {
+        font-size: 0.75rem;
+        padding: 5px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar {
+        width: 240px;
+        top: 10px;
+        left: 10px;
+    }
+    
+    .sidebar.collapsed {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .add-fruit-popup {
+        max-width: 95%;
+        width: 95%;
+    }
+}
 

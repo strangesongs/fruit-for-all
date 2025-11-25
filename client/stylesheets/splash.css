@@ -54,3 +54,54 @@ button:active, #button:active, #login:active, #create:active {
     border: 2px inset lightcoral;
 }
 
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.splash-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: inline-block;
+    width: 100px;
+    text-align: right;
+    margin-right: 8px;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.error-message {
+    color: #c62828;
+    font-size: 0.9rem;
+    margin: 10px 0;
+    text-align: center;
+}
+
+.toggle-mode {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.toggle-link {
+    color: lightcoral;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.toggle-link:hover {
+    color: #e57373;
+}
+
+.button-group {
+    margin-top: 20px;
+}

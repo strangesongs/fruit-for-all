@@ -1,12 +1,27 @@
 
 import * as db from '../schemas/schemas.js';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 const controller = {};
 
-// JWT secret - in production, this should be in environment variables
-const JWT_SECRET = process.env.JWT_SECRET || 'loquat-dev-secret-change-in-production';
-const JWT_EXPIRES_IN = '1h'; // 1 hour as requested
+// JWT secret - MUST be set in production
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRES_IN = '1h';
+
+// Validate JWT_SECRET exists in production
+if (process.env.NODE_ENV === 'production' && !JWT_SECRET) {
+  console.error('FATAL ERROR: JWT_SECRET environment variable is not set.');
+  console.error('Generate a secure secret with: openssl rand -base64 32');
+  process.exit(1);
+}
+
+// Use default only in development
+const JWT_SECRET_FINAL = JWT_SECRET || 'loquat-dev-secret-ONLY-FOR-DEVELOPMENT';
+
+if (!JWT_SECRET && process.env.NODE_ENV !== 'production') {
+  console.warn('⚠️  WARNING: Using default JWT_SECRET. Set JWT_SECRET environment variable for production.');
+}
 
 // Helper function to generate JWT token
 function generateToken(user) {
@@ -16,7 +31,7 @@ function generateToken(user) {
       email: user.email,
       iat: Math.floor(Date.now() / 1000)
     },
-    JWT_SECRET,
+    JWT_SECRET_FINAL,
     { expiresIn: JWT_EXPIRES_IN }
   );
 }
@@ -34,7 +49,7 @@ function verifyToken(req, res, next) {
   }
   
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET_FINAL);
     req.user = decoded;
     next();
   } catch (error) {
@@ -197,8 +212,45 @@ controller.createPin = async (req, res) => {
 // Get all pins (requires authentication)
 controller.getAllPins = async (req, res) => {
   try {
-    const pins = await db.getAllPins();
-    res.json({ success: true, pins });
+    const { limit, cursor, submittedBy, minLat, maxLat, minLng, maxLng } = req.query;
+    const parsedLimit = limit ? parseInt(limit) : 1000; // Increased default for viewport filtering
+    
+    // Parse bounds if provided
+    const bounds = (minLat && maxLat && minLng && maxLng) ? {
+      minLat: parseFloat(minLat),
+      maxLat: parseFloat(maxLat),
+      minLng: parseFloat(minLng),
+      maxLng: parseFloat(maxLng)
+    } : null;
+    
+    // Get pins with optional pagination, filtering, and bounds
+    const result = await db.getAllPins({
+      limit: parsedLimit,
+      cursor,
+      submittedBy, // Filter by user if provided
+      bounds // Filter by viewport bounds if provided
+    });
+    
+    // Generate ETag based on pins data
+    const dataString = JSON.stringify(result.pins);
+    const etag = `"${crypto.createHash('md5').update(dataString).digest('hex')}"`;
+    
+    // Check if client's ETag matches (304 Not Modified)
+    const clientEtag = req.headers['if-none-match'];
+    if (clientEtag === etag) {
+      return res.status(304).end();
+    }
+    
+    // Set ETag header
+    res.setHeader('ETag', etag);
+    res.setHeader('Cache-Control', 'private, max-age=300'); // 5 minutes
+    
+    res.json({ 
+      success: true, 
+      pins: result.pins,
+      cursor: result.cursor, // Next page cursor
+      hasMore: result.hasMore // Whether more pages exist
+    });
   } catch (error) {
     console.error('Error in getAllPins controller:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
@@ -208,9 +260,22 @@ controller.getAllPins = async (req, res) => {
 // Get current user's pins only
 controller.getMyPins = async (req, res) => {
   try {
-    const allPins = await db.getAllPins();
-    const myPins = allPins.filter(pin => pin.submittedBy === req.user.userName);
-    res.json({ success: true, pins: myPins });
+    const { limit, cursor } = req.query;
+    const parsedLimit = limit ? parseInt(limit) : 100;
+    
+    // Use backend filtering instead of frontend filter
+    const result = await db.getAllPins({
+      limit: parsedLimit,
+      cursor,
+      submittedBy: req.user.userName
+    });
+    
+    res.json({ 
+      success: true, 
+      pins: result.pins,
+      cursor: result.cursor,
+      hasMore: result.hasMore
+    });
   } catch (error) {
     console.error('Error in getMyPins controller:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
@@ -238,14 +303,16 @@ controller.deletePin = async (req, res) => {
       });
     }
     
-    // TODO: Add deletePin function to database layer
-    res.status(501).json({
-      success: false,
-      message: 'Pin deletion functionality coming soon'
+    // Delete the pin
+    await db.deletePin(pinId);
+    
+    res.json({
+      success: true,
+      message: 'Pin deleted successfully'
     });
   } catch (error) {
     console.error('Error in deletePin controller:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    res.status(500).json({ success: false, message: error.message || 'Internal server error' });
   }
 };
 

@@ -21,10 +21,36 @@ class App extends Component {
     }
   };
 
+  // Called when user logs in successfully
+  handleAuthSuccess = () => {
+    if (this.mapRef.current) {
+      this.mapRef.current.refreshPins();
+    }
+  };
+
+  // Called when user clicks "my pins" button
+  handleToggleMyPins = () => {
+    if (this.mapRef.current) {
+      this.mapRef.current.toggleMyPins();
+    }
+  };
+
+  // Called when user changes fruit filter
+  handleFilterChange = (fruitType) => {
+    if (this.mapRef.current) {
+      this.mapRef.current.setState({ fruitFilter: fruitType });
+    }
+  };
+
   render() {
     return (
       <div className="main-layout">
-        <Sidebar onPinSubmitted={this.handlePinSubmitted} />
+        <Sidebar 
+          onPinSubmitted={this.handlePinSubmitted}
+          onAuthSuccess={this.handleAuthSuccess}
+          onToggleMyPins={this.handleToggleMyPins}
+          onFilterChange={this.handleFilterChange}
+        />
         <Map ref={this.mapRef} />
       </div>
     );

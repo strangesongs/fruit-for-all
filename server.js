@@ -1,6 +1,8 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import rateLimit from 'express-rate-limit';
+import compression from 'compression';
 import controllers from './server/controllers/controllers.js';
 
 const app = express();
@@ -9,14 +11,50 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Middleware
+app.use(compression()); // Enable gzip compression
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Enable CORS for cross-origin requests
+// Rate limiting for authentication endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 requests per windowMs
+  message: 'Too many authentication attempts, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiting for pin creation
+const pinLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // Limit each IP to 10 pin creations per minute
+  message: 'Too many pins created, please slow down.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// CORS configuration based on environment
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',') 
+  : ['http://localhost:3000', 'http://localhost:8080'];
+
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  
+  // In production, only allow specified origins
+  if (process.env.NODE_ENV === 'production') {
+    if (allowedOrigins.includes(origin)) {
+      res.header('Access-Control-Allow-Origin', origin);
+    }
+  } else {
+    // In development, allow any origin for easier testing
+    res.header('Access-Control-Allow-Origin', origin || '*');
+  }
+  
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);
   } else {
@@ -45,13 +83,13 @@ app.get('/map', (req, res) => {
   res.redirect('./client/map-index.html');
 });
 
-// Authentication endpoints (no auth required)
-app.post('/api/auth/register', controllers.registerUser); // create new user
-app.post('/api/auth/login', controllers.loginUser); // login user
+// Authentication endpoints (no auth required, but rate limited)
+app.post('/api/auth/register', authLimiter, controllers.registerUser); // create new user
+app.post('/api/auth/login', authLimiter, controllers.loginUser); // login user
 
 // Protected API endpoints (authentication required)
 app.get('/api/auth/me', controllers.verifyToken, controllers.getCurrentUser); // get current user
-app.post('/api/pins', controllers.verifyToken, controllers.createPin); // create new pin
+app.post('/api/pins', controllers.verifyToken, pinLimiter, controllers.createPin); // create new pin
 app.get('/api/pins', controllers.verifyToken, controllers.getAllPins); // get all pins
 app.get('/api/pins/my', controllers.verifyToken, controllers.getMyPins); // get user's pins
 app.delete('/api/pins/:pinId', controllers.verifyToken, controllers.deletePin); // delete user's pin
