@@ -10,7 +10,7 @@
     "dev:server": "nodemon --exec 'node --env-file=.env' server.js",
     "build": "npm run copy:html && esbuild client/index.js --bundle --outdir=dist --minify --define:process.env.NODE_ENV=\\\"production\\\" --jsx=automatic --loader:.js=jsx --loader:.jsx=jsx --loader:.png=file",
     "copy:html": "mkdir -p dist && cp client/map-index.html dist/index.html",
-    "start": "node --env-file=.env server.js",
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -26,6 +26,9 @@
   ],
   "author": "josh cretella",
   "license": "ISC",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "bugs": {
     "url": "https://github.com/strangesongs/loquat/issues"
   },
@@ -42,6 +45,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-leaflet": "^4.2.1",
+    "resend": "^6.9.3",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

@@ -2,6 +2,9 @@
 import * as db from '../schemas/schemas.js';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import { Resend } from 'resend';
+
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 const controller = {};
 
@@ -369,11 +372,34 @@ controller.forgotPassword = async (req, res) => {
 
     const { userName, token } = await db.requestPasswordReset(email);
 
-    // TODO: replace console.log with email send when email provider is set up
-    const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
-    console.log(`[RESET] Password reset for ${userName}: ${resetUrl}`);
+    const appUrl = process.env.APP_URL || 'http://localhost:3000';
+    const resetUrl = `${appUrl}/reset-password?token=${token}`;
 
-    // Always return success — don't leak whether email exists
+    if (resend) {
+      await resend.emails.send({
+        from: 'Fruit for All <noreply@fruitforall.app>',
+        to: email,
+        subject: 'Reset your Fruit for All password',
+        html: `
+          <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 32px; color: #333;">
+            <h2 style="color: #C23939; margin-bottom: 8px;">fruit for all</h2>
+            <p style="color: #666; font-size: 0.85rem; margin-top: 0;">street fruit for all // always open source</p>
+            <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 24px 0;" />
+            <p>Hi ${userName},</p>
+            <p>We received a request to reset your password. Click the button below to set a new one — this link expires in 1 hour.</p>
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${resetUrl}" style="background: #D84747; color: white; padding: 12px 28px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">reset password</a>
+            </div>
+            <p style="font-size: 0.85rem; color: #999;">If you didn't request this, you can safely ignore this email. Your password won't change.</p>
+            <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 24px 0;" />
+            <p style="font-size: 0.8rem; color: #bbb; text-align: center;"><a href="${appUrl}" style="color: #D84747;">fruitforall.app</a></p>
+          </div>
+        `
+      });
+    } else {
+      console.log(`[RESET DEV] Password reset URL for ${userName}: ${resetUrl}`);
+    }
+
     res.json({ success: true, message: 'If that email is registered, a reset link has been sent.' });
   } catch (error) {
     // Log real error internally but return generic success to client
