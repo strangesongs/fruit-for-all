@@ -34,7 +34,14 @@ export default class Sidebar extends React.Component {
             isCollapsed: false,
 
             // My pins filter active state
-            myPinsActive: false
+            myPinsActive: false,
+
+            // Forgot password mode
+            isForgotMode: false,
+            forgotEmail: '',
+            forgotLoading: false,
+            forgotError: '',
+            forgotSuccess: false
         }
     };
 
@@ -181,6 +188,28 @@ export default class Sidebar extends React.Component {
             authPassword: '',
             authEmail: ''
         }));
+    };
+
+    handleForgotPassword = async (e) => {
+        e.preventDefault();
+        const { forgotEmail } = this.state;
+        if (!forgotEmail) {
+            this.setState({ forgotError: 'Please enter your email address' });
+            return;
+        }
+        this.setState({ forgotLoading: true, forgotError: '' });
+        try {
+            const res = await fetch(`${API_BASE}/api/auth/forgot-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: forgotEmail })
+            });
+            await res.json();
+            // Always show success (don't reveal if email exists)
+            this.setState({ forgotSuccess: true, forgotLoading: false });
+        } catch (err) {
+            this.setState({ forgotError: 'Connection error. Please try again.', forgotLoading: false });
+        }
     };
 
     handleLogin = async (e) => {
@@ -350,6 +379,37 @@ export default class Sidebar extends React.Component {
             {/* Show login/register form if not authenticated */}
             {!authenticated ? (
                 <div className="auth-section">
+                    {this.state.isForgotMode ? (
+                        <div>
+                            {this.state.forgotSuccess ? (
+                                <div>
+                                    <p className="auth-success-msg">If that email is registered, a reset link has been sent.</p>
+                                    <p className="toggle-auth">
+                                        <span onClick={() => this.setState({ isForgotMode: false, forgotSuccess: false, forgotEmail: '' })} className="toggle-link">back to login</span>
+                                    </p>
+                                </div>
+                            ) : (
+                                <form onSubmit={this.handleForgotPassword}>
+                                    <div className="form-group">
+                                        <input
+                                            type="email"
+                                            value={this.state.forgotEmail}
+                                            onChange={(e) => this.setState({ forgotEmail: e.target.value })}
+                                            placeholder="your email address"
+                                            disabled={this.state.forgotLoading}
+                                        />
+                                    </div>
+                                    {this.state.forgotError && <p className="error-message">{this.state.forgotError}</p>}
+                                    <button type="submit" className="auth-submit-btn" disabled={this.state.forgotLoading}>
+                                        {this.state.forgotLoading ? 'please wait...' : 'send reset link'}
+                                    </button>
+                                    <p className="toggle-auth">
+                                        <span onClick={() => this.setState({ isForgotMode: false, forgotError: '', forgotEmail: '' })} className="toggle-link">back to login</span>
+                                    </p>
+                                </form>
+                            )}
+                        </div>
+                    ) : (
                     <form onSubmit={isLoginMode ? this.handleLogin : this.handleRegister}>
                         <div className="form-group">
                             <input
@@ -402,7 +462,15 @@ export default class Sidebar extends React.Component {
                                 {isLoginMode ? 'register' : 'login'}
                             </span>
                         </p>
+                        {isLoginMode && (
+                            <p className="toggle-auth">
+                                <span onClick={() => this.setState({ isForgotMode: true, authError: '' })} className="toggle-link forgot-link">
+                                    forgot password?
+                                </span>
+                            </p>
+                        )}
                     </form>
+                    )}
                 </div>
             ) : (
                 <>

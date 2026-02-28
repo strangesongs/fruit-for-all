@@ -266,6 +266,20 @@ li {
     font-weight: 500;
 }
 
+.auth-success-msg {
+    color: #2e7d32;
+    font-size: 0.85rem;
+    margin: 8px 0;
+    text-align: center;
+    font-style: italic;
+}
+
+.forgot-link {
+    font-size: 0.8rem;
+    font-weight: 400;
+    display: inline;
+}
+
 .user-info {
     width: 100%;
     padding: 8px 0;

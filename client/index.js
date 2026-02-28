@@ -5,6 +5,7 @@ import React, { Component } from 'react';
 import { createRoot } from 'react-dom/client';
 import Sidebar from './sidebar.jsx';
 import Map from './map.jsx';
+import ResetPassword from './ResetPassword.jsx';
 
 // Main App component to coordinate between Sidebar and Map
 class App extends Component {
@@ -57,6 +58,14 @@ class App extends Component {
 }
 
 const root = createRoot(document.getElementById('root'));
-root.render(<App />);
+
+const params = new URLSearchParams(window.location.search);
+const resetToken = params.get('token');
+
+if (window.location.pathname === '/reset-password' && resetToken) {
+  root.render(<ResetPassword token={resetToken} />);
+} else {
+  root.render(<App />);
+}
 
 
