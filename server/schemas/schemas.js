@@ -142,6 +142,7 @@ async function getUser(userName) {
       email: data.Item.email?.S || null,
       createdAt: data.Item.createdAt?.S || null,
       lastLogin: data.Item.lastLogin?.S || null,
+      isAdmin: data.Item.isAdmin?.BOOL || false,
       // Keep legacy field for migration
       savedPins: data.Item.savedPins ? JSON.parse(data.Item.savedPins.S) : []
     };
@@ -161,6 +162,7 @@ async function saveUser(user) {
   if (user.email) item.email = { S: user.email };
   if (user.createdAt) item.createdAt = { S: user.createdAt };
   if (user.lastLogin) item.lastLogin = { S: user.lastLogin };
+  if (user.isAdmin !== undefined) item.isAdmin = { BOOL: !!user.isAdmin };
   
   // Keep legacy field for migration
   if (user.savedPins) item.savedPins = { S: JSON.stringify(user.savedPins) };

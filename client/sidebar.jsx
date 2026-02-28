@@ -35,7 +35,9 @@ export default class Sidebar extends React.Component {
     };
 
     componentDidMount() {
-        this.fetchAvailableFruitTypes();
+        if (isAuthenticated()) {
+            this.fetchAvailableFruitTypes();
+        }
     }
 
     fetchAvailableFruitTypes = async () => {
@@ -212,6 +214,8 @@ export default class Sidebar extends React.Component {
                     authPassword: '',
                     authError: ''
                 });
+                // Load fruit types now that we're authenticated
+                this.fetchAvailableFruitTypes();
                 // Notify parent to refresh pins
                 if (this.props.onAuthSuccess) {
                     console.log('[LOGIN] Calling onAuthSuccess callback');

@@ -29,6 +29,7 @@ function generateToken(user) {
     { 
       userName: user.userName, 
       email: user.email,
+      isAdmin: user.isAdmin || false,
       iat: Math.floor(Date.now() / 1000)
     },
     JWT_SECRET_FINAL,

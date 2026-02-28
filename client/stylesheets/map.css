@@ -203,6 +203,20 @@
     background-color: rgba(216, 71, 71, 0.05) !important;
 }
 
+.add-notes-prompt {
+    color: #aaa !important;
+    font-style: italic;
+    font-size: 0.85rem !important;
+    margin: 4px 0 0 0;
+    border-bottom: 2px dotted #ccc !important;
+}
+
+.add-notes-prompt:hover {
+    color: #D84747 !important;
+    border-bottom-color: #D84747 !important;
+    background-color: rgba(216, 71, 71, 0.03) !important;
+}
+
 /* Edit notes box styles */
 .edit-notes-box {
     margin-top: 8px;

@@ -451,7 +451,7 @@ class Map extends Component {
                                                 </div>
                                                 
                                                 <div className="popup-content">
-                                                    {pin.notes && (
+                                                    {(pin.notes || editingPinId === pin.pinId || (isMyPin || isAdmin())) && (
                                                         <div className="notes-section">
                                                             <strong>notes:</strong>
                                                             {editingPinId === pin.pinId ? (
@@ -476,15 +476,24 @@ class Map extends Component {
                                                                         </button>
                                                                     </div>
                                                                 </div>
-                                                            ) : (
+                                                            ) : pin.notes ? (
                                                                 <p 
                                                                     className="pin-notes clickable-notes"
                                                                     onClick={() => (isMyPin || isAdmin()) && this.startEditingNotes(pin.pinId, pin.notes)}
                                                                     style={{ cursor: (isMyPin || isAdmin()) ? 'pointer' : 'default' }}
+                                                                    title={(isMyPin || isAdmin()) ? 'Click to edit' : ''}
                                                                 >
                                                                     {pin.notes}
                                                                 </p>
-                                                            )}
+                                                            ) : (isMyPin || isAdmin()) ? (
+                                                                <p
+                                                                    className="pin-notes add-notes-prompt"
+                                                                    onClick={() => this.startEditingNotes(pin.pinId, '')}
+                                                                    style={{ cursor: 'pointer' }}
+                                                                >
+                                                                    + add notes
+                                                                </p>
+                                                            ) : null}
                                                         </div>
                                                     )}
                                                     
@@ -511,17 +520,15 @@ class Map extends Component {
                                                         </div>
                                                     </div>
                                                     
-                                                    {/* Action buttons - show delete/edit for owner or admin */}
+                                                    {/* Action buttons - show delete for owner or admin */}
                                                     {(isMyPin || isAdmin()) && (
                                                         <div className="pin-actions">
-                                                            {(isMyPin || isAdmin()) && (
-                                                                <button 
-                                                                    className="delete-pin-btn"
-                                                                    onClick={() => this.deletePin(pin.pinId)}
-                                                                >
-                                                                    delete pin
-                                                                </button>
-                                                            )}
+                                                            <button 
+                                                                className="delete-pin-btn"
+                                                                onClick={() => this.deletePin(pin.pinId)}
+                                                            >
+                                                                delete pin
+                                                            </button>
                                                         </div>
                                                     )}
                                                 </div>
