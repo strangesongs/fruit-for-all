@@ -92,7 +92,7 @@ app.get('/api/auth/me', controllers.verifyToken, controllers.getCurrentUser); //
 app.post('/api/pins', controllers.verifyToken, pinLimiter, controllers.createPin); // create new pin
 app.get('/api/pins', controllers.verifyToken, controllers.getAllPins); // get all pins
 app.get('/api/pins/my', controllers.verifyToken, controllers.getMyPins); // get user's pins
-app.patch('/api/pins/:pinId', controllers.verifyToken, controllers.updatePin); // update pin (edit notes)
+app.patch('/api/pins/:pinId', controllers.verifyToken, pinLimiter, controllers.updatePin); // update pin (edit notes)
 app.delete('/api/pins/:pinId', controllers.verifyToken, controllers.deletePin); // delete pin
 
 app.listen(PORT, () => console.log(`Server listening on port: ${PORT}`));

@@ -7,7 +7,7 @@ const controller = {};
 
 // JWT secret - MUST be set in production
 const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRES_IN = '1h';
+const JWT_EXPIRES_IN = '7d';
 
 // Validate JWT_SECRET exists in production
 if (process.env.NODE_ENV === 'production' && !JWT_SECRET) {
