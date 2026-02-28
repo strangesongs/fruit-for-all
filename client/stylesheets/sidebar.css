@@ -74,6 +74,11 @@ button:active, .action-btn:active {
     border: 2px inset #D84747;
 }
 
+.btn-active {
+    background-color: #8B1A1A !important;
+    border: 2px inset #D84747 !important;
+}
+
 .add-fruit-btn {
     background-color: #D84747;
     border-color: #D84747;

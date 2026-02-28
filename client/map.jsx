@@ -78,6 +78,7 @@ class Map extends Component {
             loading: true,
             error: null,
             highlightMyPins: false,
+            showMyPinsOnly: false,
             etag: null, // Store ETag for conditional requests
             zoom: 13, // Current zoom level
             fruitFilter: 'all', // Filter for fruit types
@@ -219,10 +220,10 @@ class Map extends Component {
         this.fetchPins(true); // Force refresh
     };
 
-    // Toggle highlighting of user's pins
+    // Toggle filtering to show only the current user's pins
     toggleMyPins = () => {
         this.setState(prevState => ({
-            highlightMyPins: !prevState.highlightMyPins
+            showMyPinsOnly: !prevState.showMyPinsOnly
         }));
     };
 
@@ -262,9 +263,11 @@ class Map extends Component {
             const result = await response.json();
 
             if (result.success) {
-                alert('Pin deleted successfully!');
-                // Refresh pins to remove deleted one
-                this.fetchPins(true);
+                // Optimistic update: remove from state immediately, clear cache
+                const updatedPins = this.state.pins.filter(pin => pin.pinId !== pinId);
+                clearCache('allPins');
+                setCache('allPins', updatedPins);
+                this.setState({ pins: updatedPins });
             } else {
                 alert('Error deleting pin: ' + result.message);
             }
@@ -327,7 +330,7 @@ class Map extends Component {
     };
 
     render() {
-        const { pins, loading, error, highlightMyPins, zoom, fruitFilter, editingPinId, editingNotes } = this.state;
+        const { pins, loading, error, showMyPinsOnly, zoom, fruitFilter, editingPinId, editingNotes } = this.state;
         const currentUser = getUser();
         const currentUsername = currentUser ? currentUser.userName : null;
         
@@ -342,6 +345,11 @@ class Map extends Component {
         // Filter by selected fruit type if filter is active
         if (fruitFilter !== 'all') {
             filteredPins = filteredPins.filter(pin => pin.fruitType === fruitFilter);
+        }
+        
+        // Filter to only current user's pins if active
+        if (showMyPinsOnly && currentUsername) {
+            filteredPins = filteredPins.filter(pin => pin.submittedBy === currentUsername);
         }
         
         // Apply clustering based on zoom level
@@ -409,7 +417,7 @@ class Map extends Component {
                                 
                                 // Regular pin markers
                                 const isMyPin = currentUsername && pin.submittedBy === currentUsername;
-                                const markerIcon = (highlightMyPins && isMyPin) ? myPinIcon : defaultIcon;
+                                const markerIcon = isMyPin ? myPinIcon : defaultIcon;
                                 
                                 // Calculate seasonal status
                                 const currentMonth = new Date().getMonth() + 1;

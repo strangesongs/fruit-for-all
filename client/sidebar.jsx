@@ -30,7 +30,10 @@ export default class Sidebar extends React.Component {
             availableFruitTypes: [],
             
             // Sidebar collapse state (for mobile)
-            isCollapsed: false
+            isCollapsed: false,
+
+            // My pins filter active state
+            myPinsActive: false
         }
     };
 
@@ -437,10 +440,12 @@ export default class Sidebar extends React.Component {
                             type="button"
                             onClick={(e) => {
                             e.preventDefault();
+                            const next = !this.state.myPinsActive;
+                            this.setState({ myPinsActive: next });
                             if (this.props.onToggleMyPins) {
                                 this.props.onToggleMyPins();
                             }}}
-                            className="action-btn"
+                            className={`action-btn${this.state.myPinsActive ? ' btn-active' : ''}`}
                             >my pins</button>
                     </div>
 
