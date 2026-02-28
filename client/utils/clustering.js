@@ -9,16 +9,12 @@
  * @returns {Array} Clustered pins with cluster information
  */
 export function clusterPins(pins, bounds, zoom) {
-  console.log('Clustering with zoom level:', zoom, 'Pin count:', pins?.length);
   if (!pins || pins.length === 0) return [];
   
   // Don't cluster at high zoom levels (close up view)
   if (zoom >= 14) {
-    console.log('Zoom >= 14, returning individual pins');
     return pins.map(pin => ({ ...pin, cluster: false, count: 1 }));
   }
-  
-  console.log('Zoom < 14, applying clustering');
   
   // Calculate grid size based on zoom level
   // Lower zoom = larger grid cells = more aggressive clustering

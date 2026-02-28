@@ -8,6 +8,7 @@ import { API_BASE } from './utils/config.js';
 import L from 'leaflet';
 
 import './stylesheets/map.css';
+import 'leaflet/dist/leaflet.css';
 
 // Custom marker icons
 const defaultIcon = new L.Icon({
