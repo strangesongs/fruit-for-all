@@ -461,14 +461,10 @@ export default class Sidebar extends React.Component {
                             <span onClick={this.toggleAuthMode} className="toggle-link">
                                 {isLoginMode ? 'register' : 'login'}
                             </span>
+                            {isLoginMode && (
+                                <span> · <span onClick={() => this.setState({ isForgotMode: true, authError: '' })} className="toggle-link forgot-link">forgot password?</span></span>
+                            )}
                         </p>
-                        {isLoginMode && (
-                            <p className="toggle-auth">
-                                <span onClick={() => this.setState({ isForgotMode: true, authError: '' })} className="toggle-link forgot-link">
-                                    forgot password?
-                                </span>
-                            </p>
-                        )}
                     </form>
                     )}
                 </div>
