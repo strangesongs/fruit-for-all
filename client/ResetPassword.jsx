@@ -60,7 +60,7 @@ export default class ResetPassword extends Component {
           padding: '24px', width: '300px', boxShadow: '4px 4px 12px rgba(0,0,0,0.2)',
           textAlign: 'center'
         }}>
-          <p style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#C23939', margin: '0 0 8px 0' }}>loquat</p>
+<p style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#C23939', margin: '0 0 8px 0' }}>fruit for all</p>
           <p style={{ fontSize: '0.9rem', margin: '0 0 20px 0' }}>set a new password</p>
 
           {success ? (

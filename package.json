@@ -1,7 +1,7 @@
 {
-  "name": "loquat",
-  "version": "2.0.0",
-  "description": "a fruit map of central los angeles",
+  "name": "fruitforall",
+  "version": "1.0.0",
+  "description": "open source orchard — a community map of free street fruit",
   "type": "module",
   "source": "client/index.html",
   "scripts": {

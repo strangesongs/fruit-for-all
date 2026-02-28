@@ -371,9 +371,9 @@ export default class Sidebar extends React.Component {
             <>
             {/* Logo and branding at top */}
             <div className="header-section">
-                <p>loquat 2.0</p>
-                <p>street fruit for all // always open source</p>
-                <img className="lil-fruit" src={loquatIcon} alt={"loquat"}/>
+                <p>fruit for all</p>
+                <p>open source orchard</p>
+                <img className="lil-fruit" src={loquatIcon} alt={"fruit for all"}/>
             </div>
 
             {/* Show login/register form if not authenticated */}
