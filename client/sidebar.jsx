@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import loquatIcon from '../loquat-48.png';
 import { getAuthHeader, getUser, clearAuth, saveAuth, isAuthenticated } from './utils/auth.js';
 import { FRUIT_SEASONS } from './utils/fruitSeasons.js';
+import { API_BASE } from './utils/config.js';
 
 import './stylesheets/sidebar.css';
 
@@ -45,7 +46,7 @@ export default class Sidebar extends React.Component {
 
     fetchAvailableFruitTypes = async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/pins', {
+            const response = await fetch(`${API_BASE}/api/pins`, {
                 headers: getAuthHeader()
             });
             const data = await response.json();
@@ -120,7 +121,7 @@ export default class Sidebar extends React.Component {
         this.setState({ submitting: true });
 
         try {
-            const response = await fetch('http://localhost:8080/api/pins', {
+            const response = await fetch(`${API_BASE}/api/pins`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -192,10 +193,9 @@ export default class Sidebar extends React.Component {
         }
 
         this.setState({ authLoading: true, authError: '' });
-        console.log('[LOGIN] Attempting login for user:', authUserName);
 
         try {
-            const response = await fetch('http://localhost:8080/api/auth/login', {
+            const response = await fetch(`${API_BASE}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
@@ -204,12 +204,9 @@ export default class Sidebar extends React.Component {
                 })
             });
 
-            console.log('[LOGIN] Response status:', response.status);
             const result = await response.json();
-            console.log('[LOGIN] Response body:', result);
 
             if (result.success) {
-                console.log('[LOGIN] Success! Saving auth and setting authenticated=true');
                 saveAuth(result.token, result.user);
                 this.setState({ 
                     authenticated: true,
@@ -221,20 +218,16 @@ export default class Sidebar extends React.Component {
                 this.fetchAvailableFruitTypes();
                 // Notify parent to refresh pins
                 if (this.props.onAuthSuccess) {
-                    console.log('[LOGIN] Calling onAuthSuccess callback');
                     this.props.onAuthSuccess();
                 }
             } else {
-                const errorMsg = result.message || 'Login failed';
-                console.log('[LOGIN] Failed:', errorMsg);
-                this.setState({ authError: errorMsg });
+                this.setState({ authError: result.message || 'Login failed' });
             }
         } catch (error) {
             console.error('[LOGIN] Exception:', error);
             this.setState({ authError: 'Connection error. Please try again.' });
         } finally {
             this.setState({ authLoading: false });
-            console.log('[LOGIN] Loading state cleared');
         }
     };
 
@@ -279,7 +272,7 @@ export default class Sidebar extends React.Component {
         this.setState({ authLoading: true, authError: '' });
 
         try {
-            const response = await fetch('http://localhost:8080/api/auth/register', {
+            const response = await fetch(`${API_BASE}/api/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 

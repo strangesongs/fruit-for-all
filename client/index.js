@@ -1,7 +1,6 @@
 
 import './stylesheets/sidebar.css';
 import './stylesheets/map.css';
-import './stylesheets/splash.css';
 import React, { Component } from 'react';
 import { createRoot } from 'react-dom/client';
 import Sidebar from './sidebar.jsx';

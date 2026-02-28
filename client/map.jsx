@@ -1,14 +1,13 @@
 import React, { Component } from 'react';
-import { render } from 'react-dom';
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import { getAuthHeader, isAuthenticated, getUser, isAdmin } from './utils/auth.js';
 import { getCache, setCache, clearCache } from './utils/cache.js';
 import { clusterPins } from './utils/clustering.js';
 import { getSeasonForZone, isInSeason, getSeasonDisplay } from './utils/fruitSeasons.js';
+import { API_BASE } from './utils/config.js';
 import L from 'leaflet';
 
 import './stylesheets/map.css';
-import './stylesheets/sidebar.css'
 
 // Custom marker icons
 const defaultIcon = new L.Icon({
@@ -77,7 +76,6 @@ class Map extends Component {
             pins: [], // Pins from database
             loading: true,
             error: null,
-            highlightMyPins: false,
             showMyPinsOnly: false,
             etag: null, // Store ETag for conditional requests
             zoom: 13, // Current zoom level
@@ -95,11 +93,8 @@ class Map extends Component {
     }
 
     fetchPins = async (forceRefresh = false, bounds = null) => {
-        console.log('[PINS] fetchPins called, isAuthenticated:', isAuthenticated(), 'forceRefresh:', forceRefresh);
-        
         // Don't fetch if not authenticated
         if (!isAuthenticated()) {
-            console.log('[PINS] Not authenticated, clearing pins');
             this.setState({ 
                 pins: [], 
                 loading: false,
@@ -119,7 +114,6 @@ class Map extends Component {
         if (!forceRefresh) {
             const cachedPins = getCache(cacheKey);
             if (cachedPins) {
-                console.log('[PINS] Loading from cache, count:', cachedPins.length);
                 this.setState({ 
                     pins: cachedPins, 
                     loading: false 
@@ -139,7 +133,7 @@ class Map extends Component {
             }
 
             // Build URL with bounds query params if provided
-            let url = 'http://localhost:8080/api/pins';
+            let url = `${API_BASE}/api/pins`;
             if (bounds) {
                 const params = new URLSearchParams({
                     minLat: bounds.minLat.toFixed(6),
@@ -150,14 +144,10 @@ class Map extends Component {
                 url += `?${params.toString()}`;
             }
 
-            console.log('[PINS] Fetching from:', url);
             const response = await fetch(url, { headers });
-            
-            console.log('[PINS] Response status:', response.status);
 
             // Handle 304 Not Modified - use cached data
             if (response.status === 304) {
-                console.log('[PINS] 304 Not Modified, using cache');
                 const cachedPins = getCache('allPins');
                 if (cachedPins) {
                     this.setState({ loading: false });
@@ -183,7 +173,6 @@ class Map extends Component {
             const result = await response.json();
             
             if (result.success) {
-                console.log('[PINS] Success! Loaded', result.pins.length, 'pins');
                 // Store ETag from response
                 const newEtag = response.headers.get('ETag');
                 
@@ -236,7 +225,6 @@ class Map extends Component {
 
         // Set new timer - wait 500ms after user stops moving
         this.debounceTimer = setTimeout(() => {
-            console.log('Viewport changed, loading pins for bounds:', bounds);
             this.setState({ loading: true });
             this.fetchPins(false, bounds);
         }, 500);
@@ -244,7 +232,6 @@ class Map extends Component {
 
     // Handle zoom changes
     handleZoomChange = (zoom) => {
-        console.log('Zoom changed to:', zoom);
         this.setState({ zoom });
     };
 
@@ -255,7 +242,7 @@ class Map extends Component {
         }
 
         try {
-            const response = await fetch(`http://localhost:8080/api/pins/${pinId}`, {
+            const response = await fetch(`${API_BASE}/api/pins/${pinId}`, {
                 method: 'DELETE',
                 headers: getAuthHeader()
             });
@@ -296,7 +283,7 @@ class Map extends Component {
     // Save edited notes
     saveEditedNotes = async (pinId) => {
         try {
-            const response = await fetch(`http://localhost:8080/api/pins/${pinId}`, {
+            const response = await fetch(`${API_BASE}/api/pins/${pinId}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -308,7 +295,6 @@ class Map extends Component {
             const result = await response.json();
 
             if (result.success) {
-                console.log('[EDIT] Notes saved successfully');
                 // Update the pin in state
                 const updatedPins = this.state.pins.map(pin => 
                     pin.pinId === pinId ? { ...pin, notes: this.state.editingNotes } : pin
@@ -357,8 +343,7 @@ class Map extends Component {
         const displayPins = clusterPins(filteredPins, bounds, zoom);
 
         return (
-            <div className='mapAndSidebar'>
-                <div className='mapContainer'>
+            <div className='map-area'>
                     <MapContainer center={[34.061415, -118.293991]} zoom={13} scrollWheelZoom={true}>
                         <MapEvents 
                             onViewportChange={this.handleViewportChange} 
@@ -547,7 +532,6 @@ class Map extends Component {
                             })
                         }
                     </MapContainer>
-                </div>
             </div>
         );
     }

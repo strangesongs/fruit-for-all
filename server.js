@@ -95,8 +95,4 @@ app.get('/api/pins/my', controllers.verifyToken, controllers.getMyPins); // get 
 app.patch('/api/pins/:pinId', controllers.verifyToken, controllers.updatePin); // update pin (edit notes)
 app.delete('/api/pins/:pinId', controllers.verifyToken, controllers.deletePin); // delete pin
 
-// Legacy endpoints (keep for migration)
-app.post('/user', controllers.loginUser); // legacy - will be removed
-app.post('/save', controllers.saveButton); // legacy - will be removed
-
 app.listen(PORT, () => console.log(`Server listening on port: ${PORT}`));
