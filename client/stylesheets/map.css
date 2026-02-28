@@ -195,6 +195,85 @@
     font-family: 'EB Garamond', serif;
 }
 
+.clickable-notes {
+    border-bottom: 2px dotted #D84747 !important;
+}
+
+.clickable-notes:hover {
+    background-color: rgba(216, 71, 71, 0.05) !important;
+}
+
+/* Edit notes box styles */
+.edit-notes-box {
+    margin-top: 8px;
+}
+
+.notes-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 8px;
+    font-family: 'EB Garamond', serif;
+    font-size: 0.9rem;
+    border: 2px solid #D84747;
+    border-radius: 4px;
+    background: white;
+    color: #333;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.notes-textarea:focus {
+    outline: none;
+    border-color: #a52a2a;
+    box-shadow: 0 0 4px rgba(216, 71, 71, 0.3);
+}
+
+.edit-notes-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    justify-content: center;
+}
+
+.save-notes-btn, .cancel-notes-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: 'EB Garamond', serif;
+    border: 2px outset;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.save-notes-btn {
+    background-color: #4CAF50;
+    color: white;
+    border-color: #4CAF50;
+}
+
+.save-notes-btn:hover {
+    background-color: #45a049;
+}
+
+.save-notes-btn:active {
+    border: 2px inset #4CAF50;
+}
+
+.cancel-notes-btn {
+    background-color: #888;
+    color: white;
+    border-color: #888;
+}
+
+.cancel-notes-btn:hover {
+    background-color: #999;
+}
+
+.cancel-notes-btn:active {
+    border: 2px inset #888;
+}
+
 .metadata-grid {
     display: grid;
     gap: 6px;

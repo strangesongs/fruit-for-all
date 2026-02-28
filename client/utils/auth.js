@@ -55,3 +55,9 @@ export function getAuthHeader() {
   const token = getToken();
   return token ? { 'Authorization': `Bearer ${token}` } : {};
 }
+
+// Check if current user is admin
+export function isAdmin() {
+  const user = getUser();
+  return user && user.isAdmin === true;
+}

@@ -92,7 +92,8 @@ app.get('/api/auth/me', controllers.verifyToken, controllers.getCurrentUser); //
 app.post('/api/pins', controllers.verifyToken, pinLimiter, controllers.createPin); // create new pin
 app.get('/api/pins', controllers.verifyToken, controllers.getAllPins); // get all pins
 app.get('/api/pins/my', controllers.verifyToken, controllers.getMyPins); // get user's pins
-app.delete('/api/pins/:pinId', controllers.verifyToken, controllers.deletePin); // delete user's pin
+app.patch('/api/pins/:pinId', controllers.verifyToken, controllers.updatePin); // update pin (edit notes)
+app.delete('/api/pins/:pinId', controllers.verifyToken, controllers.deletePin); // delete pin
 
 // Legacy endpoints (keep for migration)
 app.post('/user', controllers.loginUser); // legacy - will be removed

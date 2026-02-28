@@ -152,7 +152,7 @@ li {
 .auth-section {
     width: 100%;
     padding: 10px 0;
-    margin-bottom: 20px;
+    margin-bottom: 8px;
 }
 
 .auth-section h3 {
@@ -182,11 +182,6 @@ li {
 .auth-section .form-group input::placeholder {
     text-align: center;
     color: #999;
-}
-    border-radius: 4px;
-    background: #fafafa;
-    box-sizing: border-box;
-    transition: all 0.2s ease;
 }
 
 .auth-section .form-group input:focus {
@@ -238,8 +233,8 @@ li {
 }
 
 .toggle-auth {
-    margin-top: 6px;
-    margin-bottom: 2px;
+    margin-top: 4px;
+    margin-bottom: 0px;
     font-size: 0.85rem;
     color: #666;
     text-align: center;
@@ -250,10 +245,20 @@ li {
     text-decoration: underline;
     cursor: pointer;
     font-weight: 600;
+    display: block;
+    margin-top: 2px;
 }
 
 .toggle-link:hover {
     color: #C23939;
+}
+
+.error-message {
+    color: #d32f2f;
+    font-size: 0.8rem;
+    margin: 6px 0;
+    text-align: center;
+    font-weight: 500;
 }
 
 .user-info {

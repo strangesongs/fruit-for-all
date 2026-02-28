@@ -106,7 +106,8 @@ controller.loginUser = async (req, res) => {
       user: {
         userName: user.userName,
         email: user.email,
-        lastLogin: user.lastLogin
+        lastLogin: user.lastLogin,
+        isAdmin: user.isAdmin || false
       },
       token
     });
@@ -283,11 +284,12 @@ controller.getMyPins = async (req, res) => {
 };
 
 // Delete user's own pin
-controller.deletePin = async (req, res) => {
+controller.updatePin = async (req, res) => {
   try {
     const { pinId } = req.params;
+    const { notes } = req.body;
     
-    // First verify the pin exists and belongs to the user
+    // Verify pin exists
     const pin = await db.getPinById(pinId);
     if (!pin) {
       return res.status(404).json({
@@ -296,10 +298,52 @@ controller.deletePin = async (req, res) => {
       });
     }
     
-    if (pin.submittedBy !== req.user.userName) {
+    // Check if user is admin or owner
+    const isAdmin = req.user.isAdmin || false;
+    const isOwner = pin.submittedBy === req.user.userName;
+    
+    if (!isAdmin && !isOwner) {
       return res.status(403).json({
         success: false,
-        message: 'You can only delete your own pins'
+        message: 'Only admin or pin owner can edit this pin'
+      });
+    }
+    
+    // Update the pin with new notes
+    const updatedPin = await db.updatePin(pinId, { notes: notes || '' });
+    
+    res.json({
+      success: true,
+      message: 'Pin updated successfully',
+      pin: updatedPin
+    });
+  } catch (error) {
+    console.error('Error in updatePin controller:', error);
+    res.status(500).json({ success: false, message: error.message || 'Internal server error' });
+  }
+};
+
+controller.deletePin = async (req, res) => {
+  try {
+    const { pinId } = req.params;
+    
+    // First verify the pin exists
+    const pin = await db.getPinById(pinId);
+    if (!pin) {
+      return res.status(404).json({
+        success: false,
+        message: 'Pin not found'
+      });
+    }
+    
+    // Check if user is admin or owner
+    const isAdmin = req.user.isAdmin || false;
+    const isOwner = pin.submittedBy === req.user.userName;
+    
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only admin or pin owner can delete this pin'
       });
     }
     

@@ -187,6 +187,7 @@ export default class Sidebar extends React.Component {
         }
 
         this.setState({ authLoading: true, authError: '' });
+        console.log('[LOGIN] Attempting login for user:', authUserName);
 
         try {
             const response = await fetch('http://localhost:8080/api/auth/login', {
@@ -198,9 +199,12 @@ export default class Sidebar extends React.Component {
                 })
             });
 
+            console.log('[LOGIN] Response status:', response.status);
             const result = await response.json();
+            console.log('[LOGIN] Response body:', result);
 
             if (result.success) {
+                console.log('[LOGIN] Success! Saving auth and setting authenticated=true');
                 saveAuth(result.token, result.user);
                 this.setState({ 
                     authenticated: true,
@@ -210,16 +214,20 @@ export default class Sidebar extends React.Component {
                 });
                 // Notify parent to refresh pins
                 if (this.props.onAuthSuccess) {
+                    console.log('[LOGIN] Calling onAuthSuccess callback');
                     this.props.onAuthSuccess();
                 }
             } else {
-                this.setState({ authError: result.message || 'Login failed' });
+                const errorMsg = result.message || 'Login failed';
+                console.log('[LOGIN] Failed:', errorMsg);
+                this.setState({ authError: errorMsg });
             }
         } catch (error) {
-            console.error('Login error:', error);
+            console.error('[LOGIN] Exception:', error);
             this.setState({ authError: 'Connection error. Please try again.' });
         } finally {
             this.setState({ authLoading: false });
+            console.log('[LOGIN] Loading state cleared');
         }
     };
 

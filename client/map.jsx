@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { render } from 'react-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
-import { getAuthHeader, isAuthenticated, getUser } from './utils/auth.js';
+import { getAuthHeader, isAuthenticated, getUser, isAdmin } from './utils/auth.js';
 import { getCache, setCache, clearCache } from './utils/cache.js';
 import { clusterPins } from './utils/clustering.js';
 import { getSeasonForZone, isInSeason, getSeasonDisplay } from './utils/fruitSeasons.js';
@@ -80,24 +80,25 @@ class Map extends Component {
             highlightMyPins: false,
             etag: null, // Store ETag for conditional requests
             zoom: 13, // Current zoom level
-            fruitFilter: 'all' // Filter for fruit types
+            fruitFilter: 'all', // Filter for fruit types
+            editingPinId: null, // Pin currently being edited
+            editingNotes: '' // Temp storage for edited notes
         };
         this.mapRef = null; // Reference to map instance
         this.debounceTimer = null; // Timer for debouncing viewport changes
     }
 
     componentDidMount() {
-        // Only fetch pins if authenticated
-        if (isAuthenticated()) {
-            this.fetchPins();
-        } else {
-            this.setState({ loading: false });
-        }
+        // Fetch pins on mount
+        this.fetchPins();
     }
 
     fetchPins = async (forceRefresh = false, bounds = null) => {
+        console.log('[PINS] fetchPins called, isAuthenticated:', isAuthenticated(), 'forceRefresh:', forceRefresh);
+        
         // Don't fetch if not authenticated
         if (!isAuthenticated()) {
+            console.log('[PINS] Not authenticated, clearing pins');
             this.setState({ 
                 pins: [], 
                 loading: false,
@@ -105,6 +106,8 @@ class Map extends Component {
             });
             return;
         }
+
+        this.setState({ loading: true });
 
         // Create cache key based on bounds if provided
         const cacheKey = bounds 
@@ -115,7 +118,7 @@ class Map extends Component {
         if (!forceRefresh) {
             const cachedPins = getCache(cacheKey);
             if (cachedPins) {
-                console.log('Loading pins from cache');
+                console.log('[PINS] Loading from cache, count:', cachedPins.length);
                 this.setState({ 
                     pins: cachedPins, 
                     loading: false 
@@ -146,11 +149,14 @@ class Map extends Component {
                 url += `?${params.toString()}`;
             }
 
+            console.log('[PINS] Fetching from:', url);
             const response = await fetch(url, { headers });
             
+            console.log('[PINS] Response status:', response.status);
+
             // Handle 304 Not Modified - use cached data
             if (response.status === 304) {
-                console.log('Pins not modified, using cached data');
+                console.log('[PINS] 304 Not Modified, using cache');
                 const cachedPins = getCache('allPins');
                 if (cachedPins) {
                     this.setState({ loading: false });
@@ -158,9 +164,25 @@ class Map extends Component {
                 }
             }
 
+            // Handle auth errors
+            if (response.status === 401 || response.status === 403) {
+                console.error('[PINS] Auth error', response.status, '- re-login required');
+                this.setState({ 
+                    error: 'Session expired. Please log in again.', 
+                    loading: false,
+                    pins: []
+                });
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
             const result = await response.json();
             
             if (result.success) {
+                console.log('[PINS] Success! Loaded', result.pins.length, 'pins');
                 // Store ETag from response
                 const newEtag = response.headers.get('ETag');
                 
@@ -170,19 +192,20 @@ class Map extends Component {
                 this.setState({ 
                     pins: result.pins, 
                     loading: false,
-                    etag: newEtag
+                    etag: newEtag,
+                    error: null
                 });
             } else {
-                console.error('Failed to fetch pins:', result.message);
+                console.error('[PINS] API returned success=false:', result.message);
                 this.setState({ 
-                    error: 'Failed to load pins', 
+                    error: 'Failed to load pins: ' + result.message, 
                     loading: false 
                 });
             }
         } catch (error) {
-            console.error('Error fetching pins:', error);
+            console.error('[PINS] Exception:', error);
             this.setState({ 
-                error: 'Error loading pins', 
+                error: 'Error loading pins: ' + error.message, 
                 loading: false 
             });
         }
@@ -251,8 +274,60 @@ class Map extends Component {
         }
     };
 
+    // Start editing notes for a pin
+    startEditingNotes = (pinId, currentNotes) => {
+        this.setState({
+            editingPinId: pinId,
+            editingNotes: currentNotes || ''
+        });
+    };
+
+    // Cancel editing notes
+    cancelEditingNotes = () => {
+        this.setState({
+            editingPinId: null,
+            editingNotes: ''
+        });
+    };
+
+    // Save edited notes
+    saveEditedNotes = async (pinId) => {
+        try {
+            const response = await fetch(`http://localhost:8080/api/pins/${pinId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...getAuthHeader()
+                },
+                body: JSON.stringify({ notes: this.state.editingNotes })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                console.log('[EDIT] Notes saved successfully');
+                // Update the pin in state
+                const updatedPins = this.state.pins.map(pin => 
+                    pin.pinId === pinId ? { ...pin, notes: this.state.editingNotes } : pin
+                );
+                this.setState({
+                    pins: updatedPins,
+                    editingPinId: null,
+                    editingNotes: ''
+                });
+                // Update cache
+                setCache('allPins', updatedPins);
+            } else {
+                alert('Error saving notes: ' + result.message);
+            }
+        } catch (error) {
+            console.error('[EDIT] Error saving notes:', error);
+            alert('Error saving notes. Please try again.');
+        }
+    };
+
     render() {
-        const { pins, loading, error, highlightMyPins, zoom, fruitFilter } = this.state;
+        const { pins, loading, error, highlightMyPins, zoom, fruitFilter, editingPinId, editingNotes } = this.state;
         const currentUser = getUser();
         const currentUsername = currentUser ? currentUser.userName : null;
         
@@ -379,7 +454,37 @@ class Map extends Component {
                                                     {pin.notes && (
                                                         <div className="notes-section">
                                                             <strong>notes:</strong>
-                                                            <p className="pin-notes">{pin.notes}</p>
+                                                            {editingPinId === pin.pinId ? (
+                                                                <div className="edit-notes-box">
+                                                                    <textarea 
+                                                                        value={editingNotes}
+                                                                        onChange={(e) => this.setState({ editingNotes: e.target.value })}
+                                                                        className="notes-textarea"
+                                                                    />
+                                                                    <div className="edit-notes-actions">
+                                                                        <button 
+                                                                            onClick={() => this.saveEditedNotes(pin.pinId)}
+                                                                            className="save-notes-btn"
+                                                                        >
+                                                                            save
+                                                                        </button>
+                                                                        <button 
+                                                                            onClick={this.cancelEditingNotes}
+                                                                            className="cancel-notes-btn"
+                                                                        >
+                                                                            cancel
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <p 
+                                                                    className="pin-notes clickable-notes"
+                                                                    onClick={() => (isMyPin || isAdmin()) && this.startEditingNotes(pin.pinId, pin.notes)}
+                                                                    style={{ cursor: (isMyPin || isAdmin()) ? 'pointer' : 'default' }}
+                                                                >
+                                                                    {pin.notes}
+                                                                </p>
+                                                            )}
                                                         </div>
                                                     )}
                                                     
@@ -406,15 +511,17 @@ class Map extends Component {
                                                         </div>
                                                     </div>
                                                     
-                                                    {/* Delete button - only show if current user owns this pin */}
-                                                    {isMyPin && (
+                                                    {/* Action buttons - show delete/edit for owner or admin */}
+                                                    {(isMyPin || isAdmin()) && (
                                                         <div className="pin-actions">
-                                                            <button 
-                                                                className="delete-pin-btn"
-                                                                onClick={() => this.deletePin(pin.pinId)}
-                                                            >
-                                                                delete pin
-                                                            </button>
+                                                            {(isMyPin || isAdmin()) && (
+                                                                <button 
+                                                                    className="delete-pin-btn"
+                                                                    onClick={() => this.deletePin(pin.pinId)}
+                                                                >
+                                                                    delete pin
+                                                                </button>
+                                                            )}
                                                         </div>
                                                     )}
                                                 </div>

@@ -5,7 +5,8 @@ import {
   PutItemCommand, 
   ScanCommand, 
   QueryCommand,
-  DeleteItemCommand
+  DeleteItemCommand,
+  UpdateItemCommand
 } from '@aws-sdk/client-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
@@ -403,6 +404,7 @@ async function createUser(userData) {
     email: email.trim().toLowerCase(),
     createdAt: now,
     lastLogin: now,
+    isAdmin: userName.trim().toLowerCase() === 'admin', // Admin privileges only for 'admin' user
     savedPins: [] // Keep for migration compatibility
   };
   
@@ -470,6 +472,55 @@ async function deletePin(pinId) {
   }
 }
 
+// Update pin (e.g., edit notes)
+async function updatePin(pinId, updates) {
+  if (!pinId || typeof pinId !== 'string') {
+    throw new Error('Valid pin ID is required');
+  }
+  
+  // Get the pin to find its createdAt (needed for update since it's part of the key)
+  const pin = await getPinById(pinId);
+  if (!pin) {
+    throw new Error('Pin not found');
+  }
+  
+  // Build update expression and attribute values
+  const updateExpressions = [];
+  const attributeValues = {};
+  
+  if (updates.notes !== undefined) {
+    updateExpressions.push('notes = :notes');
+    attributeValues[':notes'] = { S: String(updates.notes || '') };
+  }
+  
+  if (updateExpressions.length === 0) {
+    return pin; // No updates to make
+  }
+  
+  const params = {
+    TableName: PINS_TABLE,
+    Key: {
+      pinId: { S: pinId },
+      createdAt: { S: pin.createdAt }
+    },
+    UpdateExpression: 'SET ' + updateExpressions.join(', ') + ', updatedAt = :now',
+    ExpressionAttributeValues: {
+      ...attributeValues,
+      ':now': { S: new Date().toISOString() }
+    },
+    ReturnValues: 'ALL_NEW'
+  };
+  
+  try {
+    const response = await client.send(new UpdateItemCommand(params));
+    // Convert DynamoDB response back to normal object
+    return convertDynamoDBItem(response.Attributes);
+  } catch (err) {
+    console.error('Error updating pin:', err);
+    throw new Error('Failed to update pin');
+  }
+}
+
 export { 
   getUser, 
   saveUser, 
@@ -479,6 +530,7 @@ export {
   getAllPins, 
   getPinById,
   deletePin,
+  updatePin,
   validatePassword,
   validateEmail 
 };
