@@ -84,8 +84,10 @@ app.get('/map', (req, res) => {
 });
 
 // Authentication endpoints (no auth required, but rate limited)
-app.post('/api/auth/register', authLimiter, controllers.registerUser); // create new user
-app.post('/api/auth/login', authLimiter, controllers.loginUser); // login user
+app.post('/api/auth/register', authLimiter, controllers.registerUser);
+app.post('/api/auth/login', authLimiter, controllers.loginUser);
+app.post('/api/auth/forgot-password', authLimiter, controllers.forgotPassword);
+app.post('/api/auth/reset-password', authLimiter, controllers.resetPassword);
 
 // Protected API endpoints (authentication required)
 app.get('/api/auth/me', controllers.verifyToken, controllers.getCurrentUser); // get current user

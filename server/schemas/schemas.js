@@ -10,6 +10,7 @@ import {
 } from '@aws-sdk/client-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 
 // Zone detection for seasonal indicators
 function detectZone(lat, lng) {
@@ -66,6 +67,24 @@ function escapeHtml(text) {
 
 function generateGeoHash(lat, lng) {
   return `${Math.round(lat * 10000)}_${Math.round(lng * 10000)}`;
+}
+
+// Convert a DynamoDB item's attributes back to a plain JS pin object
+function convertDynamoDBItem(item) {
+  if (!item) return null;
+  return {
+    pinId: item.pinId?.S,
+    createdAt: item.createdAt?.S,
+    updatedAt: item.updatedAt?.S || null,
+    coordinates: item.coordinates?.S ? JSON.parse(item.coordinates.S) : null,
+    fruitType: item.fruitType?.S,
+    fruitTypeDisplay: item.fruitTypeDisplay?.S || item.fruitType?.S,
+    notes: item.notes?.S || '',
+    submittedBy: item.submittedBy?.S,
+    geoHash: item.geoHash?.S || '',
+    status: item.status?.S || 'active',
+    zone: item.zone?.N ? parseInt(item.zone.N) : null
+  };
 }
 
 // Validate coordinates are within valid ranges
@@ -143,6 +162,8 @@ async function getUser(userName) {
       createdAt: data.Item.createdAt?.S || null,
       lastLogin: data.Item.lastLogin?.S || null,
       isAdmin: data.Item.isAdmin?.BOOL || false,
+      resetToken: data.Item.resetToken?.S || null,
+      resetTokenExpiry: data.Item.resetTokenExpiry?.S || null,
       // Keep legacy field for migration
       savedPins: data.Item.savedPins ? JSON.parse(data.Item.savedPins.S) : []
     };
@@ -163,6 +184,8 @@ async function saveUser(user) {
   if (user.createdAt) item.createdAt = { S: user.createdAt };
   if (user.lastLogin) item.lastLogin = { S: user.lastLogin };
   if (user.isAdmin !== undefined) item.isAdmin = { BOOL: !!user.isAdmin };
+  if (user.resetToken) item.resetToken = { S: user.resetToken };
+  if (user.resetTokenExpiry) item.resetTokenExpiry = { S: user.resetTokenExpiry };
   
   // Keep legacy field for migration
   if (user.savedPins) item.savedPins = { S: JSON.stringify(user.savedPins) };
@@ -246,113 +269,76 @@ async function createPin(pinData) {
 
 async function getAllPins(options = {}) {
   const { limit = 1000, cursor, submittedBy, bounds } = options;
-  
-  const params = {
-    TableName: PINS_TABLE,
-    Limit: limit
-  };
-  
-  // Add cursor for pagination
-  if (cursor) {
-    try {
-      params.ExclusiveStartKey = JSON.parse(Buffer.from(cursor, 'base64').toString('utf-8'));
-    } catch (err) {
-      console.error('Invalid cursor:', err);
-    }
-  }
-  
-  // Build filter expression for submittedBy and/or bounds
-  const filterExpressions = [];
-  const expressionAttributeValues = {};
-  
+
+  let data;
+
   if (submittedBy) {
-    filterExpressions.push('submittedBy = :submittedBy');
-    expressionAttributeValues[':submittedBy'] = { S: submittedBy };
-  }
-  
-  // Add bounds filtering - note: this filters AFTER scan, not ideal but works
-  // For production with many pins, you'd want to use geohash-based queries
-  if (bounds) {
-    // We'll filter in application code after getting results
-    // because DynamoDB doesn't support range queries on non-key attributes efficiently
-  }
-  
-  if (filterExpressions.length > 0) {
-    params.FilterExpression = filterExpressions.join(' AND ');
-    params.ExpressionAttributeValues = expressionAttributeValues;
+    // Use submittedBy-index GSI to avoid full table scan
+    const params = {
+      TableName: PINS_TABLE,
+      IndexName: 'submittedBy-index',
+      KeyConditionExpression: 'submittedBy = :user',
+      ExpressionAttributeValues: { ':user': { S: submittedBy } },
+      Limit: limit
+    };
+    if (cursor) {
+      try { params.ExclusiveStartKey = JSON.parse(Buffer.from(cursor, 'base64').toString('utf-8')); }
+      catch (err) { console.error('Invalid cursor:', err); }
+    }
+    data = await client.send(new QueryCommand(params));
+  } else {
+    // Use status-index GSI — all active pins, no full table scan
+    const params = {
+      TableName: PINS_TABLE,
+      IndexName: 'status-index',
+      KeyConditionExpression: '#s = :active',
+      ExpressionAttributeNames: { '#s': 'status' },
+      ExpressionAttributeValues: { ':active': { S: 'active' } },
+      Limit: limit
+    };
+    if (cursor) {
+      try { params.ExclusiveStartKey = JSON.parse(Buffer.from(cursor, 'base64').toString('utf-8')); }
+      catch (err) { console.error('Invalid cursor:', err); }
+    }
+    data = await client.send(new QueryCommand(params));
   }
 
   try {
-    const data = await client.send(new ScanCommand(params));
-    
-    let pins = (data.Items || []).map(item => ({
-      pinId: item.pinId.S,
-      createdAt: item.createdAt.S,
-      coordinates: JSON.parse(item.coordinates.S),
-      fruitType: item.fruitType.S,
-      fruitTypeDisplay: item.fruitTypeDisplay?.S || item.fruitType.S,
-      notes: item.notes?.S || '',
-      submittedBy: item.submittedBy.S,
-      geoHash: item.geoHash?.S || '',
-      status: item.status?.S || 'active',
-      zone: item.zone?.N ? parseInt(item.zone.N) : null
-    }));
-    
+    let pins = (data.Items || []).map(convertDynamoDBItem);
+
     // Filter by bounds in application if provided
     if (bounds) {
       pins = pins.filter(pin => {
-        const lat = pin.coordinates.lat;
-        const lng = pin.coordinates.lng;
-        return lat >= bounds.minLat && 
-               lat <= bounds.maxLat && 
-               lng >= bounds.minLng && 
-               lng <= bounds.maxLng;
+        if (!pin.coordinates) return false;
+        const { lat, lng } = pin.coordinates;
+        return lat >= bounds.minLat && lat <= bounds.maxLat &&
+               lng >= bounds.minLng && lng <= bounds.maxLng;
       });
     }
-    
-    // Create cursor for next page if more items exist
+
     let nextCursor = null;
     if (data.LastEvaluatedKey) {
       nextCursor = Buffer.from(JSON.stringify(data.LastEvaluatedKey)).toString('base64');
     }
-    
-    return {
-      pins,
-      cursor: nextCursor,
-      hasMore: !!data.LastEvaluatedKey
-    };
+
+    return { pins, cursor: nextCursor, hasMore: !!data.LastEvaluatedKey };
   } catch (err) {
-    console.error('Error getting pins:', err);
+    console.error('Error processing pins:', err);
     return { pins: [], cursor: null, hasMore: false };
   }
 }
 
 async function getPinById(pinId) {
-  // Since we need both pinId and createdAt for the key, we'll scan with filter
+  // Scan with filter since pinId is not the sole partition key
   const params = {
     TableName: PINS_TABLE,
     FilterExpression: 'pinId = :pinId',
-    ExpressionAttributeValues: {
-      ':pinId': { S: pinId }
-    }
+    ExpressionAttributeValues: { ':pinId': { S: pinId } }
   };
-
   try {
     const data = await client.send(new ScanCommand(params));
     if (!data.Items || data.Items.length === 0) return null;
-    
-    const item = data.Items[0];
-    return {
-      pinId: item.pinId.S,
-      createdAt: item.createdAt.S,
-      coordinates: JSON.parse(item.coordinates.S),
-      fruitType: item.fruitType.S,
-      fruitTypeDisplay: item.fruitTypeDisplay?.S || item.fruitType.S,
-      notes: item.notes?.S || '',
-      submittedBy: item.submittedBy.S,
-      geoHash: item.geoHash?.S || '',
-      status: item.status?.S || 'active'
-    };
+    return convertDynamoDBItem(data.Items[0]);
   } catch (err) {
     console.error('Error getting pin:', err);
     return null;
@@ -523,11 +509,99 @@ async function updatePin(pinId, updates) {
   }
 }
 
+// Find user by email address (scans LoquatUsers — small table)
+async function getUserByEmail(email) {
+  if (!email) return null;
+  const params = {
+    TableName: USERS_TABLE,
+    FilterExpression: 'email = :email',
+    ExpressionAttributeValues: { ':email': { S: email.trim().toLowerCase() } }
+  };
+  try {
+    const data = await client.send(new ScanCommand(params));
+    if (!data.Items || data.Items.length === 0) return null;
+    const item = data.Items[0];
+    return {
+      userName: item.userName.S,
+      passwordHash: item.passwordHash?.S || null,
+      email: item.email?.S || null,
+      createdAt: item.createdAt?.S || null,
+      lastLogin: item.lastLogin?.S || null,
+      isAdmin: item.isAdmin?.BOOL || false,
+      resetToken: item.resetToken?.S || null,
+      resetTokenExpiry: item.resetTokenExpiry?.S || null,
+      savedPins: item.savedPins ? JSON.parse(item.savedPins.S) : []
+    };
+  } catch (err) {
+    console.error('Error finding user by email:', err);
+    return null;
+  }
+}
+
+// Generate and store a password reset token for a given email
+// Returns { userName, email, token } or throws
+async function requestPasswordReset(email) {
+  const user = await getUserByEmail(email);
+  if (!user) throw new Error('No account found with that email address');
+
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiry = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
+
+  user.resetToken = token;
+  user.resetTokenExpiry = expiry;
+  await saveUser(user);
+
+  return { userName: user.userName, email: user.email, token };
+}
+
+// Validate reset token and update password
+async function resetPassword(token, newPassword) {
+  if (!token) throw new Error('Reset token is required');
+
+  // Find user by reset token (scan — small table)
+  const params = {
+    TableName: USERS_TABLE,
+    FilterExpression: 'resetToken = :token',
+    ExpressionAttributeValues: { ':token': { S: token } }
+  };
+
+  const data = await client.send(new ScanCommand(params));
+  if (!data.Items || data.Items.length === 0) throw new Error('Invalid or expired reset link');
+
+  const item = data.Items[0];
+  const expiry = item.resetTokenExpiry?.S;
+  if (!expiry || new Date(expiry) < new Date()) throw new Error('Reset link has expired');
+
+  const passwordValidation = validatePassword(newPassword);
+  if (!passwordValidation.valid) throw new Error(passwordValidation.message);
+
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+
+  const user = {
+    userName: item.userName.S,
+    passwordHash,
+    email: item.email?.S || null,
+    createdAt: item.createdAt?.S || null,
+    lastLogin: item.lastLogin?.S || null,
+    isAdmin: item.isAdmin?.BOOL || false,
+    resetToken: null,
+    resetTokenExpiry: null,
+    savedPins: item.savedPins ? JSON.parse(item.savedPins.S) : []
+  };
+
+  // Remove token fields from DB by omitting them (saveUser skips null values)
+  await saveUser(user);
+  return { userName: user.userName };
+}
+
 export { 
-  getUser, 
+  getUser,
+  getUserByEmail,
   saveUser, 
   createUser, 
-  verifyUser, 
+  verifyUser,
+  requestPasswordReset,
+  resetPassword,
   createPin, 
   getAllPins, 
   getPinById,

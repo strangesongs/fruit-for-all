@@ -361,6 +361,42 @@ controller.deletePin = async (req, res) => {
   }
 };
 
+// Request password reset — sends email with reset link
+controller.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+
+    const { userName, token } = await db.requestPasswordReset(email);
+
+    // TODO: replace console.log with email send when email provider is set up
+    const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
+    console.log(`[RESET] Password reset for ${userName}: ${resetUrl}`);
+
+    // Always return success — don't leak whether email exists
+    res.json({ success: true, message: 'If that email is registered, a reset link has been sent.' });
+  } catch (error) {
+    // Log real error internally but return generic success to client
+    console.error('[RESET] forgotPassword error:', error.message);
+    res.json({ success: true, message: 'If that email is registered, a reset link has been sent.' });
+  }
+};
+
+// Complete password reset — validates token and sets new password
+controller.resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) {
+      return res.status(400).json({ success: false, message: 'Token and new password are required' });
+    }
+
+    const { userName } = await db.resetPassword(token, password);
+    res.json({ success: true, message: 'Password updated successfully', userName });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
 // Export the middleware for use in routes
 controller.verifyToken = verifyToken;
 
