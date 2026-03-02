@@ -276,6 +276,28 @@ controller.createPin = async (req, res) => {
 
     if (pin) {
       res.json({ success: true, pin });
+
+      // Admin pin notification (set PIN_NOTIFICATIONS=true to enable)
+      const adminEmail = process.env.ADMIN_EMAIL;
+      if (resend && adminEmail && process.env.PIN_NOTIFICATIONS === 'true') {
+        const appUrl = process.env.APP_URL || 'http://localhost:3000';
+        resend.emails.send({
+          from: 'fruit for all <noreply@fruitforall.app>',
+          to: adminEmail,
+          subject: `new pin: ${pin.fruitTypeDisplay || fruitType} by ${submittedBy}`,
+          html: `
+            <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 32px; color: #333;">
+              <h2 style="color: #C23939;">new pin submitted</h2>
+              <p><strong>fruit:</strong> ${pin.fruitTypeDisplay || fruitType}</p>
+              <p><strong>submitted by:</strong> ${submittedBy}</p>
+              <p><strong>coordinates:</strong> ${coordinates.lat}, ${coordinates.lng}</p>
+              ${pin.notes ? `<p><strong>notes:</strong> ${pin.notes}</p>` : ''}
+              <p><strong>time:</strong> ${new Date().toUTCString()}</p>
+              <p style="margin-top: 24px;"><a href="${appUrl}" style="color: #D84747;">fruitforall.app</a></p>
+            </div>
+          `
+        }).catch(err => console.error('[EMAIL] Pin notification failed:', err.message));
+      }
     } else {
       res.status(500).json({ success: false, message: 'Failed to create pin' });
     }

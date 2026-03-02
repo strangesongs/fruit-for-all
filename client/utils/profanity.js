@@ -43,12 +43,12 @@ const BLOCKED_WORDS = [
   'idiot', 'moron', 'imbecile', 'cretin',
 
   // Violence / hate
-  'kill', 'murder', 'rape', 'rapist', 'molest', 'molester',
+  'murder', 'rape', 'rapist', 'molest', 'molester',
   'terrorist', 'jihad',
   'lynch', 'lynching',
 
   // Drug slang (keeping map content wholesome)
-  'cocaine', 'heroin', 'meth', 'crack', 'weed', 'coke',
+  'cocaine', 'heroin', 'meth', 'coke',
 ];
 
 function normalise(text) {

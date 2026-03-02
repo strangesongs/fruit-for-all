@@ -44,12 +44,12 @@ const BLOCKED_WORDS = [
   'idiot', 'moron', 'imbecile', 'cretin',
 
   // Violence / hate
-  'kill', 'murder', 'rape', 'rapist', 'molest', 'molester',
+  'murder', 'rape', 'rapist', 'molest', 'molester',
   'terrorist', 'jihad',
   'lynch', 'lynching',
 
   // Drug slang
-  'cocaine', 'heroin', 'meth', 'crack', 'weed', 'coke', 'dope',
+  'cocaine', 'heroin', 'meth', 'coke', 'dope',
 ];
 
 // Normalise for leet-speak and common substitutions: a→@, e→3, i→1, o→0, s→$
