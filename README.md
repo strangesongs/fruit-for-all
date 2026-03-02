@@ -1,105 +1,114 @@
+# fruit for all
 
-# Loquat: Fruit Tree Map of Los Angeles
+**fruit for all** is an open source, community-built map of free street fruit — trees, bushes, and vines on public land where anyone can forage. Find it, pick it, share it.
 
-## Overview
-Loquat is a web application for tracking the location of fruit trees across Los Angeles. Users can view a map, add new tree locations, and save their favorite spots. The project uses Node.js, Express, React, and AWS DynamoDB for data persistence.
+Live at **[fruitforall.app](https://fruitforall.app)**
 
-## Features
-- Interactive map of fruit trees in Los Angeles
-- Add and save tree locations
-- User authentication (planned)
-- Data persistence with AWS DynamoDB
-- Responsive UI with React
+---
 
-## Project Structure
+## what it does
+
+- Browse a live map of user-submitted fruit trees
+- Sign up and add fruit near your current location
+- Filter by fruit type
+- Anyone (no account required) can browse the map
+
+## stack
+
+| Layer | Tech |
+|---|---|
+| Frontend | React (class components), React-Leaflet, esbuild |
+| Backend | Node.js, Express 4 |
+| Database | AWS DynamoDB |
+| Auth | JWT 7-day, bcrypt |
+| Email | Resend |
+| Hosting | Railway |
+
+## local setup
+
+### prerequisites
+
+- Node.js 18+
+- AWS account with DynamoDB access
+- (Optional) Resend API key for email features
+
+### 1. clone and install
+
+```sh
+git clone https://github.com/strangesongs/loquat.git
+cd loquat
+npm install
+```
+
+### 2. environment
+
+```sh
+cp .env.example .env
+```
+
+Edit `.env`:
 
 ```
-├── server.js                # Express server entry point
-├── package.json             # Project dependencies and scripts
-├── client/                  # Frontend code
-│   ├── index.html           # Main HTML file
-│   ├── index.js             # Entry JS for React
-│   ├── main.js              # Main logic
-│   ├── map-index.html       # Map page HTML
-│   ├── map.js / map.jsx     # Map logic/components
-│   ├── sidebar.jsx          # Sidebar React component
-│   └── stylesheets/         # CSS files
-├── server/
-│   ├── controllers/         # Express route controllers
-│   └── schemas/             # DynamoDB integration
+NODE_ENV=development
+JWT_SECRET=        # generate: openssl rand -base64 32
+AWS_REGION=us-west-2
+DYNAMODB_TABLE=LoquatUsers
+PINS_TABLE=LoquatPins
+RESEND_API_KEY=    # optional — emails skipped if absent
+APP_URL=http://localhost:3000
+ADMIN_EMAIL=       # optional
 ```
 
+### 3. AWS credentials
 
-## Installation & Setup
+```sh
+aws configure
+```
 
-1. **Clone the repository:**
-	```sh
-	git clone https://github.com/strangesongs/solo-project.git
-	cd solo-project
-	```
-2. **Install dependencies:**
-	```sh
-	npm install
-	```
-3. **Set up AWS credentials:**
-	- For local development, configure credentials via AWS CLI (`aws configure`) or `~/.aws/credentials`.
-	- For AWS hosting, use IAM roles or environment variables.
-4. **Set environment variables:**
-	- Create a `.env` file or set in your deployment config:
-	  ```
-	  AWS_REGION=us-west-2
-	  DYNAMODB_TABLE=LoquatUsers
-	  ```
-5. **Start the server:**
-	```sh
-	npm start
-	```
-	The server will run on [http://localhost:3000](http://localhost:3000).
+Or set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in `.env`.  
+The IAM user needs DynamoDB read/write access on both tables.
 
-## Data Persistence
+### 4. DynamoDB tables
 
-- User and pin data are stored in AWS DynamoDB (`LoquatUsers` table).
-- Requires AWS credentials and region configuration.
-- Data is persistent and scalable for cloud hosting.
+Create two tables in the AWS console:
 
-## Usage
+| Table | Partition key |
+|---|---|
+| `LoquatUsers` | `userName` (String) |
+| `LoquatPins` | `pinId` (String) |
 
-- Visit `http://localhost:3000` to access the main page.
-- Log in with any username (no password required).
-- Use the map to view and add fruit tree locations.
-- Save pins; your pins are stored per username in DynamoDB.
+### 5. run
 
+```sh
+npm run dev        # client (port 3000) + server (port 8080)
+npm run build      # production build to dist/
+```
 
-## Development Notes
+## project structure
 
-- Backend uses AWS DynamoDB for user and pin data (see `server/schemas/schemas.js`).
-- No authentication or password required; login is username-only.
-- MongoDB and Mongoose are no longer required.
-- Frontend uses React (Leaflet/Mapbox integration planned for future).
+```
+server.js
+server/
+  controllers/controllers.js
+  schemas/schemas.js
+client/
+  index.js            # esbuild entry
+  map.jsx
+  sidebar.jsx
+  splash.jsx
+  utils/
+    auth.js
+    fruitList.js
+    fruitSeasons.js
+    clustering.js
+    cache.js
+  stylesheets/
+```
 
+## contributing
 
-## DynamoDB Setup
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-1. **Create a DynamoDB table named `LoquatUsers`:**
-	- Partition key: `userName` (type: String)
-	- No sort key required
-2. **Set environment variables:**
-	- In `.env` or your deployment config:
-	  ```
-	  AWS_REGION=us-west-2
-	  DYNAMODB_TABLE=LoquatUsers
-	  ```
-3. **Configure AWS credentials:**
-	- For local dev: use AWS CLI (`aws configure`) or `~/.aws/credentials`
-	- For AWS hosting: use IAM roles or environment variables
-4. **Troubleshooting:**
-	- Ensure your IAM user/role has DynamoDB read/write permissions
-	- Check region and table name match your setup
-	- Use AWS Console or CLI to verify table exists and is accessible
+## license
 
-## Contributing
-Pull requests and suggestions are welcome! Please open issues for bugs or feature requests.
-
-## License
-ISC
-
+GPL-3.0 — see [LICENSE](LICENSE). Forks must remain open source.

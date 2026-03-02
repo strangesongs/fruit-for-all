@@ -21,6 +21,9 @@ Thumbs.db
 *.swp
 *.swo
 
+# Copilot internal context (local only)
+.github/copilot-instructions.md
+
 # Logs
 logs/
 *.log
