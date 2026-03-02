@@ -99,8 +99,7 @@ controller.registerUser = async (req, res) => {
             </div>
             <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 24px 0;" />
             <p style="font-size: 0.8rem; color: #bbb; text-align: center;">
-              &#x1F34A;
-              <br/>
+              <img src="${appUrl}/loquat-48.png" alt="fruit for all" width="32" height="32" style="display: block; margin: 0 auto 8px auto;" />
               <a href="${appUrl}" style="color: #D84747;">fruitforall.app</a>
             </p>
           </div>
@@ -445,8 +444,7 @@ controller.forgotPassword = async (req, res) => {
             <p style="font-size: 0.85rem; color: #999;">if you didn't request this, you can safely ignore this email. your password won't change.</p>
             <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 24px 0;" />
             <p style="font-size: 0.8rem; color: #bbb; text-align: center;">
-              &#x1F34A;
-              <br/>
+              <img src="${appUrl}/loquat-48.png" alt="fruit for all" width="32" height="32" style="display: block; margin: 0 auto 8px auto;" />
               <a href="${appUrl}" style="color: #D84747;">fruitforall.app</a>
             </p>
           </div>

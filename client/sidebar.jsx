@@ -78,24 +78,32 @@ export default class Sidebar extends React.Component {
     };
 
     getCurrentLocation = () => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    this.setState({
-                        currentLocation: {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude
-                        }
-                    });
-                },
-                (error) => {
-                    console.error('Error getting location:', error);
-                    alert('Unable to get location. Please check your browser settings.');
-                }
-            );
-        } else {
-            alert('Geolocation is not supported by this browser.');
+        if (!navigator.geolocation) {
+            this.setState({ locationError: 'geolocation is not supported by this browser.' });
+            return;
         }
+        this.setState({ locationLoading: true, locationError: '' });
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                this.setState({
+                    locationLoading: false,
+                    currentLocation: {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    }
+                });
+            },
+            (error) => {
+                console.error('Error getting location:', error);
+                const msg = error.code === 1
+                    ? 'location permission denied. please allow location access in your browser settings.'
+                    : error.code === 2
+                    ? 'location unavailable. try moving to a better signal area.'
+                    : 'location request timed out. please try again.';
+                this.setState({ locationLoading: false, locationError: msg });
+            },
+            { timeout: 10000, maximumAge: 60000, enableHighAccuracy: false }
+        );
     };
 
     handleInputChange = (field, value) => {
@@ -554,10 +562,13 @@ export default class Sidebar extends React.Component {
                                             type="button" 
                                             onClick={this.getCurrentLocation}
                                             className="location-btn"
-                                            disabled={this.state.submitting}
+                                            disabled={this.state.submitting || this.state.locationLoading}
                                         >
-                                            get current location
+                                            {this.state.locationLoading ? 'getting location...' : this.state.currentLocation ? 'update location' : 'get current location'}
                                         </button>
+                                        {this.state.locationError && (
+                                            <p className="error-message" style={{marginTop: '4px'}}>{this.state.locationError}</p>
+                                        )}
                                         {this.state.currentLocation && (
                                             <div className="location-display">
                                                 <small>
