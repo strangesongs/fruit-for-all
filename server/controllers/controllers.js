@@ -95,7 +95,7 @@ controller.registerUser = async (req, res) => {
             <p>fruit for all is a community-built, user-submitted map of free street fruit in your area. find it, pick it, share it.</p>
             <p>you can only add fruit when it's right under your nose &mdash; hit the &lsquo;add fruit&rsquo; button to pull your geolocation and log fruit to the map.</p>
             <p>anyone using fruit for all will be able to see fruit you've shared, so make sure it's ok for other users to forage that fruit (i.e. don't share fruit in a private backyard or locked away behind a gate).</p>
-            <p>check out our code at <a href="https://github.com/strangesongs/loquat" style="color: #D84747;">github.com/strangesongs/loquat</a> and feel free to submit issues, feature requests and fixes.</p>
+            <p>check out our code at <a href="https://github.com/strangesongs/fruit-for-all" style="color: #D84747;">github.com/strangesongs/fruit-for-all</a> and feel free to submit issues, feature requests and fixes.</p>
             <p>please reach out with any questions to <a href="mailto:admin@fruitforall.app" style="color: #D84747;">admin@fruitforall.app</a></p>
             <div style="text-align: center; margin: 32px 0;">
               <a href="${appUrl}" style="background: #D84747; color: white; padding: 12px 28px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">open the map</a>

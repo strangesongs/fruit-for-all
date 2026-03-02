@@ -1,7 +1,7 @@
 // Authentication utilities for managing JWT tokens
 
-const TOKEN_KEY = 'loquat_auth_token';
-const USER_KEY = 'loquat_user';
+const TOKEN_KEY = 'ffa_auth_token';
+const USER_KEY = 'ffa_user';
 
 // Save authentication token and user info to localStorage
 export function saveAuth(token, user) {

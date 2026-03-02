@@ -35,8 +35,8 @@ Live at **[fruitforall.app](https://fruitforall.app)**
 ### 1. clone and install
 
 ```sh
-git clone https://github.com/strangesongs/loquat.git
-cd loquat
+git clone https://github.com/strangesongs/fruit-for-all.git
+cd fruit-for-all
 npm install
 ```
 

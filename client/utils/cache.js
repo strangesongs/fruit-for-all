@@ -1,6 +1,6 @@
 // Client-side caching utility with TTL support
 
-const CACHE_PREFIX = 'loquat_cache_';
+const CACHE_PREFIX = 'ffa_cache_';
 const DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 /**

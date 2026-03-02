@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/strangesongs/loquat.git"
+    "url": "git+https://github.com/strangesongs/fruit-for-all.git"
   },
   "keywords": [
     "fruit",
@@ -25,14 +25,14 @@
     "los-angeles"
   ],
   "author": "josh cretella",
-  "license": "ISC",
+  "license": "GPL-3.0",
   "engines": {
     "node": ">=20.0.0"
   },
   "bugs": {
-    "url": "https://github.com/strangesongs/loquat/issues"
+    "url": "https://github.com/strangesongs/fruit-for-all/issues"
   },
-  "homepage": "https://github.com/strangesongs/loquat#readme",
+  "homepage": "https://github.com/strangesongs/fruit-for-all#readme",
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.896.0",
     "bcrypt": "^6.0.0",
