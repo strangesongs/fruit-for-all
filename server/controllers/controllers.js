@@ -276,6 +276,20 @@ controller.createPin = async (req, res) => {
   }
 };
 
+// Get a sample of pins for unauthenticated (public) visitors
+controller.getPublicPins = async (req, res) => {
+  try {
+    const result = await db.getAllPins({ limit: 100 });
+    // Strip submittedBy to avoid exposing usernames publicly
+    const publicPins = result.pins.map(({ submittedBy, ...pin }) => pin);
+    res.setHeader('Cache-Control', 'public, max-age=300');
+    res.json({ success: true, pins: publicPins });
+  } catch (error) {
+    console.error('Error in getPublicPins controller:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
 // Get all pins (requires authentication)
 controller.getAllPins = async (req, res) => {
   try {

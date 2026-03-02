@@ -96,6 +96,9 @@ app.get('/map', (req, res) => {
   res.redirect('./client/map-index.html');
 });
 
+// Public endpoints (no auth required)
+app.get('/api/pins/public', controllers.getPublicPins); // preview pins for logged-out users
+
 // Authentication endpoints (no auth required, but rate limited)
 app.post('/api/auth/register', authLimiter, controllers.registerUser);
 app.post('/api/auth/login', authLimiter, controllers.loginUser);

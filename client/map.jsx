@@ -94,13 +94,20 @@ class Map extends Component {
     }
 
     fetchPins = async (forceRefresh = false, bounds = null) => {
-        // Don't fetch if not authenticated
+        // Fetch public pins for unauthenticated visitors
         if (!isAuthenticated()) {
-            this.setState({ 
-                pins: [], 
-                loading: false,
-                error: null 
-            });
+            this.setState({ loading: true });
+            try {
+                const response = await fetch('/api/pins/public');
+                const data = await response.json();
+                this.setState({
+                    pins: data.success ? data.pins : [],
+                    loading: false,
+                    error: null,
+                });
+            } catch (err) {
+                this.setState({ pins: [], loading: false, error: null });
+            }
             return;
         }
 

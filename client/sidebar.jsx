@@ -387,8 +387,12 @@ export default class Sidebar extends React.Component {
         const { authenticated, isLoginMode, authUserName, authPassword, authEmail, authLoading, authError } = this.state;
         const currentUser = getUser();
 
+        const isAuthModal = !authenticated;
+
         return (
-        <div className={`sidebar ${this.state.isCollapsed ? 'collapsed' : ''}`}>
+        <>
+        {isAuthModal && <div className="auth-modal-backdrop" />}
+        <div className={`sidebar ${this.state.isCollapsed ? 'collapsed' : ''} ${isAuthModal ? 'sidebar-auth-modal' : ''}`}>
             {/* Hamburger menu button */}
             <button className="hamburger-btn" onClick={this.toggleSidebar} aria-label="Toggle menu">
                 <span></span>
@@ -682,6 +686,7 @@ export default class Sidebar extends React.Component {
             </>
             )}
         </div>
+        </>
         )
     };
 

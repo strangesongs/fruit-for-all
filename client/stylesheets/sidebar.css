@@ -780,3 +780,28 @@ li {
     }
 }
 
+/* ── Auth modal: centered sign-in on desktop ─────────────────────────────── */
+
+.auth-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 999;
+}
+
+@media (min-width: 640px) {
+    .sidebar-auth-modal {
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 340px;
+        max-height: 90vh;
+        z-index: 1000;
+    }
+
+    .sidebar-auth-modal .hamburger-btn {
+        display: none;
+    }
+}
