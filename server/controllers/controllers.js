@@ -74,6 +74,51 @@ controller.registerUser = async (req, res) => {
     
     // Generate JWT token
     const token = generateToken(user);
+
+    const appUrl = process.env.APP_URL || 'http://localhost:3000';
+
+    // Send welcome email to new user
+    if (resend) {
+      resend.emails.send({
+        from: 'Fruit for All <noreply@fruitforall.app>',
+        to: email,
+        subject: 'Welcome to Fruit for All!',
+        html: `
+          <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 32px; color: #333;">
+            <h2 style="color: #C23939; margin-bottom: 8px;">fruit for all</h2>
+            <p style="color: #666; font-size: 0.85rem; margin-top: 0;">open source orchard</p>
+            <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 24px 0;" />
+            <p>Hi ${userName},</p>
+            <p>Welcome to Fruit for All — a community map of free street fruit. You're now part of the open source orchard.</p>
+            <p>Head to the map to explore fruit near you, or add a pin for a tree you know about.</p>
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${appUrl}" style="background: #D84747; color: white; padding: 12px 28px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">open the map</a>
+            </div>
+            <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 24px 0;" />
+            <p style="font-size: 0.8rem; color: #bbb; text-align: center;"><a href="${appUrl}" style="color: #D84747;">fruitforall.app</a></p>
+          </div>
+        `
+      }).catch(err => console.error('[EMAIL] Welcome email failed:', err.message));
+    }
+
+    // Send admin notification
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (resend && adminEmail) {
+      resend.emails.send({
+        from: 'Fruit for All <noreply@fruitforall.app>',
+        to: adminEmail,
+        subject: `New user: ${userName}`,
+        html: `
+          <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 32px; color: #333;">
+            <h2 style="color: #C23939;">new registration</h2>
+            <p><strong>Username:</strong> ${userName}</p>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Time:</strong> ${new Date().toUTCString()}</p>
+            <p style="margin-top: 24px;"><a href="${appUrl}" style="color: #D84747;">fruitforall.app</a></p>
+          </div>
+        `
+      }).catch(err => console.error('[EMAIL] Admin notification failed:', err.message));
+    }
     
     res.status(201).json({
       success: true,

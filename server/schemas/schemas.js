@@ -374,10 +374,16 @@ async function createUser(userData) {
     throw new Error(passwordValidation.message);
   }
   
-  // Check if user already exists
+  // Check if username already exists
   const existingUser = await getUser(userName.trim());
   if (existingUser && existingUser.passwordHash) {
-    throw new Error('Username already exists');
+    throw new Error('Username already registered');
+  }
+
+  // Check if email already exists
+  const existingEmail = await getUserByEmail(email.trim().toLowerCase());
+  if (existingEmail) {
+    throw new Error('Email already registered');
   }
   
   // Hash password
