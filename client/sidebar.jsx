@@ -46,6 +46,9 @@ export default class Sidebar extends React.Component {
             forgotError: '',
             forgotSuccess: false,
 
+            // About panel
+            showAbout: false,
+
             // Fruit type autocomplete
             fruitTypeSuggestions: [],
             showFruitSuggestions: false
@@ -424,7 +427,18 @@ export default class Sidebar extends React.Component {
             {/* Show login/register form if not authenticated */}
             {!authenticated ? (
                 <div className="auth-section">
-                    {this.state.isForgotMode ? (
+                    {this.state.showAbout ? (
+                        <div className="about-panel">
+                            <h3 className="about-title">what is fruit for all?</h3>
+                            <p>fruit for all is a community-built map of free street fruit — lemons, figs, oranges, and whatever else is growing near you.</p>
+                            <p>when you spot accessible fruit, log it to the map so others can find it. you can only add fruit when you're standing next to it.</p>
+                            <p>anyone on the map can see what you've shared, so only pin fruit that's genuinely accessible — not fruit behind gates or on private property.</p>
+                            <p className="about-oss">open source — <a href="https://github.com/strangesongs/fruit-for-all" className="about-link-ext" target="_blank" rel="noreferrer">github.com/strangesongs/fruit-for-all</a></p>
+                            <p className="toggle-auth">
+                                <span onClick={() => this.setState({ showAbout: false })} className="toggle-link about-back">← back</span>
+                            </p>
+                        </div>
+                    ) : this.state.isForgotMode ? (
                         <div>
                             {this.state.forgotSuccess ? (
                                 <div>
@@ -512,6 +526,9 @@ export default class Sidebar extends React.Component {
                                 <span onClick={() => this.setState({ isForgotMode: true, authError: '' })} className="toggle-link forgot-link">forgot password?</span>
                             </p>
                         )}
+                        <p className="toggle-auth">
+                            <span onClick={() => this.setState({ showAbout: true })} className="toggle-link about-link">what is fruit for all?</span>
+                        </p>
                     </form>
                     )}
                 </div>
