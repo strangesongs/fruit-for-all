@@ -31,8 +31,9 @@ export default class Sidebar extends React.Component {
             selectedFruitFilter: 'all',
             availableFruitTypes: [],
             
-            // Sidebar collapse state (for mobile)
-            isCollapsed: false,
+            // Sidebar collapse state — auto-collapse on very small screens when authenticated
+            // (keeps map visible on Jelly Star / similar tiny devices)
+            isCollapsed: isAuthenticated() && typeof window !== 'undefined' && window.innerWidth <= 360,
 
             // My pins filter active state
             myPinsActive: false,
@@ -271,7 +272,9 @@ export default class Sidebar extends React.Component {
                     authenticated: true,
                     authUserName: '',
                     authPassword: '',
-                    authError: ''
+                    authError: '',
+                    // On tiny screens, collapse after login so the map is visible
+                    isCollapsed: window.innerWidth <= 360,
                 });
                 // Load fruit types now that we're authenticated
                 this.fetchAvailableFruitTypes();
@@ -350,7 +353,9 @@ export default class Sidebar extends React.Component {
                     authUserName: '',
                     authPassword: '',
                     authEmail: '',
-                    authError: ''
+                    authError: '',
+                    // On tiny screens, collapse after registration so the map is visible
+                    isCollapsed: window.innerWidth <= 360,
                 });
                 // Notify parent to refresh pins
                 if (this.props.onAuthSuccess) {

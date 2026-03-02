@@ -11,7 +11,7 @@ html, body {
     position: relative;
     height: 100vh;
     width: 100vw;
-    min-width: 320px;
+    min-width: 240px;
     min-height: 320px;
     background: #fafafa;
 }
@@ -780,6 +780,96 @@ li {
     }
 }
 
+/* ── Jelly Star / sub-360px screens ────────────────────────────────────── */
+@media (max-width: 360px) {
+    /* Sidebar fills available width with 8px breathing room */
+    .sidebar {
+        width: calc(100vw - 16px);
+        top: 8px;
+        left: 8px;
+        padding: 8px;
+    }
+
+    .sidebar.collapsed {
+        width: 46px;
+        height: 46px;
+        top: 8px;
+        left: 8px;
+    }
+
+    /* Auth sidebar: true full-screen, no floating card */
+    .sidebar-auth-modal {
+        top: 0;
+        left: 0;
+        width: 100vw;
+        max-height: 100dvh;
+        height: 100dvh;
+        border-radius: 0;
+        border: none;
+        overflow-y: auto;
+    }
+
+    /* No backdrop needed — sidebar already covers whole screen */
+    .auth-modal-backdrop {
+        display: none;
+    }
+
+    .header-section p:first-child {
+        font-size: 0.95rem;
+    }
+
+    .header-section p:nth-child(2) {
+        font-size: 0.75rem;
+    }
+
+    .auth-section h3 {
+        font-size: 0.95rem;
+        margin: 6px 0 10px;
+    }
+
+    .auth-section .form-group input {
+        font-size: 0.8rem;
+        padding: 6px 8px;
+    }
+
+    .auth-submit-btn {
+        font-size: 0.75rem;
+        padding: 7px 10px;
+    }
+
+    button, .action-btn {
+        font-size: 0.7rem;
+        padding: 5px 8px;
+    }
+
+    .lil-fruit {
+        width: 18px;
+        height: 18px;
+    }
+
+    .fruit-filter-select {
+        font-size: 0.75rem;
+        padding: 5px 6px;
+    }
+
+    .fruit-suggestions {
+        max-height: 140px;
+    }
+
+    .fruit-suggestions li {
+        padding: 5px 8px;
+        font-size: 0.75rem;
+    }
+
+    /* Popups fit full width */
+    .add-fruit-popup,
+    .notes-popup {
+        width: calc(100vw - 16px);
+        max-width: calc(100vw - 16px);
+        max-height: 90dvh;
+    }
+}
+
 /* ── Auth modal: centered sign-in on desktop ─────────────────────────────── */
 
 .auth-modal-backdrop {
@@ -791,6 +881,7 @@ li {
     z-index: 999;
 }
 
+/* On screens wide enough for a modal — centered card */
 @media (min-width: 640px) {
     .sidebar-auth-modal {
         top: 50%;
@@ -799,6 +890,26 @@ li {
         width: 340px;
         max-height: 90vh;
         z-index: 1000;
+    }
+
+    .sidebar-auth-modal .hamburger-btn {
+        display: none;
+    }
+}
+
+/* Between 361–639px (typical phones): auth sidebar fills width, no backdrop */
+@media (min-width: 361px) and (max-width: 639px) {
+    .sidebar-auth-modal {
+        width: calc(100vw - 16px);
+        top: 8px;
+        left: 8px;
+        transform: none;
+        max-height: calc(100dvh - 16px);
+        overflow-y: auto;
+    }
+
+    .auth-modal-backdrop {
+        display: none;
     }
 
     .sidebar-auth-modal .hamburger-btn {
