@@ -1,5 +1,5 @@
 {
-  "name": "fruitforall",
+  "name": "fruit-for-all",
   "version": "1.0.0",
   "description": "open source orchard — a community map of free street fruit",
   "type": "module",
@@ -24,7 +24,7 @@
     "leaflet",
     "los-angeles"
   ],
-  "author": "josh cretella",
+  "author": "j cretella",
   "license": "GPL-3.0",
   "engines": {
     "node": ">=20.0.0"
