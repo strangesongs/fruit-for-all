@@ -1,10 +1,54 @@
 // Mirrors server/utils/profanity.js — keep both in sync when updating the list.
 const BLOCKED_WORDS = [
-  'fuck', 'shit', 'cunt', 'cock', 'dick', 'pussy', 'ass', 'bitch', 'bastard',
-  'whore', 'slut', 'fag', 'faggot', 'nigger', 'nigga', 'chink', 'spic',
-  'kike', 'wetback', 'retard', 'tranny', 'dyke', 'piss', 'crap',
-  'motherfucker', 'fucker', 'asshole', 'jackass', 'dumbass', 'bullshit',
-  'goddamn', 'damn', 'prick', 'twat', 'wanker', 'bollocks'
+  // Core profanity
+  'fuck', 'fucker', 'fucked', 'fucking', 'fucks', 'motherfucker', 'motherfucking',
+  'shit', 'shits', 'shitting', 'shitty', 'bullshit',
+  'ass', 'asshole', 'asses', 'jackass', 'dumbass', 'smartass', 'badass',
+  'bitch', 'bitches', 'bitchy',
+  'bastard', 'bastards',
+  'damn', 'goddamn', 'dammit',
+  'crap', 'crappy',
+  'piss', 'pissed', 'pissing',
+  'hell', // kept mild but included for completeness
+
+  // Genitalia / sexual
+  'cock', 'cocks', 'cunt', 'cunts', 'dick', 'dicks', 'pussy', 'pussies',
+  'prick', 'twat', 'twats', 'wanker', 'wankers', 'wank',
+  'bollocks', 'balls', 'tits', 'titties', 'boobs',
+  'penis', 'vagina', 'anus',
+  'dildo', 'butt', 'butthole', 'rectum',
+  'cumshot', 'cum', 'jizz', 'spunk', 'boner',
+  'blowjob', 'handjob', 'fingering', 'rimjob',
+  'horny', 'slutty', 'whore', 'whores', 'slut', 'sluts',
+  'hoe', 'skank', 'skanky',
+  'sex', 'sexy', 'sexting', 'nude', 'nudes', 'naked', 'porn', 'porno', 'pornography',
+  'xxx', 'erotic', 'orgasm', 'masturbate', 'masturbation',
+
+  // Slurs — racial / ethnic
+  'nigger', 'niggers', 'nigga', 'niggas',
+  'chink', 'chinks', 'gook', 'gooks',
+  'spic', 'spics', 'wetback', 'wetbacks', 'beaner', 'beaners',
+  'kike', 'kikes', 'hymie',
+  'raghead', 'towelhead', 'sandnigger',
+  'cracker', 'honky', 'whitey',
+  'zipperhead', 'slant',
+
+  // Slurs — homophobic / transphobic
+  'fag', 'fags', 'faggot', 'faggots',
+  'dyke', 'dykes', 'queer',
+  'tranny', 'trannies', 'shemale',
+
+  // Slurs — ableist
+  'retard', 'retards', 'retarded', 'spaz', 'spastic',
+  'idiot', 'moron', 'imbecile', 'cretin',
+
+  // Violence / hate
+  'kill', 'murder', 'rape', 'rapist', 'molest', 'molester',
+  'terrorist', 'jihad',
+  'lynch', 'lynching',
+
+  // Drug slang (keeping map content wholesome)
+  'cocaine', 'heroin', 'meth', 'crack', 'weed', 'coke',
 ];
 
 function normalise(text) {
