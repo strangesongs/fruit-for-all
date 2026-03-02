@@ -3,6 +3,9 @@ import * as db from '../schemas/schemas.js';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { Resend } from 'resend';
+import { FRUIT_LIST } from '../../client/utils/fruitList.js';
+
+const FRUIT_SET = new Set(FRUIT_LIST);
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -90,7 +93,7 @@ controller.registerUser = async (req, res) => {
             <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 24px 0;" />
             <p>welcome to fruit for all, your open source orchard.</p>
             <p>fruit for all is a community-built, user-submitted map of free street fruit in your area. find it, pick it, share it.</p>
-            <p>you can only add fruit when it's right under your nose &mdash; hit the &lsquo;add a pin&rsquo; button to pull your geolocation and log fruit to the map.</p>
+            <p>you can only add fruit when it's right under your nose &mdash; hit the &lsquo;add fruit&rsquo; button to pull your geolocation and log fruit to the map.</p>
             <p>anyone using fruit for all will be able to see fruit you've shared, so make sure it's ok for other users to forage that fruit (i.e. don't share fruit in a private backyard or locked away behind a gate).</p>
             <p>check out our code at <a href="https://github.com/strangesongs/loquat" style="color: #D84747;">github.com/strangesongs/loquat</a> and feel free to submit issues, feature requests and fixes.</p>
             <p>please reach out with any questions to <a href="mailto:admin@fruitforall.app" style="color: #D84747;">admin@fruitforall.app</a></p>
@@ -238,6 +241,14 @@ controller.createPin = async (req, res) => {
     });
   }
 
+  // Validate fruitType is from the approved list
+  if (!FRUIT_SET.has(fruitType.trim().toLowerCase())) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid fruit type. Please select from the approved list.'
+    });
+  }
+
   // Validate notes length (max 500 words)
   if (notes && notes.split(' ').length > 500) {
     return res.status(400).json({ 
@@ -249,7 +260,7 @@ controller.createPin = async (req, res) => {
   try {
     const pin = await db.createPin({
       coordinates,
-      fruitType: fruitType.trim(),
+      fruitType: fruitType.trim().toLowerCase(),
       notes: notes ? notes.trim() : '',
       submittedBy: submittedBy.trim()
     });

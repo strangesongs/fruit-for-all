@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import loquatIcon from '../loquat-48.png';
 import { getAuthHeader, getUser, clearAuth, saveAuth, isAuthenticated } from './utils/auth.js';
 import { FRUIT_SEASONS } from './utils/fruitSeasons.js';
+import { FRUIT_LIST } from './utils/fruitList.js';
 import { API_BASE } from './utils/config.js';
 
 import './stylesheets/sidebar.css';
@@ -41,7 +42,11 @@ export default class Sidebar extends React.Component {
             forgotEmail: '',
             forgotLoading: false,
             forgotError: '',
-            forgotSuccess: false
+            forgotSuccess: false,
+
+            // Fruit type autocomplete
+            fruitTypeSuggestions: [],
+            showFruitSuggestions: false
         }
     };
 
@@ -129,7 +134,12 @@ export default class Sidebar extends React.Component {
         }
 
         if (!fruitType.trim()) {
-            alert('Please enter a fruit type');
+            alert('Please select a fruit type');
+            return;
+        }
+
+        if (!FRUIT_LIST.includes(fruitType.trim().toLowerCase())) {
+            alert('Please select a fruit from the list');
             return;
         }
 
@@ -196,6 +206,18 @@ export default class Sidebar extends React.Component {
             authPassword: '',
             authEmail: ''
         }));
+    };
+
+    handleFruitTypeInput = (e) => {
+        const val = e.target.value;
+        const suggestions = val.trim().length > 0
+            ? FRUIT_LIST.filter(f => f.toLowerCase().startsWith(val.toLowerCase())).slice(0, 8)
+            : FRUIT_LIST.slice(0, 8);
+        this.setState({ fruitType: val, fruitTypeSuggestions: suggestions, showFruitSuggestions: true });
+    };
+
+    selectFruitType = (fruit) => {
+        this.setState({ fruitType: fruit, showFruitSuggestions: false, fruitTypeSuggestions: [] });
     };
 
     handleForgotPassword = async (e) => {
@@ -579,17 +601,35 @@ export default class Sidebar extends React.Component {
                                     </div>
 
                                     {/* Fruit Type Section */}
-                                    <div className="popup-section">
+                                    <div className="popup-section fruit-autocomplete-wrapper">
                                         <label htmlFor="popup-fruit-type">Fruit or Tree Type:</label>
-                                        <input 
-                                            type="text" 
+                                        <input
+                                            type="text"
                                             id="popup-fruit-type"
                                             value={this.state.fruitType}
-                                            onChange={(e) => this.handleInputChange('fruitType', e.target.value)}
-                                            placeholder="e.g., lemon, orange, avocado"
-                                            maxLength="50"
+                                            onChange={this.handleFruitTypeInput}
+                                            onFocus={this.handleFruitTypeInput}
+                                            onBlur={() => setTimeout(() => this.setState({ showFruitSuggestions: false }), 150)}
+                                            placeholder="type to search..."
+                                            autoComplete="off"
                                             disabled={this.state.submitting}
                                         />
+                                        {this.state.showFruitSuggestions && this.state.fruitTypeSuggestions.length > 0 && (
+                                            <ul className="fruit-suggestions">
+                                                {this.state.fruitTypeSuggestions.map(fruit => (
+                                                    <li
+                                                        key={fruit}
+                                                        onMouseDown={() => this.selectFruitType(fruit)}
+                                                        className={this.state.fruitType === fruit ? 'fruit-suggestion-active' : ''}
+                                                    >
+                                                        {fruit}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                        {this.state.fruitType && !FRUIT_LIST.includes(this.state.fruitType.toLowerCase()) && (
+                                            <p className="fruit-not-found">no match &mdash; keep typing or select from the list</p>
+                                        )}
                                     </div>
 
                                     {/* Notes Section */}
@@ -619,7 +659,7 @@ export default class Sidebar extends React.Component {
                                     <button 
                                         type="submit" 
                                         onClick={this.submitPin}
-                                        disabled={this.state.submitting || !this.state.currentLocation || !this.state.fruitType.trim()}
+                                        disabled={this.state.submitting || !this.state.currentLocation || !FRUIT_LIST.includes((this.state.fruitType || '').trim().toLowerCase())}
                                         className="submit-btn"
                                     >
                                         {this.state.submitting ? 'Submitting...' : 'Submit Pin'}
