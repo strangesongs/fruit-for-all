@@ -1,5 +1,6 @@
 
 import * as db from '../schemas/schemas.js';
+import { containsProfanity } from '../utils/profanity.js';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { Resend } from 'resend';
@@ -257,6 +258,14 @@ controller.createPin = async (req, res) => {
     });
   }
 
+  // Profanity check
+  if (containsProfanity(notes)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please keep notes family-friendly.'
+    });
+  }
+
   try {
     const pin = await db.createPin({
       coordinates,
@@ -389,6 +398,14 @@ controller.updatePin = async (req, res) => {
       });
     }
     
+    // Profanity check
+    if (containsProfanity(notes)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please keep notes family-friendly.'
+      });
+    }
+
     // Update the pin with new notes
     const updatedPin = await db.updatePin(pinId, { notes: notes || '' });
     

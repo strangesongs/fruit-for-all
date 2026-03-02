@@ -4,6 +4,7 @@ import { getAuthHeader, getUser, clearAuth, saveAuth, isAuthenticated } from './
 import { FRUIT_SEASONS } from './utils/fruitSeasons.js';
 import { FRUIT_LIST } from './utils/fruitList.js';
 import { API_BASE } from './utils/config.js';
+import { containsProfanity } from './utils/profanity.js';
 
 import './stylesheets/sidebar.css';
 
@@ -141,6 +142,11 @@ export default class Sidebar extends React.Component {
 
         if (!FRUIT_LIST.includes(fruitType.trim().toLowerCase())) {
             alert('Please select a fruit from the list');
+            return;
+        }
+
+        if (containsProfanity(notes)) {
+            alert('Please keep notes family-friendly.');
             return;
         }
 

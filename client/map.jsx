@@ -5,6 +5,7 @@ import { getCache, setCache, clearCache } from './utils/cache.js';
 import { clusterPins } from './utils/clustering.js';
 import { getSeasonForZone, isInSeason, getSeasonDisplay } from './utils/fruitSeasons.js';
 import { API_BASE } from './utils/config.js';
+import { containsProfanity } from './utils/profanity.js';
 import L from 'leaflet';
 
 import './stylesheets/map.css';
@@ -344,6 +345,10 @@ class Map extends Component {
 
     // Save edited notes
     saveEditedNotes = async (pinId) => {
+        if (containsProfanity(this.state.editingNotes)) {
+            alert('Please keep notes family-friendly.');
+            return;
+        }
         try {
             const response = await fetch(`${API_BASE}/api/pins/${pinId}`, {
                 method: 'PATCH',
