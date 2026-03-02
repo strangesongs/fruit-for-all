@@ -64,6 +64,7 @@ button, .action-btn {
     padding: 6px 12px;
     margin: 3px;
     margin-top: 6px;
+    font-family: inherit;
     font-size: 0.8rem;
     font-weight: normal;
     border: 2px outset var(--red);
@@ -77,11 +78,11 @@ button, .action-btn {
     transition: background-color 0.1s ease;
 }
 
-button:hover, .action-btn:hover {
+button:not(.hamburger-btn):hover, .action-btn:hover {
     background-color: var(--red-dark);
 }
 
-button:active, .action-btn:active {
+button:not(.hamburger-btn):active, .action-btn:active {
     border: 2px inset var(--red);
 }
 
@@ -223,6 +224,7 @@ li {
     margin-top: 6px;
     margin-left: auto;
     margin-right: auto;
+    font-family: inherit;
     font-size: 0.8rem;
     background-color: var(--red);
     color: white;
@@ -274,7 +276,7 @@ li {
     color: #999;
     text-decoration: none;
     cursor: pointer;
-    display: inline;
+    display: block;
 }
 
 .secondary-link:hover {
@@ -284,10 +286,10 @@ li {
 .secondary-links-group {
     margin-top: 8px;
     padding-top: 8px;
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px solid #e8e8e8;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
     align-items: center;
 }
 
