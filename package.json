@@ -39,6 +39,7 @@
     "compression": "^1.8.1",
     "express": "^4.19.2",
     "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "leaflet": "^1.9.4",
     "node-fetch": "^3.3.2",

@@ -494,7 +494,7 @@ class Map extends Component {
                                                     <div className="metadata-grid">
                                                         <div className="metadata-item">
                                                             <strong>location:</strong>
-                                                            <span>{pin.coordinates.lat.toFixed(6)}, {pin.coordinates.lng.toFixed(6)}</span>
+                                                            <span>{pin.coordinates.lat.toFixed(4)}, {pin.coordinates.lng.toFixed(4)}</span>
                                                         </div>
                                                         
                                                         <div className="metadata-item">

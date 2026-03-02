@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import rateLimit from 'express-rate-limit';
 import compression from 'compression';
+import helmet from 'helmet';
 import controllers from './server/controllers/controllers.js';
 
 const app = express();
@@ -12,6 +13,19 @@ const __dirname = path.dirname(__filename);
 
 // Middleware
 app.use(compression()); // Enable gzip compression
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"], // needed for esbuild-bundled inline scripts
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+      imgSrc: ["'self'", 'data:', 'https://raw.githubusercontent.com', 'https://cdnjs.cloudflare.com', 'https://*.tile.openstreetmap.org'],
+      connectSrc: ["'self'"],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Leaflet map tiles require this off
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -65,8 +79,7 @@ app.use((req, res, next) => {
 // Serve static files from dist/ at the root FIRST
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// Serve test files from root directory for development
-app.use('/test', express.static(__dirname));
+// NOTE: /test static route removed — it exposed project source files in production
 
 // Serve the built frontend for root and all non-API routes
 app.get('/', (req, res) => {
