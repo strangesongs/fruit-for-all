@@ -80,22 +80,29 @@ controller.registerUser = async (req, res) => {
     // Send welcome email to new user
     if (resend) {
       resend.emails.send({
-        from: 'Fruit for All <noreply@fruitforall.app>',
+        from: 'fruit for all <noreply@fruitforall.app>',
         to: email,
-        subject: 'Welcome to Fruit for All!',
+        subject: 'welcome to fruit for all',
         html: `
           <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 32px; color: #333;">
-            <h2 style="color: #C23939; margin-bottom: 8px;">fruit for all</h2>
+            <h2 style="color: #C23939; margin-bottom: 4px;">fruit for all</h2>
             <p style="color: #666; font-size: 0.85rem; margin-top: 0;">open source orchard</p>
             <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 24px 0;" />
-            <p>Hi ${userName},</p>
-            <p>Welcome to Fruit for All — a community map of free street fruit. You're now part of the open source orchard.</p>
-            <p>Head to the map to explore fruit near you, or add a pin for a tree you know about.</p>
+            <p>welcome to fruit for all, your open source orchard.</p>
+            <p>fruit for all is a community-built, user-submitted map of free street fruit in your area. find it, pick it, share it.</p>
+            <p>you can only add fruit when it's right under your nose &mdash; hit the &lsquo;add a pin&rsquo; button to pull your geolocation and log fruit to the map.</p>
+            <p>anyone using fruit for all will be able to see fruit you've shared, so make sure it's ok for other users to forage that fruit (i.e. don't share fruit in a private backyard or locked away behind a gate).</p>
+            <p>check out our code at <a href="https://github.com/strangesongs/loquat" style="color: #D84747;">github.com/strangesongs/loquat</a> and feel free to submit issues, feature requests and fixes.</p>
+            <p>please reach out with any questions to <a href="mailto:admin@fruitforall.app" style="color: #D84747;">admin@fruitforall.app</a></p>
             <div style="text-align: center; margin: 32px 0;">
               <a href="${appUrl}" style="background: #D84747; color: white; padding: 12px 28px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">open the map</a>
             </div>
             <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 24px 0;" />
-            <p style="font-size: 0.8rem; color: #bbb; text-align: center;"><a href="${appUrl}" style="color: #D84747;">fruitforall.app</a></p>
+            <p style="font-size: 0.8rem; color: #bbb; text-align: center;">
+              &#x1F34A;
+              <br/>
+              <a href="${appUrl}" style="color: #D84747;">fruitforall.app</a>
+            </p>
           </div>
         `
       }).catch(err => console.error('[EMAIL] Welcome email failed:', err.message));
@@ -105,15 +112,15 @@ controller.registerUser = async (req, res) => {
     const adminEmail = process.env.ADMIN_EMAIL;
     if (resend && adminEmail) {
       resend.emails.send({
-        from: 'Fruit for All <noreply@fruitforall.app>',
+        from: 'fruit for all <noreply@fruitforall.app>',
         to: adminEmail,
-        subject: `New user: ${userName}`,
+        subject: `new user: ${userName}`,
         html: `
           <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 32px; color: #333;">
             <h2 style="color: #C23939;">new registration</h2>
-            <p><strong>Username:</strong> ${userName}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Time:</strong> ${new Date().toUTCString()}</p>
+            <p><strong>username:</strong> ${userName}</p>
+            <p><strong>email:</strong> ${email}</p>
+            <p><strong>time:</strong> ${new Date().toUTCString()}</p>
             <p style="margin-top: 24px;"><a href="${appUrl}" style="color: #D84747;">fruitforall.app</a></p>
           </div>
         `
@@ -422,22 +429,26 @@ controller.forgotPassword = async (req, res) => {
 
     if (resend) {
       await resend.emails.send({
-        from: 'Fruit for All <noreply@fruitforall.app>',
+        from: 'fruit for all <noreply@fruitforall.app>',
         to: email,
-        subject: 'Reset your Fruit for All password',
+        subject: 'reset your fruit for all password',
         html: `
           <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 32px; color: #333;">
-            <h2 style="color: #C23939; margin-bottom: 8px;">fruit for all</h2>
-            <p style="color: #666; font-size: 0.85rem; margin-top: 0;">street fruit for all // always open source</p>
+            <h2 style="color: #C23939; margin-bottom: 4px;">fruit for all</h2>
+            <p style="color: #666; font-size: 0.85rem; margin-top: 0;">open source orchard</p>
             <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 24px 0;" />
-            <p>Hi ${userName},</p>
-            <p>We received a request to reset your password. Click the button below to set a new one — this link expires in 1 hour.</p>
+            <p>hi ${userName},</p>
+            <p>we received a request to reset your password. click the button below to set a new one &mdash; this link expires in 1 hour.</p>
             <div style="text-align: center; margin: 32px 0;">
               <a href="${resetUrl}" style="background: #D84747; color: white; padding: 12px 28px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">reset password</a>
             </div>
-            <p style="font-size: 0.85rem; color: #999;">If you didn't request this, you can safely ignore this email. Your password won't change.</p>
+            <p style="font-size: 0.85rem; color: #999;">if you didn't request this, you can safely ignore this email. your password won't change.</p>
             <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 24px 0;" />
-            <p style="font-size: 0.8rem; color: #bbb; text-align: center;"><a href="${appUrl}" style="color: #D84747;">fruitforall.app</a></p>
+            <p style="font-size: 0.8rem; color: #bbb; text-align: center;">
+              &#x1F34A;
+              <br/>
+              <a href="${appUrl}" style="color: #D84747;">fruitforall.app</a>
+            </p>
           </div>
         `
       });
