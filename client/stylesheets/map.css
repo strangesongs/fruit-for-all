@@ -139,7 +139,6 @@
 
 .pin-popup {
     min-width: 280px;
-    font-family: 'EB Garamond', serif;
     background: white;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
@@ -162,7 +161,6 @@
     font-size: 1.1rem;
     font-weight: bold;
     color: #D84747;
-    font-family: 'EB Garamond', serif;
 }
 
 .pin-popup .popup-content {
@@ -183,7 +181,6 @@
     color: #D84747;
     font-size: 0.8rem;
     font-weight: bold;
-    font-family: 'EB Garamond', serif;
 }
 
 .pin-notes {
@@ -192,7 +189,6 @@
     line-height: 1.4;
     color: #333;
     font-style: italic;
-    font-family: 'EB Garamond', serif;
 }
 
 .clickable-notes {
@@ -226,7 +222,6 @@
     width: 100%;
     min-height: 80px;
     padding: 8px;
-    font-family: 'EB Garamond', serif;
     font-size: 0.9rem;
     border: 2px solid #D84747;
     border-radius: 4px;
@@ -252,8 +247,7 @@
 .save-notes-btn, .cancel-notes-btn {
     padding: 6px 12px;
     font-size: 0.8rem;
-    font-weight: 600;
-    font-family: 'EB Garamond', serif;
+    font-weight: normal;
     border: 2px outset;
     border-radius: 4px;
     cursor: pointer;
@@ -307,7 +301,6 @@
     color: #D84747;
     font-weight: bold;
     min-width: 80px;
-    font-family: 'EB Garamond', serif;
 }
 
 /* Style fruit title to match label colors */
@@ -315,13 +308,11 @@
     color: #D84747 !important;
     font-weight: bold !important;
     margin: 0 !important;
-    font-family: 'EB Garamond', serif !important;
 }
 
 .metadata-item span {
     color: #333;
     text-align: right;
-    font-family: 'EB Garamond', serif;
     font-size: 0.8rem;
 }
 
@@ -331,8 +322,7 @@
     padding: 6px 10px;
     border-radius: 4px;
     font-size: 0.85rem;
-    font-weight: 600;
-    font-family: 'EB Garamond', serif;
+    font-weight: normal;
     display: inline-block;
 }
 
@@ -375,8 +365,7 @@
     border-radius: 4px;
     padding: 6px 12px;
     font-size: 0.8rem;
-    font-weight: 600;
-    font-family: 'EB Garamond', serif;
+    font-weight: normal;
     cursor: pointer;
     transition: background-color 0.2s ease;
 }

@@ -1,10 +1,22 @@
 
+:root {
+    --red:       #D84747;
+    --red-dark:  #C23939;
+    --red-deep:  #8B1A1A;
+    --text:      #333;
+    --text-muted:#666;
+    --text-faint:#999;
+    --surface:   #fafafa;
+    --border:    #e0e0e0;
+    --font:      'EB Garamond', serif;
+}
+
 html, body {
     height: 100%;
     margin: 0;
     padding: 0;
-    font-family: 'EB Garamond', serif;
-    background: #fafafa;
+    font-family: var(--font);
+    background: var(--surface);
 }
 
 .main-layout {
@@ -47,15 +59,14 @@ html, body {
 }
 
 button, .action-btn {
-    background-color: #D84747;
+    background-color: var(--red);
     color: white;
     padding: 6px 12px;
     margin: 3px;
     margin-top: 6px;
-    font-family: 'EB Garamond', serif;
     font-size: 0.8rem;
-    font-weight: bold;
-    border: 2px outset #D84747;
+    font-weight: normal;
+    border: 2px outset var(--red);
     cursor: pointer;
     width: 90%;
     box-sizing: border-box;
@@ -67,11 +78,11 @@ button, .action-btn {
 }
 
 button:hover, .action-btn:hover {
-    background-color: #C23939;
+    background-color: var(--red-dark);
 }
 
 button:active, .action-btn:active {
-    border: 2px inset #D84747;
+    border: 2px inset var(--red);
 }
 
 .btn-active {
@@ -175,8 +186,7 @@ li {
     width: 100%;
     padding: 8px 10px;
     font-size: 0.9rem;
-    font-family: 'EB Garamond', serif;
-    border: 2px solid #e0e0e0;
+    border: 2px solid var(--border);
     border-radius: 4px;
     background: #fafafa;
     box-sizing: border-box;
@@ -214,22 +224,21 @@ li {
     margin-left: auto;
     margin-right: auto;
     font-size: 0.8rem;
-    background-color: #D84747;
+    background-color: var(--red);
     color: white;
-    border: 2px outset #D84747;
+    border: 2px outset var(--red);
     border-radius: 4px;
     cursor: pointer;
-    font-family: 'EB Garamond', serif;
-    font-weight: bold;
+    font-weight: normal;
     display: block;
 }
 
 .auth-submit-btn:hover {
-    background-color: #C23939;
+    background-color: var(--red-dark);
 }
 
 .auth-submit-btn:active {
-    border: 2px inset #D84747;
+    border: 2px inset var(--red);
 }
 
 .auth-submit-btn:disabled {
@@ -392,19 +401,17 @@ li {
     margin-bottom: 6px;
     font-size: 0.8rem;
     font-weight: 600;
-    color: #C23939;
-    font-family: 'EB Garamond', serif;
+    color: var(--red-dark);
 }
 
 .fruit-filter-select {
     width: 100%;
     padding: 8px 10px;
-    border: 2px solid #e0e0e0;
+    border: 2px solid var(--border);
     border-radius: 4px;
-    background-color: #fafafa;
+    background-color: var(--surface);
     font-size: 0.9rem;
-    font-family: 'EB Garamond', serif;
-    color: #333;
+    color: var(--text);
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -421,7 +428,6 @@ li {
 
 .fruit-filter-select option {
     padding: 8px;
-    font-family: 'EB Garamond', serif;
     font-size: 0.9rem;
 }
 
@@ -462,7 +468,6 @@ li {
     min-height: 120px;
     padding: 8px;
     border: 2px inset #d3d3d3;
-    font-family: 'EB Garamond', serif;
     font-size: 0.8rem;
     resize: vertical;
     box-sizing: border-box;
@@ -552,19 +557,17 @@ li {
 .popup-section label {
     display: block;
     font-size: 0.8rem;
-    color: #D84747;
+    color: var(--red);
     margin-bottom: 4px;
     font-weight: 600;
     text-align: left;
-    font-family: 'EB Garamond', serif;
 }
 
 .popup-section input,
 .popup-section textarea {
     width: 100%;
     padding: 8px 10px;
-    border: 2px solid #e0e0e0;
-    font-family: 'EB Garamond', serif;
+    border: 2px solid var(--border);
     font-size: 0.9rem;
     box-sizing: border-box;
     border-radius: 4px;
@@ -585,16 +588,15 @@ li {
 }
 
 .location-btn {
-    background-color: #D84747;
-    border: 2px outset #D84747;
+    background-color: var(--red);
+    border: 2px outset var(--red);
     color: white;
     padding: 8px 10px;
     font-size: 0.8rem;
-    font-weight: 600;
+    font-weight: normal;
     width: auto;
     margin-bottom: 6px;
     border-radius: 4px;
-    font-family: 'EB Garamond', serif;
     cursor: pointer;
 }
 
@@ -616,9 +618,8 @@ li {
 }
 
 .location-display small {
-    font-family: 'EB Garamond', serif;
-    color: #333;
-    font-weight: bold;
+    color: var(--text);
+    font-weight: normal;
 }
 
 .popup-footer {
@@ -793,8 +794,7 @@ li {
 .fruit-suggestions li {
     padding: 8px 12px;
     font-size: 0.85rem;
-    font-family: 'EB Garamond', serif;
-    color: #333;
+    color: var(--text);
     cursor: pointer;
     border-bottom: 1px solid #f0f0f0;
     margin: 0;
