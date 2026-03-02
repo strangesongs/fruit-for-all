@@ -42,7 +42,7 @@ function detectZone(lat, lng) {
 }
 
 const REGION = process.env.AWS_REGION || 'us-west-2';
-const USERS_TABLE = process.env.DYNAMODB_TABLE || 'LoquatUsers';
+const USERS_TABLE = process.env.DYNAMODB_USERS_TABLE || 'LoquatUsers';
 const PINS_TABLE = process.env.PINS_TABLE || 'LoquatPins';
 const client = new DynamoDBClient({ region: REGION });
 
