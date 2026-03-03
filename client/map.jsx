@@ -11,7 +11,7 @@ import L from 'leaflet';
 import './stylesheets/map.css';
 import 'leaflet/dist/leaflet.css';
 
-// Custom marker icons
+// Marker icons
 const defaultIcon = new L.Icon({
     iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -30,15 +30,29 @@ const myPinIcon = new L.Icon({
     shadowSize: [41, 41]
 });
 
-// Cluster icon (blue for clusters)
-const clusterIcon = new L.Icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-    iconSize: [35, 57],
-    iconAnchor: [17, 57],
-    popupAnchor: [1, -50],
-    shadowSize: [57, 57]
+const makeClusterIcon = (count) => new L.DivIcon({
+    className: '',
+    html: `<div style="
+        width: 28px;
+        height: 28px;
+        background: #D84747;
+        border-radius: 50%;
+        border: 2px solid rgba(0,0,0,0.25);
+        box-shadow: 1px 2px 4px rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 11px;
+        font-family: 'EB Garamond', serif;
+        font-weight: bold;
+    ">${count}</div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -16],
 });
+
+const clusterIcon = makeClusterIcon('+');
 
 // Sample pins shown only when the database has no real pins yet
 const SAMPLE_PINS = [
@@ -441,7 +455,7 @@ class Map extends Component {
                                         <Marker 
                                             position={[pin.coordinates.lat, pin.coordinates.lng]} 
                                             key={pin.pinId}
-                                            icon={clusterIcon}
+                                            icon={makeClusterIcon(pin.count || '+')}
                                         >
                                             <Popup>
                                                 <div className="pin-popup">
@@ -484,20 +498,20 @@ class Map extends Component {
                                 let seasonBadge = null;
                                 if (inSeason !== null) {
                                     if (inSeason) {
-                                        seasonBadge = <div className="season-badge in-season">🟢 In season now!</div>;
+                                        seasonBadge = <div className="season-badge in-season">in season now</div>;
                                     } else if (seasonMonths && seasonMonths.length > 0) {
                                         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
                                                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                                         const seasonRange = seasonMonths.length > 6 
                                             ? 'Most of the year'
-                                            : `${monthNames[seasonMonths[0]-1]} - ${monthNames[seasonMonths[seasonMonths.length-1]-1]}`;
+                                            : `${monthNames[seasonMonths[0]-1]} – ${monthNames[seasonMonths[seasonMonths.length-1]-1]}`;
                                         
-                                        seasonBadge = <div className="season-badge upcoming">🔵 Coming soon: {seasonRange}</div>;
+                                        seasonBadge = <div className="season-badge upcoming">season: {seasonRange}</div>;
                                     } else {
-                                        seasonBadge = <div className="season-badge out-of-season">⚪ Out of season</div>;
+                                        seasonBadge = <div className="season-badge out-of-season">out of season</div>;
                                     }
                                 } else {
-                                    seasonBadge = <div className="season-badge general">📅 Typical: {generalSeason}</div>;
+                                    seasonBadge = <div className="season-badge general">typical: {generalSeason}</div>;
                                 }
                                 
                                 return (

@@ -7,7 +7,7 @@
     width: 100vw;
     height: 100vh;
     display: flex;
-    background: #fff;
+    background: #f0f0f0;
     z-index: 1;
 }
 
@@ -86,7 +86,7 @@
     justify-content: center !important;
     border-radius: 0 !important;
     line-height: 1 !important;
-    font-family: monospace !important;
+    font-family: 'EB Garamond', serif !important;
     box-shadow: none !important;
     text-shadow: none !important;
     outline: none !important;
@@ -140,11 +140,13 @@
 .pin-popup {
     min-width: 280px;
     background: white;
-    border: 2px solid #e0e0e0;
+    border: 2px solid #b8b8b8;
     border-radius: 8px;
     padding: 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 5px 6px 10px rgba(0, 0, 0, 0.22);
     overflow: hidden;
+    font-family: 'EB Garamond', serif;
+    color: #333;
 }
 
 .pin-popup .popup-header {
@@ -192,7 +194,6 @@
 }
 
 .clickable-notes {
-    border-bottom: 2px dotted #D84747 !important;
 }
 
 .clickable-notes:hover {
@@ -204,12 +205,10 @@
     font-style: italic;
     font-size: 0.85rem !important;
     margin: 4px 0 0 0;
-    border-bottom: 2px dotted #ccc !important;
 }
 
 .add-notes-prompt:hover {
     color: #D84747 !important;
-    border-bottom-color: #D84747 !important;
     background-color: rgba(216, 71, 71, 0.03) !important;
 }
 
@@ -222,6 +221,7 @@
     width: 100%;
     min-height: 80px;
     padding: 8px;
+    font-family: inherit;
     font-size: 0.9rem;
     border: 2px solid #D84747;
     border-radius: 4px;
@@ -246,6 +246,7 @@
 
 .save-notes-btn, .cancel-notes-btn {
     padding: 6px 12px;
+    font-family: inherit;
     font-size: 0.8rem;
     font-weight: normal;
     border: 2px outset;
@@ -316,38 +317,28 @@
     font-size: 0.8rem;
 }
 
-/* Season badges */
+/* Season badges — two states only */
 .season-badge {
     margin-top: 8px;
-    padding: 6px 10px;
+    padding: 4px 10px;
     border-radius: 4px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: normal;
     display: inline-block;
 }
 
 .season-badge.in-season {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background: rgba(216, 71, 71, 0.1);
+    color: #8B1A1A;
+    border: 1px solid rgba(216, 71, 71, 0.25);
 }
 
-.season-badge.upcoming {
-    background: #d1ecf1;
-    color: #0c5460;
-    border: 1px solid #bee5eb;
-}
-
-.season-badge.out-of-season {
-    background: #f8f9fa;
-    color: #6c757d;
-    border: 1px solid #e0e0e0;
-}
-
+.season-badge.upcoming,
+.season-badge.out-of-season,
 .season-badge.general {
-    background: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffeeba;
+    background: #f4f4f4;
+    color: #888;
+    border: 1px solid #e0e0e0;
 }
 
 /* Pin actions section */
