@@ -256,17 +256,17 @@
 }
 
 .save-notes-btn {
-    background-color: #4CAF50;
+    background-color: #D84747;
     color: white;
-    border-color: #4CAF50;
+    border-color: #D84747;
 }
 
 .save-notes-btn:hover {
-    background-color: #45a049;
+    background-color: #C23939;
 }
 
 .save-notes-btn:active {
-    border: 2px inset #4CAF50;
+    border: 2px inset #D84747;
 }
 
 .cancel-notes-btn {
@@ -355,6 +355,7 @@
     border: 2px outset #d32f2f;
     border-radius: 4px;
     padding: 6px 12px;
+    font-family: inherit;
     font-size: 0.8rem;
     font-weight: normal;
     cursor: pointer;

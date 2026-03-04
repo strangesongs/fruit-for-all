@@ -290,13 +290,469 @@ export const FRUIT_SEASONS = {
     display: "Fall"
   },
   
-  passionfruit: {
+  'passion fruit': {
     zones: {
       10: [6, 7, 8, 9, 10],
       9: [7, 8, 9],
     },
     display: "Summer - Fall (warm zones)"
-  }
+  },
+
+  // Tree fruit (extended)
+  'asian pear': {
+    zones: {
+      10: [7, 8],
+      9: [8, 9],
+      8: [8, 9],
+      7: [9, 10],
+      6: [9, 10],
+    },
+    display: "Summer - Fall"
+  },
+
+  crabapple: {
+    zones: {
+      10: [8, 9],
+      9: [9, 10],
+      8: [9, 10],
+      7: [9, 10],
+      6: [9, 10],
+    },
+    display: "Fall"
+  },
+
+  medlar: {
+    zones: {
+      10: [10, 11],
+      9: [10, 11],
+      8: [10, 11],
+      7: [10, 11],
+    },
+    display: "Fall - Early Winter"
+  },
+
+  nectarine: {
+    zones: {
+      10: [5, 6, 7],
+      9: [6, 7, 8],
+      8: [7, 8],
+      7: [7, 8],
+      6: [8],
+    },
+    display: "Summer"
+  },
+
+  pawpaw: {
+    zones: {
+      10: [8, 9],
+      9: [9, 10],
+      8: [9, 10],
+      7: [9, 10],
+      6: [9, 10],
+    },
+    display: "Fall"
+  },
+
+  pluot: {
+    zones: {
+      10: [5, 6, 7],
+      9: [6, 7, 8],
+      8: [7, 8],
+      7: [7, 8],
+    },
+    display: "Summer"
+  },
+
+  quince: {
+    zones: {
+      10: [9, 10],
+      9: [10, 11],
+      8: [10, 11],
+      7: [10, 11],
+    },
+    display: "Fall"
+  },
+
+  serviceberry: {
+    zones: {
+      10: [5, 6],
+      9: [5, 6],
+      8: [6, 7],
+      7: [6, 7],
+      6: [6, 7],
+    },
+    display: "Early Summer"
+  },
+
+  'sour cherry': {
+    zones: {
+      10: [5, 6],
+      9: [6, 7],
+      8: [6, 7],
+      7: [6, 7],
+      6: [7],
+    },
+    display: "Early Summer"
+  },
+
+  // Citrus (extended)
+  bergamot: {
+    zones: {
+      10: [12, 1, 2, 3],
+      9: [1, 2, 3],
+    },
+    display: "Winter"
+  },
+
+  'blood orange': {
+    zones: {
+      10: [12, 1, 2, 3, 4],
+      9: [1, 2, 3, 4],
+      8: [2, 3],
+    },
+    display: "Winter - Early Spring"
+  },
+
+  calamansi: {
+    zones: {
+      10: [11, 12, 1, 2, 3, 4, 5],
+      9: [12, 1, 2, 3],
+    },
+    display: "Winter - Spring (warm zones)"
+  },
+
+  citron: {
+    zones: {
+      10: [11, 12, 1, 2, 3],
+      9: [12, 1, 2],
+    },
+    display: "Winter"
+  },
+
+  clementine: {
+    zones: {
+      10: [11, 12, 1, 2],
+      9: [12, 1, 2, 3],
+    },
+    display: "Winter"
+  },
+
+  mandarin: {
+    zones: {
+      10: [11, 12, 1, 2, 3],
+      9: [12, 1, 2, 3],
+      8: [1, 2],
+    },
+    display: "Winter"
+  },
+
+  pomelo: {
+    zones: {
+      10: [12, 1, 2, 3, 4],
+      9: [1, 2, 3],
+    },
+    display: "Winter - Spring"
+  },
+
+  yuzu: {
+    zones: {
+      10: [11, 12, 1, 2],
+      9: [11, 12, 1, 2],
+      8: [12, 1],
+    },
+    display: "Winter"
+  },
+
+  // Tropical / subtropical (extended)
+  banana: {
+    zones: {
+      10: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      9: [6, 7, 8, 9, 10],
+    },
+    display: "Year-round (tropical zones)"
+  },
+
+  breadfruit: {
+    zones: {
+      10: [7, 8, 9, 10],
+    },
+    display: "Summer - Fall (tropical only)"
+  },
+
+  cherimoya: {
+    zones: {
+      10: [11, 12, 1, 2, 3],
+      9: [12, 1, 2],
+    },
+    display: "Winter - Spring (warm zones)"
+  },
+
+  'dragon fruit': {
+    zones: {
+      10: [6, 7, 8, 9, 10, 11],
+    },
+    display: "Summer - Fall (tropical only)"
+  },
+
+  feijoa: {
+    zones: {
+      10: [9, 10, 11],
+      9: [10, 11],
+      8: [10, 11],
+    },
+    display: "Fall"
+  },
+
+  jackfruit: {
+    zones: {
+      10: [6, 7, 8, 9],
+    },
+    display: "Summer (tropical only)"
+  },
+
+  jaboticaba: {
+    zones: {
+      10: [3, 4, 5, 9, 10, 11],   // Two crops per year
+    },
+    display: "Spring & Fall (tropical only)"
+  },
+
+  longan: {
+    zones: {
+      10: [7, 8, 9],
+    },
+    display: "Summer (tropical only)"
+  },
+
+  lychee: {
+    zones: {
+      10: [5, 6, 7],
+    },
+    display: "Early Summer (tropical only)"
+  },
+
+  papaya: {
+    zones: {
+      10: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    },
+    display: "Year-round (tropical only)"
+  },
+
+  rambutan: {
+    zones: {
+      10: [6, 7, 8, 9],
+    },
+    display: "Summer (tropical only)"
+  },
+
+  sapote: {
+    zones: {
+      10: [11, 12, 1, 2, 3],
+    },
+    display: "Winter - Spring (tropical only)"
+  },
+
+  soursop: {
+    zones: {
+      10: [6, 7, 8, 9, 10, 11, 12],
+    },
+    display: "Summer - Winter (tropical only)"
+  },
+
+  starfruit: {
+    zones: {
+      10: [8, 9, 10, 11, 12, 1, 2],
+    },
+    display: "Late Summer - Winter (tropical only)"
+  },
+
+  'surinam cherry': {
+    zones: {
+      10: [4, 5, 6, 9, 10],       // Two crops per year
+    },
+    display: "Spring & Fall (tropical only)"
+  },
+
+  tamarind: {
+    zones: {
+      10: [12, 1, 2, 3, 4],
+    },
+    display: "Winter - Spring (tropical only)"
+  },
+
+  // Nuts (extended)
+  chestnut: {
+    zones: {
+      10: [9, 10],
+      9: [9, 10, 11],
+      8: [10, 11],
+      7: [10, 11],
+    },
+    display: "Fall"
+  },
+
+  hazelnut: {
+    zones: {
+      10: [9, 10],
+      9: [9, 10],
+      8: [9, 10],
+      7: [9, 10],
+      6: [9, 10],
+    },
+    display: "Fall"
+  },
+
+  macadamia: {
+    zones: {
+      10: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    },
+    display: "Spring - Winter (warm zones)"
+  },
+
+  'pine nut': {
+    zones: {
+      10: [9, 10],
+      9: [9, 10],
+      8: [10, 11],
+      7: [10, 11],
+    },
+    display: "Fall"
+  },
+
+  pistachio: {
+    zones: {
+      10: [9, 10],
+      9: [9, 10],
+      8: [9, 10],
+    },
+    display: "Fall"
+  },
+
+  // Berries / vines (extended)
+  boysenberry: {
+    zones: {
+      10: [5, 6, 7],
+      9: [6, 7],
+      8: [6, 7, 8],
+      7: [7, 8],
+    },
+    display: "Early Summer"
+  },
+
+  cranberry: {
+    zones: {
+      10: [10, 11],
+      9: [10, 11],
+      8: [10, 11],
+      7: [10, 11],
+      6: [10],
+    },
+    display: "Fall"
+  },
+
+  currant: {
+    zones: {
+      10: [6, 7],
+      9: [6, 7],
+      8: [7, 8],
+      7: [7, 8],
+      6: [7, 8],
+    },
+    display: "Summer"
+  },
+
+  dewberry: {
+    zones: {
+      10: [4, 5, 6],
+      9: [5, 6],
+      8: [6, 7],
+    },
+    display: "Late Spring - Early Summer"
+  },
+
+  elderberry: {
+    zones: {
+      10: [8, 9],
+      9: [8, 9],
+      8: [8, 9],
+      7: [8, 9],
+      6: [8, 9],
+    },
+    display: "Late Summer"
+  },
+
+  gooseberry: {
+    zones: {
+      10: [6, 7],
+      9: [6, 7],
+      8: [7, 8],
+      7: [7, 8],
+      6: [7, 8],
+    },
+    display: "Summer"
+  },
+
+  huckleberry: {
+    zones: {
+      10: [7, 8],
+      9: [7, 8],
+      8: [7, 8],
+      7: [8, 9],
+    },
+    display: "Summer"
+  },
+
+  loganberry: {
+    zones: {
+      10: [5, 6, 7],
+      9: [6, 7],
+      8: [7, 8],
+    },
+    display: "Early Summer"
+  },
+
+  // Other (extended)
+  coconut: {
+    zones: {
+      10: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    },
+    display: "Year-round (tropical only)"
+  },
+
+  date: {
+    zones: {
+      10: [9, 10, 11],
+    },
+    display: "Fall"
+  },
+
+  jujube: {
+    zones: {
+      10: [9, 10],
+      9: [9, 10],
+      8: [9, 10],
+      7: [10],
+    },
+    display: "Fall"
+  },
+
+  olive: {
+    zones: {
+      10: [11, 12, 1],
+      9: [11, 12, 1],
+      8: [10, 11],
+    },
+    display: "Fall - Winter"
+  },
+
+  'prickly pear': {
+    zones: {
+      10: [8, 9, 10],
+      9: [9, 10],
+      8: [9, 10],
+    },
+    display: "Late Summer - Fall"
+  },
 };
 
 /**

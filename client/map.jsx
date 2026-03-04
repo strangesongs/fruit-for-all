@@ -54,60 +54,6 @@ const makeClusterIcon = (count) => new L.DivIcon({
 
 const clusterIcon = makeClusterIcon('+');
 
-// Sample pins shown only when the database has no real pins yet
-const SAMPLE_PINS = [
-    {
-        pinId: 'sample-1',
-        fruitType: 'lemon',
-        fruitTypeDisplay: 'Lemon',
-        coordinates: { lat: 34.0614, lng: -118.2940 },
-        submittedBy: 'sample',
-        notes: 'Large tree, very productive in winter.',
-        zone: 10,
-        address: 'Boyle Heights, Los Angeles'
-    },
-    {
-        pinId: 'sample-2',
-        fruitType: 'fig',
-        fruitTypeDisplay: 'Fig',
-        coordinates: { lat: 34.0682, lng: -118.2855 },
-        submittedBy: 'sample',
-        notes: 'Two trees near the sidewalk. Ripe in late summer.',
-        zone: 10,
-        address: 'East Los Angeles'
-    },
-    {
-        pinId: 'sample-3',
-        fruitType: 'orange',
-        fruitTypeDisplay: 'Orange',
-        coordinates: { lat: 34.0558, lng: -118.3012 },
-        submittedBy: 'sample',
-        notes: 'Navel oranges, branches hang over the sidewalk.',
-        zone: 10,
-        address: 'Lincoln Heights, Los Angeles'
-    },
-    {
-        pinId: 'sample-4',
-        fruitType: 'avocado',
-        fruitTypeDisplay: 'Avocado',
-        coordinates: { lat: 34.0645, lng: -118.3085 },
-        submittedBy: 'sample',
-        notes: 'Tall Hass tree, fruit drops to the ground when ripe.',
-        zone: 10,
-        address: 'Silver Lake, Los Angeles'
-    },
-    {
-        pinId: 'sample-5',
-        fruitType: 'mulberry',
-        fruitTypeDisplay: 'Mulberry',
-        coordinates: { lat: 34.0724, lng: -118.2778 },
-        submittedBy: 'sample',
-        notes: 'White mulberry. Brings birds in spring.',
-        zone: 10,
-        address: 'El Sereno, Los Angeles'
-    }
-];
-
 // Component to handle map events
 function MapEvents({ onViewportChange, onZoomChange }) {
     const map = useMapEvents({
@@ -401,12 +347,9 @@ class Map extends Component {
         const currentUser = getUser();
         const currentUsername = currentUser ? currentUser.userName : null;
         
-        // Use sample pins when database is empty
-        const displaySource = pins.length === 0 ? SAMPLE_PINS : pins;
-
         // Filter out test/demo pins from display
         const excludeWords = ['test', 'tests', 'demo', 'testing', 'user'];
-        let filteredPins = displaySource.filter(pin => {
+        let filteredPins = pins.filter(pin => {
             if (!pin.fruitType) return false;
             const lowerType = pin.fruitType.toLowerCase();
             return !excludeWords.some(word => lowerType.includes(word));

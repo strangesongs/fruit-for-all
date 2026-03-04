@@ -69,6 +69,7 @@ button, .action-btn {
     font-size: 0.8rem;
     font-weight: normal;
     border: 2px outset var(--red);
+    border-radius: 4px;
     cursor: pointer;
     width: 90%;
     box-sizing: border-box;
@@ -76,7 +77,7 @@ button, .action-btn {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: background-color 0.1s ease;
+    transition: background-color 0.2s ease;
 }
 
 button:not(.hamburger-btn):hover, .action-btn:hover {
@@ -570,6 +571,7 @@ li {
     width: 100%;
     padding: 8px 10px;
     border: 2px solid var(--border);
+    font-family: inherit;
     font-size: 0.9rem;
     box-sizing: border-box;
     border-radius: 4px;
@@ -638,7 +640,7 @@ li {
     width: auto;
     min-width: 80px;
     margin: 0;
-    font-weight: 600;
+    font-weight: normal;
 }
 
 .cancel-btn {
@@ -680,6 +682,7 @@ li {
     left: 10px;
     background: transparent;
     border: none;
+    border-radius: 0;
     width: 20px;
     height: 16px;
     padding: 0;
@@ -697,7 +700,6 @@ li {
     width: 100%;
     height: 2px;
     background-color: #C23939;
-    border-radius: 1px;
     transition: all 0.3s ease;
 }
 
@@ -711,11 +713,14 @@ li {
     height: 50px;
     padding: 0;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .sidebar.collapsed .hamburger-btn {
     position: static;
-    margin: 12px auto;
+    margin: 0;
 }
 
 /* Mobile responsiveness */
