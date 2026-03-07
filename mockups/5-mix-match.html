@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mockup 5: Mix & Match — Fonts × Earthy Palettes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <!--
+    Bitter      — sturdy slab, our reference
+    Vollkorn    — old-style serif with ink-trap character; feels typeset, not digital
+    Josefin Slab — geometric slab; vintage catalog/poster energy
+    Zilla Slab  — Mozilla's humanist slab; slightly rougher than Bitter
+    Crete Round — rounded old-style; most organic, almost hand-pressed
+  -->
+  <link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,600;1,400&family=Vollkorn:ital,wght@0,400;0,600;1,400&family=Josefin+Slab:ital,wght@0,400;0,600;1,400&family=Zilla+Slab:ital,wght@0,400;0,600;1,400&family=Crete+Round:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 40px 24px 80px;
+      background: #14100c;
+      font-family: 'Helvetica Neue', sans-serif;
+    }
+    h1 {
+      color: #e8dfc8; font-size: 18px; margin: 0 0 4px;
+      font-family: 'Vollkorn', serif;
+    }
+    .subtitle { color: #6a5e48; font-size: 11px; margin: 0 0 6px; font-family: monospace; }
+    .legend {
+      color: #5a5040; font-size: 10px; font-family: monospace;
+      margin: 0 0 36px; max-width: 760px; line-height: 1.9;
+      border-left: 2px solid #2a2010; padding-left: 12px;
+    }
+    .legend span { color: #9a8a6a; }
+
+    .page-panels { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+    .panel-col { display: flex; flex-direction: column; gap: 8px; width: 232px; }
+    .panel-name { color: #e8dfc8; font-size: 12px; font-weight: bold; }
+    .panel-font { color: #9a7a50; font-size: 10px; font-family: monospace; margin-bottom: 1px; }
+    .panel-colors { color: #6a5840; font-size: 10px; font-family: monospace; line-height: 1.7; margin-bottom: 6px; }
+    .swatches { display: flex; gap: 3px; margin-bottom: 8px; }
+    .sw { width: 16px; height: 16px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.06); }
+    .ref-tag {
+      display: inline-block; font-size: 9px; font-family: monospace;
+      color: #4a7a4a; border: 1px solid #2a4a2a;
+      padding: 1px 5px; border-radius: 2px; margin-bottom: 6px;
+    }
+
+    /* device shell */
+    .device {
+      width: 232px; background: #0c0a08;
+      border-radius: 24px; padding: 18px 8px;
+      box-shadow: 0 6px 32px rgba(0,0,0,0.7), inset 0 0 0 1px #201a12;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .screen-label { color: #302818; font-size: 9px; font-family: monospace; text-align: center; margin-bottom: 1px; }
+    .view-label { color: #3a3020; font-size: 9px; font-family: monospace; text-align: center; text-transform: uppercase; letter-spacing: 1px; margin: 5px 0 2px; }
+    .screen { width: 216px; overflow: hidden; border-radius: 3px; }
+
+    /* ── Structural (palette-independent) ── */
+    .lq { width: 100%; }
+    .map-bg { display: flex; align-items: flex-start; justify-content: flex-start; width: 100%; }
+
+    .sidebar {
+      width: calc(216px - 14px);
+      box-sizing: border-box; border-radius: 7px;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      box-shadow: 4px 5px 9px rgba(0,0,0,0.28);
+      padding: 7px; margin: 7px;
+      border-width: 2px; border-style: solid;
+    }
+    .hdr-row {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; padding: 3px 0 7px;
+    }
+    .hbtn {
+      background: transparent !important; border: none !important;
+      border-radius: 0 !important; width: 18px !important; height: 14px !important;
+      padding: 0 !important; flex-shrink: 0; cursor: pointer;
+      display: flex; flex-direction: column; justify-content: space-between;
+      margin-right: 7px !important;
+    }
+    .hbtn span { display: block; width: 100%; height: 2px; }
+    .app-title { font-size: 0.95rem; font-weight: 600; margin: 0; }
+    .act-btns { display: flex; flex-direction: column; align-items: center; gap: 3px; margin-bottom: 7px; width: 100%; }
+    .ubtn {
+      color: white; padding: 9px 12px; margin: 2px;
+      font-size: 0.88rem; font-weight: 400;
+      border-radius: 4px; cursor: pointer; width: 90%; box-sizing: border-box;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      border-width: 2px; border-style: outset;
+    }
+    .ulabel { font-size: 0.67rem; margin-bottom: 3px; }
+    .div { width: 90%; border: none; margin: 5px 0; border-top-width: 1px; border-top-style: solid; }
+
+    /* popup */
+    .popup {
+      width: calc(216px - 14px);
+      border-radius: 7px; padding: 0;
+      box-shadow: 4px 5px 9px rgba(0,0,0,0.28); overflow: hidden;
+      border-width: 2px; border-style: solid;
+    }
+    .phdr { padding: 7px; border-bottom-width: 1px; border-bottom-style: solid; border-radius: 7px 7px 0 0; }
+    .ftitle { margin: 0; font-size: 0.95rem; font-weight: 600; }
+    .sbadge {
+      margin-top: 5px; padding: 2px 7px; border-radius: 3px;
+      font-size: 0.68rem; display: inline-block;
+      border-width: 1px; border-style: solid;
+    }
+    .pcont { padding: 7px; }
+    .nsec { margin-bottom: 7px; padding: 5px; border-radius: 3px; border-left-width: 3px; border-left-style: solid; }
+    .nsec strong { font-size: 0.68rem; font-weight: 600; }
+    .pnotes { margin: 3px 0 0; font-size: 0.75rem; line-height: 1.35; font-style: italic; }
+    .mgrid { display: grid; gap: 3px; }
+    .mitem { display: flex; justify-content: space-between; align-items: center; padding: 2px 4px; border-radius: 3px; font-size: 0.68rem; }
+    .mitem strong { font-weight: 600; min-width: 50px; }
+    .mitem span { text-align: right; font-size: 0.68rem; }
+    .pact { margin-top: 7px; padding-top: 7px; border-top-width: 1px; border-top-style: solid; text-align: center; }
+    .dbtn { color: white; border-radius: 4px; padding: 9px 12px; font-size: 0.88rem; cursor: pointer; width: 90%; border-width: 2px; border-style: outset; }
+
+    /*
+    ════════════════════════════════════════════
+    PANEL 1 — C palette + Bitter (REFERENCE)
+    terracotta #7a3c20 · wheat #f7f2e4 · olive notes #5c6b2e
+    ════════════════════════════════════════════
+    */
+    .p1 { font-family: 'Bitter', serif; }
+    .p1-map  { background: linear-gradient(135deg, #d4c8a8, #bcb088); }
+    .p1-side { background: #f7f2e4; border-color: #c8b888; }
+    .p1 .hbtn span { background: #7a3c20; }
+    .p1-title { color: #7a3c20; }
+    .p1-div { border-top-color: #d8c898; }
+    .p1-ul { color: #8a7050; }
+    .p1-btn { background-color: #7a3c20; border-color: #7a3c20; }
+    .p1-popup { background: #fdf9f0; border-color: #c8b888; }
+    .p1-phdr { background: #f2ece0; border-bottom-color: #d8c898; }
+    .p1-ft  { color: #7a3c20; }
+    .p1-sb  { background: rgba(122,60,32,.1); color: #5a2810; border-color: rgba(122,60,32,.3); }
+    .p1-pc  { background: #fdf9f0; }
+    .p1-ns  { background: #f2ece0; border-left-color: #5c6b2e; }
+    .p1-nsl { color: #5c6b2e; }
+    .p1-nst { color: #2b1a0e; }
+    .p1-mi  { background: #f2ece0; }
+    .p1-mla { color: #7a3c20; }
+    .p1-mva { color: #2b1a0e; }
+    .p1-pat { border-top-color: #d8c898; }
+    .p1-del { background-color: #5c3820; border-color: #5c3820; }
+
+    /*
+    ════════════════════════════════════════════
+    PANEL 2 — C palette + Vollkorn
+    Same colors, different font: older, inky character
+    ════════════════════════════════════════════
+    */
+    .p2 { font-family: 'Vollkorn', serif; }
+    .p2-map  { background: linear-gradient(135deg, #d4c8a8, #bcb088); }
+    .p2-side { background: #f7f2e4; border-color: #c8b888; }
+    .p2 .hbtn span { background: #7a3c20; }
+    .p2-title { color: #7a3c20; }
+    .p2-div { border-top-color: #d8c898; }
+    .p2-ul { color: #8a7050; }
+    .p2-btn { background-color: #7a3c20; border-color: #7a3c20; }
+    .p2-popup { background: #fdf9f0; border-color: #c8b888; }
+    .p2-phdr { background: #f2ece0; border-bottom-color: #d8c898; }
+    .p2-ft  { color: #7a3c20; }
+    .p2-sb  { background: rgba(122,60,32,.1); color: #5a2810; border-color: rgba(122,60,32,.3); }
+    .p2-pc  { background: #fdf9f0; }
+    .p2-ns  { background: #f2ece0; border-left-color: #5c6b2e; }
+    .p2-nsl { color: #5c6b2e; }
+    .p2-nst { color: #2b1a0e; }
+    .p2-mi  { background: #f2ece0; }
+    .p2-mla { color: #7a3c20; }
+    .p2-mva { color: #2b1a0e; }
+    .p2-pat { border-top-color: #d8c898; }
+    .p2-del { background-color: #5c3820; border-color: #5c3820; }
+
+    /*
+    ════════════════════════════════════════════
+    PANEL 3 — C terracotta + deeper parchment surface + Josefin Slab
+    Slightly more aged — like a 1972 seed catalog cover
+    ════════════════════════════════════════════
+    */
+    .p3 { font-family: 'Josefin Slab', serif; }
+    .p3-map  { background: linear-gradient(135deg, #c8bc98, #b0a880); }
+    .p3-side { background: #ede5d0; border-color: #bca878; }   /* deeper parchment */
+    .p3 .hbtn span { background: #7a3c20; }
+    .p3-title { color: #7a3c20; }
+    .p3-div { border-top-color: #ccba88; }
+    .p3-ul { color: #907658; }
+    .p3-btn { background-color: #7a3c20; border-color: #7a3c20; }
+    .p3-popup { background: #f8f2e2; border-color: #bca878; }
+    .p3-phdr { background: #ede5d0; border-bottom-color: #ccba88; }
+    .p3-ft  { color: #7a3c20; }
+    .p3-sb  { background: rgba(122,60,32,.1); color: #5a2810; border-color: rgba(122,60,32,.3); }
+    .p3-pc  { background: #f8f2e2; }
+    .p3-ns  { background: #ede5d0; border-left-color: #5c6b2e; }
+    .p3-nsl { color: #5c6b2e; }
+    .p3-nst { color: #281608; }
+    .p3-mi  { background: #ede5d0; }
+    .p3-mla { color: #7a3c20; }
+    .p3-mva { color: #281608; }
+    .p3-pat { border-top-color: #ccba88; }
+    .p3-del { background-color: #5c3820; border-color: #5c3820; }
+
+    /*
+    ════════════════════════════════════════════
+    PANEL 4 — Forest green (A) + C's wheat surface + Zilla Slab
+    The "cross": A's earthy green authority + C's warm paper warmth
+    ════════════════════════════════════════════
+    */
+    .p4 { font-family: 'Zilla Slab', serif; }
+    .p4-map  { background: linear-gradient(135deg, #c8d4b8, #b0bc98); }
+    .p4-side { background: #f7f2e4; border-color: #a8bc90; }
+    .p4 .hbtn span { background: #3d5a3e; }
+    .p4-title { color: #3d5a3e; }
+    .p4-div { border-top-color: #c0d0a8; }
+    .p4-ul { color: #6a7850; }
+    .p4-btn { background-color: #3d5a3e; border-color: #3d5a3e; }
+    .p4-popup { background: #fdf9f0; border-color: #a8bc90; }
+    .p4-phdr { background: #eef4e4; border-bottom-color: #c0d0a8; }
+    .p4-ft  { color: #3d5a3e; }
+    .p4-sb  { background: rgba(61,90,62,.1); color: #1e3a20; border-color: rgba(61,90,62,.3); }
+    .p4-pc  { background: #fdf9f0; }
+    .p4-ns  { background: #eef4e4; border-left-color: #7a3c20; }   /* terracotta accent on notes = earthy cross */
+    .p4-nsl { color: #7a3c20; }
+    .p4-nst { color: #1a2010; }
+    .p4-mi  { background: #eef4e4; }
+    .p4-mla { color: #3d5a3e; }
+    .p4-mva { color: #1a2010; }
+    .p4-pat { border-top-color: #c0d0a8; }
+    .p4-del { background-color: #7a3c20; border-color: #7a3c20; }  /* terracotta delete against green chrome */
+
+    /*
+    ════════════════════════════════════════════
+    PANEL 5 — Burnt umber primary + aged linen surface + Crete Round
+    Most organic: rounded letterforms, amber note accent, deepest paper tone
+    ════════════════════════════════════════════
+    */
+    .p5 { font-family: 'Crete Round', serif; }
+    .p5-map  { background: linear-gradient(135deg, #c8bc98, #b0a478); }
+    .p5-side { background: #ece4cc; border-color: #b89858; }   /* aged linen */
+    .p5 .hbtn span { background: #5c3018; }
+    .p5-title { color: #5c3018; }
+    .p5-div { border-top-color: #c8a860; }
+    .p5-ul { color: #907050; }
+    .p5-btn { background-color: #5c3018; border-color: #5c3018; }
+    .p5-popup { background: #f8f2e0; border-color: #b89858; }
+    .p5-phdr { background: #ece4cc; border-bottom-color: #c8a860; }
+    .p5-ft  { color: #5c3018; }
+    .p5-sb  { background: rgba(92,48,24,.1); color: #3a1808; border-color: rgba(92,48,24,.3); }
+    .p5-pc  { background: #f8f2e0; }
+    .p5-ns  { background: #ece4cc; border-left-color: #7a6020; }  /* amber/ochre note accent */
+    .p5-nsl { color: #7a6020; }
+    .p5-nst { color: #241408; }
+    .p5-mi  { background: #ece4cc; }
+    .p5-mla { color: #5c3018; }
+    .p5-mva { color: #241408; }
+    .p5-pat { border-top-color: #c8a860; }
+    .p5-del { background-color: #3d5a3e; border-color: #3d5a3e; }  /* forest green delete against umber chrome */
+  </style>
+</head>
+<body>
+
+<h1>Mockup 5 — Mix & Match: Fonts × Palettes</h1>
+<p class="subtitle">All panels: chunky buttons (10px 14px, 0.88rem) · compact popup (no min-width)</p>
+<p class="legend">
+  <span>P1</span> Palette C + Bitter (reference — what you approved) &nbsp;·&nbsp;
+  <span>P2</span> Same colors + Vollkorn (older ink-trap serif — more typeset feel) &nbsp;·&nbsp;
+  <span>P3</span> C terracotta + deeper parchment surface + Josefin Slab (geometric vintage catalog) &nbsp;·&nbsp;
+  <span>P4</span> A forest green × C wheat surface cross + Zilla Slab (humanist slab; outdoor catalog authority) &nbsp;·&nbsp;
+  <span>P5</span> Burnt umber + aged linen + Crete Round (most organic; rounded letterforms, ochre accent)
+</p>
+
+<div class="page-panels">
+
+  <!-- ═════════ PANEL 1 ═════════ -->
+  <div class="panel-col">
+    <div class="panel-name">P1 — C + Bitter</div>
+    <div class="ref-tag">reference</div>
+    <div class="panel-font">font: Bitter</div>
+    <div class="panel-colors">terracotta #7a3c20<br>wheat surface #f7f2e4<br>olive notes #5c6b2e</div>
+    <div class="swatches">
+      <div class="sw" style="background:#7a3c20"></div>
+      <div class="sw" style="background:#f7f2e4"></div>
+      <div class="sw" style="background:#5c6b2e"></div>
+      <div class="sw" style="background:#5c3820"></div>
+    </div>
+    <div class="device">
+      <div class="screen-label">216px · Jelly Star</div>
+      <div class="view-label">sidebar</div>
+      <div class="screen" style="height:264px;overflow-y:auto;">
+        <div class="lq p1 map-bg p1-map" style="min-height:264px;">
+          <div class="sidebar p1-side">
+            <div class="hdr-row">
+              <button class="hbtn p1"><span></span><span></span><span></span></button>
+              <p class="app-title p1-title">loquat</p>
+            </div>
+            <hr class="div p1-div">
+            <div class="act-btns">
+              <button class="ubtn p1 p1-btn">home</button>
+              <button class="ubtn p1 p1-btn">add fruit</button>
+              <button class="ubtn p1 p1-btn">my pins</button>
+            </div>
+            <hr class="div p1-div">
+            <div class="ulabel p1 p1-ul">logged in as: user123</div>
+            <button class="ubtn p1 p1-btn" style="margin-top:3px;">logout</button>
+          </div>
+        </div>
+      </div>
+      <div class="view-label">popup</div>
+      <div class="screen" style="height:280px;overflow-y:auto;">
+        <div class="lq p1 map-bg p1-map" style="min-height:280px;padding:7px;align-items:flex-start;">
+          <div class="popup p1-popup">
+            <div class="phdr p1-phdr">
+              <h3 class="ftitle p1 p1-ft">apple</h3>
+              <span class="sbadge p1 p1-sb">in season</span>
+            </div>
+            <div class="pcont p1-pc">
+              <div class="nsec p1-ns">
+                <strong class="p1 p1-nsl">notes:</strong>
+                <p class="pnotes p1 p1-nst">Large tree near the back fence. Fruit ready in October.</p>
+              </div>
+              <div class="mgrid">
+                <div class="mitem p1-mi"><strong class="p1 p1-mla">location:</strong><span class="p1 p1-mva">37.77, −122.41</span></div>
+                <div class="mitem p1-mi"><strong class="p1 p1-mla">added by:</strong><span class="p1 p1-mva">user123</span></div>
+                <div class="mitem p1-mi"><strong class="p1 p1-mla">date:</strong><span class="p1 p1-mva">Jan 1 2026</span></div>
+              </div>
+              <div class="pact p1-pat"><button class="dbtn p1 p1-del">delete pin</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ PANEL 2 ═════════ -->
+  <div class="panel-col">
+    <div class="panel-name">P2 — C + Vollkorn</div>
+    <div class="panel-font">font: Vollkorn — old-style, inky</div>
+    <div class="panel-colors">terracotta #7a3c20<br>wheat surface #f7f2e4<br>olive notes #5c6b2e</div>
+    <div class="swatches">
+      <div class="sw" style="background:#7a3c20"></div>
+      <div class="sw" style="background:#f7f2e4"></div>
+      <div class="sw" style="background:#5c6b2e"></div>
+      <div class="sw" style="background:#5c3820"></div>
+    </div>
+    <div class="device">
+      <div class="screen-label">216px · Jelly Star</div>
+      <div class="view-label">sidebar</div>
+      <div class="screen" style="height:264px;overflow-y:auto;">
+        <div class="lq p2 map-bg p2-map" style="min-height:264px;">
+          <div class="sidebar p2-side">
+            <div class="hdr-row">
+              <button class="hbtn p2"><span></span><span></span><span></span></button>
+              <p class="app-title p2-title">loquat</p>
+            </div>
+            <hr class="div p2-div">
+            <div class="act-btns">
+              <button class="ubtn p2 p2-btn">home</button>
+              <button class="ubtn p2 p2-btn">add fruit</button>
+              <button class="ubtn p2 p2-btn">my pins</button>
+            </div>
+            <hr class="div p2-div">
+            <div class="ulabel p2 p2-ul">logged in as: user123</div>
+            <button class="ubtn p2 p2-btn" style="margin-top:3px;">logout</button>
+          </div>
+        </div>
+      </div>
+      <div class="view-label">popup</div>
+      <div class="screen" style="height:280px;overflow-y:auto;">
+        <div class="lq p2 map-bg p2-map" style="min-height:280px;padding:7px;align-items:flex-start;">
+          <div class="popup p2-popup">
+            <div class="phdr p2-phdr">
+              <h3 class="ftitle p2 p2-ft">apple</h3>
+              <span class="sbadge p2 p2-sb">in season</span>
+            </div>
+            <div class="pcont p2-pc">
+              <div class="nsec p2-ns">
+                <strong class="p2 p2-nsl">notes:</strong>
+                <p class="pnotes p2 p2-nst">Large tree near the back fence. Fruit ready in October.</p>
+              </div>
+              <div class="mgrid">
+                <div class="mitem p2-mi"><strong class="p2 p2-mla">location:</strong><span class="p2 p2-mva">37.77, −122.41</span></div>
+                <div class="mitem p2-mi"><strong class="p2 p2-mla">added by:</strong><span class="p2 p2-mva">user123</span></div>
+                <div class="mitem p2-mi"><strong class="p2 p2-mla">date:</strong><span class="p2 p2-mva">Jan 1 2026</span></div>
+              </div>
+              <div class="pact p2-pat"><button class="dbtn p2 p2-del">delete pin</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ PANEL 3 ═════════ -->
+  <div class="panel-col">
+    <div class="panel-name">P3 — C dark + Josefin Slab</div>
+    <div class="panel-font">font: Josefin Slab — geometric vintage</div>
+    <div class="panel-colors">terracotta #7a3c20<br>parchment surface #ede5d0<br>olive notes #5c6b2e</div>
+    <div class="swatches">
+      <div class="sw" style="background:#7a3c20"></div>
+      <div class="sw" style="background:#ede5d0"></div>
+      <div class="sw" style="background:#5c6b2e"></div>
+      <div class="sw" style="background:#5c3820"></div>
+    </div>
+    <div class="device">
+      <div class="screen-label">216px · Jelly Star</div>
+      <div class="view-label">sidebar</div>
+      <div class="screen" style="height:264px;overflow-y:auto;">
+        <div class="lq p3 map-bg p3-map" style="min-height:264px;">
+          <div class="sidebar p3-side">
+            <div class="hdr-row">
+              <button class="hbtn p3"><span></span><span></span><span></span></button>
+              <p class="app-title p3-title">loquat</p>
+            </div>
+            <hr class="div p3-div">
+            <div class="act-btns">
+              <button class="ubtn p3 p3-btn">home</button>
+              <button class="ubtn p3 p3-btn">add fruit</button>
+              <button class="ubtn p3 p3-btn">my pins</button>
+            </div>
+            <hr class="div p3-div">
+            <div class="ulabel p3 p3-ul">logged in as: user123</div>
+            <button class="ubtn p3 p3-btn" style="margin-top:3px;">logout</button>
+          </div>
+        </div>
+      </div>
+      <div class="view-label">popup</div>
+      <div class="screen" style="height:280px;overflow-y:auto;">
+        <div class="lq p3 map-bg p3-map" style="min-height:280px;padding:7px;align-items:flex-start;">
+          <div class="popup p3-popup">
+            <div class="phdr p3-phdr">
+              <h3 class="ftitle p3 p3-ft">apple</h3>
+              <span class="sbadge p3 p3-sb">in season</span>
+            </div>
+            <div class="pcont p3-pc">
+              <div class="nsec p3-ns">
+                <strong class="p3 p3-nsl">notes:</strong>
+                <p class="pnotes p3 p3-nst">Large tree near the back fence. Fruit ready in October.</p>
+              </div>
+              <div class="mgrid">
+                <div class="mitem p3-mi"><strong class="p3 p3-mla">location:</strong><span class="p3 p3-mva">37.77, −122.41</span></div>
+                <div class="mitem p3-mi"><strong class="p3 p3-mla">added by:</strong><span class="p3 p3-mva">user123</span></div>
+                <div class="mitem p3-mi"><strong class="p3 p3-mla">date:</strong><span class="p3 p3-mva">Jan 1 2026</span></div>
+              </div>
+              <div class="pact p3-pat"><button class="dbtn p3 p3-del">delete pin</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ PANEL 4 ═════════ -->
+  <div class="panel-col">
+    <div class="panel-name">P4 — A×C cross + Zilla Slab</div>
+    <div class="panel-font">font: Zilla Slab — humanist, slightly rough</div>
+    <div class="panel-colors">forest green #3d5a3e<br>wheat surface #f7f2e4<br>terracotta notes #7a3c20</div>
+    <div class="swatches">
+      <div class="sw" style="background:#3d5a3e"></div>
+      <div class="sw" style="background:#f7f2e4"></div>
+      <div class="sw" style="background:#7a3c20"></div>
+      <div class="sw" style="background:#7a3c20"></div>
+    </div>
+    <div class="device">
+      <div class="screen-label">216px · Jelly Star</div>
+      <div class="view-label">sidebar</div>
+      <div class="screen" style="height:264px;overflow-y:auto;">
+        <div class="lq p4 map-bg p4-map" style="min-height:264px;">
+          <div class="sidebar p4-side">
+            <div class="hdr-row">
+              <button class="hbtn p4"><span></span><span></span><span></span></button>
+              <p class="app-title p4-title">loquat</p>
+            </div>
+            <hr class="div p4-div">
+            <div class="act-btns">
+              <button class="ubtn p4 p4-btn">home</button>
+              <button class="ubtn p4 p4-btn">add fruit</button>
+              <button class="ubtn p4 p4-btn">my pins</button>
+            </div>
+            <hr class="div p4-div">
+            <div class="ulabel p4 p4-ul">logged in as: user123</div>
+            <button class="ubtn p4 p4-btn" style="margin-top:3px;">logout</button>
+          </div>
+        </div>
+      </div>
+      <div class="view-label">popup</div>
+      <div class="screen" style="height:280px;overflow-y:auto;">
+        <div class="lq p4 map-bg p4-map" style="min-height:280px;padding:7px;align-items:flex-start;">
+          <div class="popup p4-popup">
+            <div class="phdr p4-phdr">
+              <h3 class="ftitle p4 p4-ft">apple</h3>
+              <span class="sbadge p4 p4-sb">in season</span>
+            </div>
+            <div class="pcont p4-pc">
+              <div class="nsec p4-ns">
+                <strong class="p4 p4-nsl">notes:</strong>
+                <p class="pnotes p4 p4-nst">Large tree near the back fence. Fruit ready in October.</p>
+              </div>
+              <div class="mgrid">
+                <div class="mitem p4-mi"><strong class="p4 p4-mla">location:</strong><span class="p4 p4-mva">37.77, −122.41</span></div>
+                <div class="mitem p4-mi"><strong class="p4 p4-mla">added by:</strong><span class="p4 p4-mva">user123</span></div>
+                <div class="mitem p4-mi"><strong class="p4 p4-mla">date:</strong><span class="p4 p4-mva">Jan 1 2026</span></div>
+              </div>
+              <div class="pact p4-pat"><button class="dbtn p4 p4-del">delete pin</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ PANEL 5 ═════════ -->
+  <div class="panel-col">
+    <div class="panel-name">P5 — Umber + Crete Round</div>
+    <div class="panel-font">font: Crete Round — organic, rounded</div>
+    <div class="panel-colors">burnt umber #5c3018<br>aged linen #ece4cc<br>ochre accent #7a6020</div>
+    <div class="swatches">
+      <div class="sw" style="background:#5c3018"></div>
+      <div class="sw" style="background:#ece4cc"></div>
+      <div class="sw" style="background:#7a6020"></div>
+      <div class="sw" style="background:#3d5a3e"></div>
+    </div>
+    <div class="device">
+      <div class="screen-label">216px · Jelly Star</div>
+      <div class="view-label">sidebar</div>
+      <div class="screen" style="height:264px;overflow-y:auto;">
+        <div class="lq p5 map-bg p5-map" style="min-height:264px;">
+          <div class="sidebar p5-side">
+            <div class="hdr-row">
+              <button class="hbtn p5"><span></span><span></span><span></span></button>
+              <p class="app-title p5-title">loquat</p>
+            </div>
+            <hr class="div p5-div">
+            <div class="act-btns">
+              <button class="ubtn p5 p5-btn">home</button>
+              <button class="ubtn p5 p5-btn">add fruit</button>
+              <button class="ubtn p5 p5-btn">my pins</button>
+            </div>
+            <hr class="div p5-div">
+            <div class="ulabel p5 p5-ul">logged in as: user123</div>
+            <button class="ubtn p5 p5-btn" style="margin-top:3px;">logout</button>
+          </div>
+        </div>
+      </div>
+      <div class="view-label">popup</div>
+      <div class="screen" style="height:280px;overflow-y:auto;">
+        <div class="lq p5 map-bg p5-map" style="min-height:280px;padding:7px;align-items:flex-start;">
+          <div class="popup p5-popup">
+            <div class="phdr p5-phdr">
+              <h3 class="ftitle p5 p5-ft">apple</h3>
+              <span class="sbadge p5 p5-sb">in season</span>
+            </div>
+            <div class="pcont p5-pc">
+              <div class="nsec p5-ns">
+                <strong class="p5 p5-nsl">notes:</strong>
+                <p class="pnotes p5 p5-nst">Large tree near the back fence. Fruit ready in October.</p>
+              </div>
+              <div class="mgrid">
+                <div class="mitem p5-mi"><strong class="p5 p5-mla">location:</strong><span class="p5 p5-mva">37.77, −122.41</span></div>
+                <div class="mitem p5-mi"><strong class="p5 p5-mla">added by:</strong><span class="p5 p5-mva">user123</span></div>
+                <div class="mitem p5-mi"><strong class="p5 p5-mla">date:</strong><span class="p5 p5-mva">Jan 1 2026</span></div>
+              </div>
+              <div class="pact p5-pat"><button class="dbtn p5 p5-del">delete pin</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

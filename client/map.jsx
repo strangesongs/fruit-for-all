@@ -44,7 +44,7 @@ const makeClusterIcon = (count) => new L.DivIcon({
         justify-content: center;
         color: white;
         font-size: 11px;
-        font-family: 'EB Garamond', serif;
+        font-family: 'Vollkorn', serif;
         font-weight: bold;
     ">${count}</div>`,
     iconSize: [28, 28],
@@ -377,8 +377,8 @@ class Map extends Component {
                             onZoomChange={this.handleZoomChange}
                         />
                         <TileLayer
-                            attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                            url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+                            attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://stamen.com">Stamen Design</a> &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+                            url='https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png'
                         />
                         {loading && (
                             <div className="loading-overlay">

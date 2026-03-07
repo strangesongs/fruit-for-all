@@ -40,8 +40,8 @@
 }
 
 .loading-overlay {
-    color: #D84747;
-    border-left: 3px solid #D84747;
+    color: #7a3c20;
+    border-left: 3px solid #7a3c20;
 }
 
 .error-overlay {
@@ -86,7 +86,7 @@
     justify-content: center !important;
     border-radius: 0 !important;
     line-height: 1 !important;
-    font-family: 'EB Garamond', serif !important;
+    font-family: 'Vollkorn', serif !important;
     box-shadow: none !important;
     text-shadow: none !important;
     outline: none !important;
@@ -138,36 +138,35 @@
 }
 
 .pin-popup {
-    min-width: 280px;
     background: white;
     border: 2px solid #b8b8b8;
     border-radius: 8px;
     padding: 0;
     box-shadow: 5px 6px 10px rgba(0, 0, 0, 0.22);
     overflow: hidden;
-    font-family: 'EB Garamond', serif;
+    font-family: 'Vollkorn', serif;
     color: #333;
 }
 
 .pin-popup .popup-header {
     margin-bottom: 0;
-    padding: 12px;
-    background-color: #fafafa !important;
-    border-bottom: 1px solid #e0e0e0;
+    padding: 8px;
+    background-color: #f2ece0 !important;
+    border-bottom: 1px solid #c8b888;
     border-radius: 8px 8px 0 0;
     display: block;
 }
 
 .fruit-title {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: bold;
-    color: #D84747;
+    color: #7a3c20;
 }
 
 .pin-popup .popup-content {
     margin: 0;
-    padding: 12px;
+    padding: 8px;
     background-color: white !important;
 }
 
@@ -176,11 +175,11 @@
     padding: 8px;
     background: #fafafa;
     border-radius: 4px;
-    border-left: 3px solid #D84747;
+    border-left: 3px solid #5c6b2e;
 }
 
 .notes-section strong {
-    color: #D84747;
+    color: #5c6b2e;
     font-size: 0.8rem;
     font-weight: bold;
 }
@@ -295,18 +294,18 @@
     padding: 4px 6px;
     background: #fafafa;
     border-radius: 3px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
 }
 
 .metadata-item strong {
-    color: #D84747;
+    color: #7a3c20;
     font-weight: bold;
     min-width: 80px;
 }
 
 /* Style fruit title to match label colors */
 .pin-popup .fruit-title {
-    color: #D84747 !important;
+    color: #7a3c20 !important;
     font-weight: bold !important;
     margin: 0 !important;
 }
@@ -314,7 +313,7 @@
 .metadata-item span {
     color: #333;
     text-align: right;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
 }
 
 /* Season badges — two states only */
@@ -350,9 +349,9 @@
 }
 
 .delete-pin-btn {
-    background-color: #d32f2f;
+    background-color: #3d5a3e;
     color: white;
-    border: 2px outset #d32f2f;
+    border: 2px outset #3d5a3e;
     border-radius: 4px;
     padding: 6px 12px;
     font-family: inherit;
@@ -363,11 +362,11 @@
 }
 
 .delete-pin-btn:hover {
-    background-color: #b71c1c;
+    background-color: #2e4530;
 }
 
 .delete-pin-btn:active {
-    border: 2px inset #d32f2f;
+    border: 2px inset #3d5a3e;
 }
 
 /* Mobile zoom controls positioning - avoid sidebar overlap */

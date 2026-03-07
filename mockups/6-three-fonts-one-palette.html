@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mockup 6: Four Fonts, One Palette</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,600;1,400&family=Zilla+Slab:ital,wght@0,400;0,600;1,400&family=Crete+Round:ital@0;1&family=Vollkorn:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 40px 24px 80px;
+      background: #14100c;
+      font-family: 'Helvetica Neue', sans-serif;
+    }
+    h1 { color: #e8dfc8; font-size: 18px; margin: 0 0 4px; font-family: 'Bitter', serif; }
+    .subtitle { color: #6a5e48; font-size: 11px; margin: 0 0 6px; font-family: monospace; }
+    .legend {
+      color: #5a5040; font-size: 10px; font-family: monospace;
+      margin: 0 0 10px; line-height: 1.8;
+      border-left: 2px solid #2a2010; padding-left: 12px;
+    }
+    .palette-strip { display: flex; gap: 6px; margin-bottom: 32px; align-items: center; }
+    .sw { width: 28px; height: 28px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.07); }
+    .sw-label { color: #4a4030; font-size: 9px; font-family: monospace; line-height: 1.4; margin-left: 2px; margin-right: 10px; }
+
+    .page-panels { display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start; }
+    .panel-col { display: flex; flex-direction: column; gap: 8px; width: 240px; }
+    .panel-name { color: #e8dfc8; font-size: 13px; font-weight: bold; }
+    .panel-desc { color: #7a6848; font-size: 10px; font-family: monospace; margin-bottom: 6px; line-height: 1.6; }
+
+    .device {
+      width: 260px; background: #0c0a08;
+      border-radius: 28px; padding: 20px 10px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.7), inset 0 0 0 1px #201a12;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .screen-label { color: #2a2010; font-size: 9px; font-family: monospace; text-align: center; margin-bottom: 1px; }
+    .view-label { color: #3a3020; font-size: 9px; font-family: monospace; text-align: center; text-transform: uppercase; letter-spacing: 1px; margin: 6px 0 2px; }
+    .screen { width: 240px; overflow: hidden; border-radius: 4px; }
+
+    /* ── Palette (P1/C: terracotta + wheat + olive) ── */
+    :root {
+      --primary:  #7a3c20;
+      --surface:  #f7f2e4;
+      --surface2: #f2ece0;
+      --border:   #c8b888;
+      --border2:  #d8c898;
+      --text:     #2b1a0e;
+      --muted:    #8a7050;
+      --olive:    #5c6b2e;
+      --del:      #5c3820;
+      --map1:     #d4c8a8;
+      --map2:     #bcb088;
+    }
+
+    /* ── Shared structure ── */
+    .map-bg {
+      background: linear-gradient(135deg, var(--map1), var(--map2));
+      display: flex; align-items: flex-start; justify-content: flex-start; width: 100%;
+    }
+    .sidebar {
+      width: calc(240px - 16px); box-sizing: border-box;
+      background: var(--surface); border: 2px solid var(--border); border-radius: 8px;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      box-shadow: 5px 6px 10px rgba(0,0,0,0.25); padding: 8px; margin: 8px;
+    }
+    .hdr-row { display: flex; align-items: center; justify-content: center; width: 100%; padding: 4px 0 7px; }
+    .hbtn {
+      background: transparent !important; border: none !important; border-radius: 0 !important;
+      width: 20px !important; height: 15px !important; padding: 0 !important;
+      flex-shrink: 0; cursor: pointer; display: flex; flex-direction: column;
+      justify-content: space-between; margin-right: 8px !important;
+    }
+    .hbtn span { display: block; width: 100%; height: 2px; background: var(--primary); }
+    .app-title { font-size: 1rem; font-weight: 600; color: var(--primary); margin: 0; }
+    .act-btns { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-bottom: 7px; width: 100%; }
+    .ubtn {
+      background-color: var(--primary); color: white;
+      padding: 10px 14px; margin: 2px; font-size: 0.9rem; font-weight: 400;
+      border: 2px outset var(--primary); border-radius: 4px; cursor: pointer;
+      width: 90%; box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .ulabel { font-size: 0.68rem; color: var(--muted); margin-bottom: 3px; }
+    .hdiv { width: 90%; border: none; border-top: 1px solid var(--border2); margin: 5px 0; }
+
+    /* popup */
+    .popup {
+      width: calc(240px - 16px); background: var(--surface);
+      border: 2px solid var(--border); border-radius: 8px; padding: 0;
+      box-shadow: 5px 6px 10px rgba(0,0,0,0.25); overflow: hidden; color: var(--text);
+    }
+    .phdr { padding: 8px; background: var(--surface2); border-bottom: 1px solid var(--border2); border-radius: 8px 8px 0 0; }
+    .ftitle { margin: 0; font-size: 1rem; font-weight: 600; color: var(--primary); }
+    .sbadge {
+      margin-top: 6px; padding: 3px 8px; border-radius: 3px; font-size: 0.72rem;
+      display: inline-block; background: rgba(122,60,32,0.1); color: #5a2810;
+      border: 1px solid rgba(122,60,32,0.3);
+    }
+    .pcont { padding: 8px; background: var(--surface); }
+    .nsec { margin-bottom: 8px; padding: 6px; background: var(--surface2); border-radius: 3px; border-left: 3px solid var(--olive); }
+    .nsec strong { font-size: 0.72rem; font-weight: 600; color: var(--olive); }
+    .pnotes { margin: 3px 0 0; font-size: 0.78rem; line-height: 1.35; font-style: italic; color: var(--text); }
+    .mgrid { display: grid; gap: 4px; }
+    .mitem { display: flex; justify-content: space-between; align-items: center; padding: 3px 5px; background: var(--surface2); border-radius: 3px; font-size: 0.72rem; }
+    .mitem strong { font-weight: 600; color: var(--primary); min-width: 52px; }
+    .mitem span { color: var(--text); text-align: right; font-size: 0.72rem; }
+    .pact { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border2); text-align: center; }
+    .dbtn {
+      background-color: var(--del); color: white;
+      border: 2px outset var(--del); border-radius: 4px;
+      padding: 10px 14px; font-size: 0.9rem; cursor: pointer; width: 90%;
+    }
+
+    /* ── Font overrides — applied via wrapper class ── */
+    .f-bitter, .f-bitter .app-title, .f-bitter .ubtn, .f-bitter .ulabel,
+    .f-bitter .ftitle, .f-bitter .sbadge, .f-bitter .nsec strong,
+    .f-bitter .pnotes, .f-bitter .mitem, .f-bitter .dbtn {
+      font-family: 'Bitter', serif;
+    }
+
+    .f-zilla, .f-zilla .app-title, .f-zilla .ubtn, .f-zilla .ulabel,
+    .f-zilla .ftitle, .f-zilla .sbadge, .f-zilla .nsec strong,
+    .f-zilla .pnotes, .f-zilla .mitem, .f-zilla .dbtn {
+      font-family: 'Zilla Slab', serif;
+    }
+
+    .f-crete, .f-crete .app-title, .f-crete .ubtn, .f-crete .ulabel,
+    .f-crete .ftitle, .f-crete .sbadge, .f-crete .nsec strong,
+    .f-crete .pnotes, .f-crete .mitem, .f-crete .dbtn {
+      font-family: 'Crete Round', serif;
+    }
+    /* Crete Round has no bold weight — compensate slightly */
+    .f-crete .app-title { letter-spacing: 0.01em; }
+    .f-crete .ftitle { letter-spacing: 0.01em; }
+    .f-crete .ubtn { font-size: 0.85rem; }  /* sits slightly larger optically */
+
+    .f-vollkorn, .f-vollkorn .app-title, .f-vollkorn .ubtn, .f-vollkorn .ulabel,
+    .f-vollkorn .ftitle, .f-vollkorn .sbadge, .f-vollkorn .nsec strong,
+    .f-vollkorn .pnotes, .f-vollkorn .mitem, .f-vollkorn .dbtn {
+      font-family: 'Vollkorn', serif;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Mockup 6 — Four Fonts, One Palette</h1>
+<p class="subtitle">Bitter · Zilla Slab · Crete Round · Vollkorn — all on P1 (terracotta + wheat + olive)</p>
+<div class="legend">
+  Palette locked to P1 throughout. Font is the only variable.<br>
+  Crete Round has no bold weight — titles use regular weight with slight tracking as compensation.
+</div>
+
+<!-- palette strip -->
+<div class="palette-strip">
+  <div class="sw" style="background:#7a3c20"></div><div class="sw-label">primary<br>#7a3c20</div>
+  <div class="sw" style="background:#f7f2e4"></div><div class="sw-label">surface<br>#f7f2e4</div>
+  <div class="sw" style="background:#5c6b2e"></div><div class="sw-label">notes<br>#5c6b2e</div>
+  <div class="sw" style="background:#5c3820"></div><div class="sw-label">delete<br>#5c3820</div>
+  <div class="sw" style="background:#c8b888"></div><div class="sw-label">border<br>#c8b888</div>
+</div>
+
+<div class="page-panels">
+
+  <!-- ═════ BITTER ═════ -->
+  <div class="panel-col">
+    <div class="panel-name">Bitter</div>
+    <div class="panel-desc">Sturdy slab · upright · clear at small sizes<br>Most "digital-friendly" of the three</div>
+    <div class="device">
+      <div class="screen-label">240px · Jelly Star</div>
+      <div class="view-label">sidebar</div>
+      <div class="screen" style="height:272px; overflow-y:auto;">
+        <div class="f-bitter map-bg" style="min-height:272px;">
+          <div class="sidebar">
+            <div class="hdr-row">
+              <button class="hbtn"><span></span><span></span><span></span></button>
+              <p class="app-title">loquat</p>
+            </div>
+            <hr class="hdiv">
+            <div class="act-btns">
+              <button class="ubtn f-bitter">home</button>
+              <button class="ubtn f-bitter">add fruit</button>
+              <button class="ubtn f-bitter">my pins</button>
+            </div>
+            <hr class="hdiv">
+            <div class="ulabel f-bitter">logged in as: user123</div>
+            <button class="ubtn f-bitter" style="margin-top:3px;">logout</button>
+          </div>
+        </div>
+      </div>
+      <div class="view-label">popup</div>
+      <div class="screen" style="height:286px; overflow-y:auto;">
+        <div class="f-bitter map-bg" style="min-height:286px; padding:8px; align-items:flex-start;">
+          <div class="popup">
+            <div class="phdr">
+              <h3 class="ftitle f-bitter">apple</h3>
+              <span class="sbadge f-bitter">in season</span>
+            </div>
+            <div class="pcont">
+              <div class="nsec">
+                <strong class="f-bitter">notes:</strong>
+                <p class="pnotes f-bitter">Large tree near the back fence. Fruit ready in October.</p>
+              </div>
+              <div class="mgrid">
+                <div class="mitem"><strong class="f-bitter">location:</strong><span class="f-bitter">37.77, −122.41</span></div>
+                <div class="mitem"><strong class="f-bitter">added by:</strong><span class="f-bitter">user123</span></div>
+                <div class="mitem"><strong class="f-bitter">date:</strong><span class="f-bitter">Jan 1 2026</span></div>
+              </div>
+              <div class="pact"><button class="dbtn f-bitter">delete pin</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════ ZILLA SLAB ═════ -->
+  <div class="panel-col">
+    <div class="panel-name">Zilla Slab</div>
+    <div class="panel-desc">Humanist slab · slightly rougher stroke<br>Feels closer to a field guide or trail map</div>
+    <div class="device">
+      <div class="screen-label">240px · Jelly Star</div>
+      <div class="view-label">sidebar</div>
+      <div class="screen" style="height:272px; overflow-y:auto;">
+        <div class="f-zilla map-bg" style="min-height:272px;">
+          <div class="sidebar">
+            <div class="hdr-row">
+              <button class="hbtn"><span></span><span></span><span></span></button>
+              <p class="app-title">loquat</p>
+            </div>
+            <hr class="hdiv">
+            <div class="act-btns">
+              <button class="ubtn f-zilla">home</button>
+              <button class="ubtn f-zilla">add fruit</button>
+              <button class="ubtn f-zilla">my pins</button>
+            </div>
+            <hr class="hdiv">
+            <div class="ulabel f-zilla">logged in as: user123</div>
+            <button class="ubtn f-zilla" style="margin-top:3px;">logout</button>
+          </div>
+        </div>
+      </div>
+      <div class="view-label">popup</div>
+      <div class="screen" style="height:286px; overflow-y:auto;">
+        <div class="f-zilla map-bg" style="min-height:286px; padding:8px; align-items:flex-start;">
+          <div class="popup">
+            <div class="phdr">
+              <h3 class="ftitle f-zilla">apple</h3>
+              <span class="sbadge f-zilla">in season</span>
+            </div>
+            <div class="pcont">
+              <div class="nsec">
+                <strong class="f-zilla">notes:</strong>
+                <p class="pnotes f-zilla">Large tree near the back fence. Fruit ready in October.</p>
+              </div>
+              <div class="mgrid">
+                <div class="mitem"><strong class="f-zilla">location:</strong><span class="f-zilla">37.77, −122.41</span></div>
+                <div class="mitem"><strong class="f-zilla">added by:</strong><span class="f-zilla">user123</span></div>
+                <div class="mitem"><strong class="f-zilla">date:</strong><span class="f-zilla">Jan 1 2026</span></div>
+              </div>
+              <div class="pact"><button class="dbtn f-zilla">delete pin</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════ CRETE ROUND ═════ -->
+  <div class="panel-col">
+    <div class="panel-name">Crete Round</div>
+    <div class="panel-desc">Rounded old-style · no bold weight<br>Most organic — terminal curves feel hand-pressed</div>
+    <div class="device">
+      <div class="screen-label">240px · Jelly Star</div>
+      <div class="view-label">sidebar</div>
+      <div class="screen" style="height:272px; overflow-y:auto;">
+        <div class="f-crete map-bg" style="min-height:272px;">
+          <div class="sidebar">
+            <div class="hdr-row">
+              <button class="hbtn"><span></span><span></span><span></span></button>
+              <p class="app-title">loquat</p>
+            </div>
+            <hr class="hdiv">
+            <div class="act-btns">
+              <button class="ubtn f-crete">home</button>
+              <button class="ubtn f-crete">add fruit</button>
+              <button class="ubtn f-crete">my pins</button>
+            </div>
+            <hr class="hdiv">
+            <div class="ulabel f-crete">logged in as: user123</div>
+            <button class="ubtn f-crete" style="margin-top:3px;">logout</button>
+          </div>
+        </div>
+      </div>
+      <div class="view-label">popup</div>
+      <div class="screen" style="height:286px; overflow-y:auto;">
+        <div class="f-crete map-bg" style="min-height:286px; padding:8px; align-items:flex-start;">
+          <div class="popup">
+            <div class="phdr">
+              <h3 class="ftitle f-crete">apple</h3>
+              <span class="sbadge f-crete">in season</span>
+            </div>
+            <div class="pcont">
+              <div class="nsec">
+                <strong class="f-crete">notes:</strong>
+                <p class="pnotes f-crete">Large tree near the back fence. Fruit ready in October.</p>
+              </div>
+              <div class="mgrid">
+                <div class="mitem"><strong class="f-crete">location:</strong><span class="f-crete">37.77, −122.41</span></div>
+                <div class="mitem"><strong class="f-crete">added by:</strong><span class="f-crete">user123</span></div>
+                <div class="mitem"><strong class="f-crete">date:</strong><span class="f-crete">Jan 1 2026</span></div>
+              </div>
+              <div class="pact"><button class="dbtn f-crete">delete pin</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════ VOLLKORN ═════ -->
+  <div class="panel-col">
+    <div class="panel-name">Vollkorn</div>
+    <div class="panel-desc">Old-style serif · ink-trap contrast<br>Most "typeset" — feels printed, not rendered</div>
+    <div class="device">
+      <div class="screen-label">240px · Jelly Star</div>
+      <div class="view-label">sidebar</div>
+      <div class="screen" style="height:272px; overflow-y:auto;">
+        <div class="f-vollkorn map-bg" style="min-height:272px;">
+          <div class="sidebar">
+            <div class="hdr-row">
+              <button class="hbtn"><span></span><span></span><span></span></button>
+              <p class="app-title">loquat</p>
+            </div>
+            <hr class="hdiv">
+            <div class="act-btns">
+              <button class="ubtn f-vollkorn">home</button>
+              <button class="ubtn f-vollkorn">add fruit</button>
+              <button class="ubtn f-vollkorn">my pins</button>
+            </div>
+            <hr class="hdiv">
+            <div class="ulabel f-vollkorn">logged in as: user123</div>
+            <button class="ubtn f-vollkorn" style="margin-top:3px;">logout</button>
+          </div>
+        </div>
+      </div>
+      <div class="view-label">popup</div>
+      <div class="screen" style="height:286px; overflow-y:auto;">
+        <div class="f-vollkorn map-bg" style="min-height:286px; padding:8px; align-items:flex-start;">
+          <div class="popup">
+            <div class="phdr">
+              <h3 class="ftitle f-vollkorn">apple</h3>
+              <span class="sbadge f-vollkorn">in season</span>
+            </div>
+            <div class="pcont">
+              <div class="nsec">
+                <strong class="f-vollkorn">notes:</strong>
+                <p class="pnotes f-vollkorn">Large tree near the back fence. Fruit ready in October.</p>
+              </div>
+              <div class="mgrid">
+                <div class="mitem"><strong class="f-vollkorn">location:</strong><span class="f-vollkorn">37.77, −122.41</span></div>
+                <div class="mitem"><strong class="f-vollkorn">added by:</strong><span class="f-vollkorn">user123</span></div>
+                <div class="mitem"><strong class="f-vollkorn">date:</strong><span class="f-vollkorn">Jan 1 2026</span></div>
+              </div>
+              <div class="pact"><button class="dbtn f-vollkorn">delete pin</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

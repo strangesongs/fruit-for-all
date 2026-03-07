@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mockup 7b: Terrain vs Watercolor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Vollkorn:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; padding: 40px 28px 80px; background: #14100c; font-family: 'Helvetica Neue', sans-serif; }
+    h1   { color: #e8dfc8; font-size: 18px; margin: 0 0 4px; font-family: 'Vollkorn', serif; }
+    .sub { color: #6a5e48; font-size: 11px; margin: 0 0 28px; font-family: monospace; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px 48px; max-width: 1200px; }
+    .panel { display: flex; flex-direction: column; gap: 7px; }
+    .panel-name { color: #e8dfc8; font-size: 13px; font-weight: bold; font-family: 'Vollkorn', serif; }
+    .tile-url { color: #4a6040; font-size: 9px; font-family: monospace; word-break: break-all; line-height: 1.5; }
+    .panel-desc { color: #7a6848; font-size: 10px; font-family: monospace; line-height: 1.6; }
+    .harmony-tag { display: inline-block; font-size: 9px; font-family: monospace; padding: 1px 6px; border-radius: 2px; }
+    .good { background: rgba(61,90,62,0.25); color: #7ab87a; border: 1px solid #3d5a3e; }
+    .note { background: rgba(90,70,30,0.25); color: #c8a878; border: 1px solid #7a5020; }
+    .map-wrap { width: 100%; height: 460px; border-radius: 6px; overflow: hidden; position: relative; border: 2px solid #2a2010; margin-top: 4px; }
+    .leaflet-map { width: 100%; height: 100%; }
+    .hbtn {
+      position: absolute; top: 10px; left: 10px;
+      background: #f7f2e4; border: 2px solid #c8b888; border-radius: 4px;
+      padding: 7px 8px; box-shadow: 2px 3px 8px rgba(0,0,0,0.35);
+      cursor: pointer; display: flex; flex-direction: column;
+      justify-content: space-between; gap: 4px;
+      width: 36px; height: 32px; z-index: 1000;
+    }
+    .hbtn span { display: block; width: 100%; height: 2px; background: #7a3c20; border-radius: 1px; }
+    .foot { margin-top: 36px; border-top: 1px solid #2a2010; padding-top: 16px; max-width: 1200px; color: #4a4030; font-size: 9.5px; font-family: monospace; line-height: 2; }
+    .foot span { color: #9a8060; }
+    .foot code { color: #5a7040; }
+  </style>
+</head>
+<body>
+
+<h1>Mockup 7b — Terrain vs. Watercolor</h1>
+<p class="sub">Stadia Stamen tiles. Centered on SF Mission/Noe Valley (37.7684, -122.4053) zoom 14 — from your Stamen link.</p>
+
+<div class="grid">
+
+  <div class="panel">
+    <div class="panel-name">Stadia Stamen Terrain</div>
+    <span class="harmony-tag good">earthy greens, readable street detail</span>
+    <div class="tile-url">https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png</div>
+    <div class="panel-desc">Crisp topology-style — streets legible, parks sage green, terrain shading. Good contrast for the terracotta pins.</div>
+    <div class="map-wrap">
+      <div id="map-terrain" class="leaflet-map"></div>
+      <div class="hbtn"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-name">Stadia Stamen Watercolor</div>
+    <span class="harmony-tag note">painterly — check if pins stay readable</span>
+    <div class="tile-url">https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg</div>
+    <div class="panel-desc">Watercolour washes, very atmospheric. Streets soft/less legible. The question is whether the terracotta pins read clearly enough against it.</div>
+    <div class="map-wrap">
+      <div id="map-watercolor" class="leaflet-map"></div>
+      <div class="hbtn"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="foot">
+  <span>Both tiles:</span> © Stamen Design, hosted by Stadia Maps — free tier at stadiamaps.com, API key required for production (<code>?api_key=YOUR_KEY</code>)<br>
+  <span>Base data:</span> © OpenStreetMap contributors
+</div>
+
+<script>
+  var centre = [37.7684, -122.4053];
+  var zoom = 14;
+
+  var pinIcon = L.divIcon({
+    className: '',
+    html: '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"><path fill="#7a3c20" stroke="#3a1008" stroke-width="0.8" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/></svg>',
+    iconSize: [28, 28], iconAnchor: [14, 28],
+  });
+
+  var pins = [
+    [37.7684, -122.4053],
+    [37.7720, -122.4120],
+    [37.7620, -122.3980],
+    [37.7750, -122.4300],
+    [37.7580, -122.4180],
+  ];
+
+  function makeMap(id, url, attr) {
+    var m = L.map(id, { center: centre, zoom: zoom, zoomControl: false });
+    L.tileLayer(url, { attribution: attr, maxZoom: 19 }).addTo(m);
+    L.control.zoom({ position: 'bottomright' }).addTo(m);
+    pins.forEach(function(p) { L.marker(p, { icon: pinIcon }).addTo(m); });
+  }
+
+  makeMap('map-terrain',
+    'https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png',
+    '&copy; <a href="https://stadiamaps.com/">Stadia</a> &copy; <a href="https://stamen.com">Stamen</a> &copy; <a href="https://openstreetmap.org">OSM</a>');
+
+  makeMap('map-watercolor',
+    'https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg',
+    '&copy; <a href="https://stadiamaps.com/">Stadia</a> &copy; <a href="https://stamen.com">Stamen</a> &copy; <a href="https://openstreetmap.org">OSM</a>');
+</script>
+
+</body>
+</html>

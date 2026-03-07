@@ -1,15 +1,17 @@
 
 :root {
-    --red:       #D84747;
-    --red-dark:  #C23939;
-    --red-deep:  #8B1A1A;
-    --text:      #333;
-    --text-muted:#666;
+    --red:       #7a3c20;
+    --red-dark:  #5c3018;
+    --red-deep:  #3d2010;
+    --text:      #2b1a0e;
+    --text-muted:#8a7050;
     --text-faint:#999;
-    --surface:   #fafafa;
-    --card:      #f0f0f0;
-    --border:    #e0e0e0;
-    --font:      'EB Garamond', serif;
+    --surface:   #f7f2e4;
+    --card:      #f2ece0;
+    --border:    #c8b888;
+    --font:      'Vollkorn', serif;
+    --olive:     #5c6b2e;
+    --del:       #3d5a3e;
 }
 
 html, body {
@@ -26,7 +28,7 @@ html, body {
     width: 100vw;
     min-width: 240px;
     min-height: 320px;
-    background: #fafafa;
+    background: var(--surface);
 }
 
 .sidebar {
@@ -62,11 +64,11 @@ html, body {
 button, .action-btn {
     background-color: var(--red);
     color: white;
-    padding: 6px 12px;
+    padding: 10px 14px;
     margin: 3px;
     margin-top: 6px;
     font-family: inherit;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     font-weight: normal;
     border: 2px outset var(--red);
     border-radius: 4px;
@@ -89,19 +91,19 @@ button:not(.hamburger-btn):active, .action-btn:active {
 }
 
 .btn-active {
-    background-color: #8B1A1A !important;
-    border: 2px inset #D84747 !important;
+    background-color: var(--red-deep) !important;
+    border: 2px inset var(--red) !important;
 }
 
 .add-fruit-btn {
-    background-color: #D84747;
-    border-color: #D84747;
-    font-size: 0.8rem;
-    padding: 6px 12px;
+    background-color: var(--red);
+    border-color: var(--red);
+    font-size: 0.9rem;
+    padding: 10px 14px;
 }
 
 .add-fruit-btn:active {
-    border: 2px inset #D84747;
+    border: 2px inset var(--red);
 }
 
 .saved-pins, .ready-fruit {
@@ -148,7 +150,7 @@ li {
     padding-top: 8px;
     padding-bottom: 10px;
     flex: 0 0 auto;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--border);
 }
 
 .header-section p {
@@ -192,22 +194,13 @@ li {
     font-size: 0.9rem;
     border: 2px solid var(--border);
     border-radius: 4px;
-    background: #fafafa;
-    box-sizing: border-box;
-    transition: all 0.2s ease;
-    text-align: center;
-}
-
-.auth-section .form-group input::placeholder {
-    text-align: center;
+        background: var(--surface);
     color: #999;
 }
 
 .auth-section .form-group input:focus {
     outline: none;
-    border-color: #D84747;
-    background-color: white;
-}
+        border-color: var(--red);
 
 .auth-section .form-group input:disabled {
     opacity: 0.6;
@@ -322,7 +315,7 @@ li {
 
 .about-panel h3.about-title {
     font-size: 1rem;
-    color: #C23939;
+    color: var(--red-dark);
     margin: 0 0 12px 0;
     font-weight: 600;
 }
@@ -338,7 +331,7 @@ li {
 }
 
 .about-link-ext {
-    color: #D84747;
+    color: var(--red);
     text-decoration: none;
 }
 
@@ -370,16 +363,16 @@ li {
 }
 
 .logout-btn {
-    background-color: #D84747;
-    border-color: #D84747;
+    background-color: var(--red);
+    border-color: var(--red);
 }
 
 .logout-btn:hover {
-    background-color: #C23939;
+    background-color: var(--red-dark);
 }
 
 .logout-btn:active {
-    border: 2px inset #D84747;
+    border: 2px inset var(--red);
 }
 
 .lil-fruit {
@@ -462,7 +455,7 @@ li {
 
 .notes-popup h4 {
     margin-top: 0;
-    color: #D84747;
+    color: var(--red);
     font-size: 0.9rem;
 }
 
@@ -520,15 +513,15 @@ li {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 15px;
-    border-bottom: 1px solid #e0e0e0;
-    background-color: #fafafa;
+    padding: 8px 15px;
+    border-bottom: 1px solid var(--border);
+    background-color: var(--card);
     border-radius: 6px 6px 0 0;
 }
 
 .popup-header h4 {
     margin: 0;
-    color: #D84747;
+    color: var(--red);
     font-size: 1rem;
     font-weight: 600;
 }
@@ -550,7 +543,7 @@ li {
 }
 
 .popup-content {
-    padding: 12px 15px;
+    padding: 8px 15px;
 }
 
 .popup-section {
@@ -657,16 +650,16 @@ li {
 }
 
 .submit-btn {
-    background-color: #D84747;
-    border-color: #D84747;
+    background-color: var(--red);
+    border-color: var(--red);
 }
 
 .submit-btn:hover {
-    background-color: #C23939;
+    background-color: var(--red-dark);
 }
 
 .submit-btn:active {
-    border: 2px inset #D84747;
+    border: 2px inset var(--red);
 }
 
 .submit-btn:disabled {
@@ -769,8 +762,8 @@ li {
     }
     
     button, .action-btn {
-        font-size: 0.75rem;
-        padding: 5px 10px;
+        font-size: 0.8rem;
+        padding: 6px 10px;
     }
 }
 
@@ -901,8 +894,8 @@ li {
     }
 
     button, .action-btn {
-        font-size: 0.7rem;
-        padding: 5px 8px;
+        font-size: 0.75rem;
+        padding: 6px 8px;
     }
 
     .lil-fruit {

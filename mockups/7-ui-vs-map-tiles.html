@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mockup 7: Map Tiles</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Vollkorn:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 40px 24px 80px;
+      background: #14100c;
+      font-family: 'Helvetica Neue', sans-serif;
+    }
+    h1   { color: #e8dfc8; font-size: 18px; margin: 0 0 4px; font-family: 'Vollkorn', serif; }
+    .sub { color: #6a5e48; font-size: 11px; margin: 0 0 24px; font-family: monospace; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 36px 48px;
+      max-width: 940px;
+    }
+    .panel { display: flex; flex-direction: column; gap: 6px; }
+    .panel-name { color: #e8dfc8; font-size: 13px; font-weight: bold; font-family: 'Vollkorn', serif; }
+    .tile-url { color: #4a6040; font-size: 9px; font-family: monospace; word-break: break-all; line-height: 1.5; }
+    .panel-desc { color: #7a6848; font-size: 10px; font-family: monospace; line-height: 1.6; }
+    .harmony-tag {
+      display: inline-block; font-size: 9px; font-family: monospace;
+      padding: 1px 6px; border-radius: 2px;
+    }
+    .good { background: rgba(61,90,62,0.25);  color: #7ab87a; border: 1px solid #3d5a3e; }
+    .ok   { background: rgba(122,96,32,0.2);  color: #c8a060; border: 1px solid #7a6020; }
+
+    /* ── Map viewport — full width, map fills it, hamburger floats ── */
+    .map {
+      width: 100%; height: 300px;
+      border-radius: 6px; overflow: hidden;
+      position: relative;
+      border: 2px solid #2a2010;
+      margin-top: 4px;
+    }
+
+    /* ── Tile simulations ── */
+    .osm {
+      background-color: #aad3df;
+      background-image:
+        repeating-linear-gradient(45deg,  rgba(255,255,200,0.35) 0, rgba(255,255,200,0.35) 1px, transparent 1px, transparent 18px),
+        repeating-linear-gradient(-30deg, rgba(255,255,255,0.12) 0, rgba(255,255,255,0.12) 1px, transparent 1px, transparent 26px),
+        radial-gradient(ellipse 42% 35% at 72% 35%, rgba(170,210,120,0.75) 0%, transparent 100%),
+        radial-gradient(ellipse 28% 38% at 18% 68%, rgba(140,200,100,0.65) 0%, transparent 100%),
+        radial-gradient(ellipse 25% 20% at 50% 80%, rgba(160,210,110,0.5)  0%, transparent 100%),
+        linear-gradient(160deg, #aad3df 0%, #9dc9d8 45%, #b8d8e8 100%);
+    }
+    .positron {
+      background-color: #f5f5f2;
+      background-image:
+        repeating-linear-gradient(0deg,  rgba(170,170,170,0.22) 0, rgba(170,170,170,0.22) 1px, transparent 1px, transparent 22px),
+        repeating-linear-gradient(90deg, rgba(170,170,170,0.14) 0, rgba(170,170,170,0.14) 1px, transparent 1px, transparent 32px),
+        repeating-linear-gradient(35deg, rgba(150,150,150,0.10) 0, rgba(150,150,150,0.10) 1px, transparent 1px, transparent 44px),
+        linear-gradient(180deg, #f8f8f6 0%, #f0f0ec 100%);
+    }
+    .topo {
+      background-color: #d8cba8;
+      background-image:
+        repeating-linear-gradient(18deg,  rgba(110,75,35,0.13) 0, rgba(110,75,35,0.13) 1px, transparent 1px, transparent 14px),
+        repeating-linear-gradient(108deg, rgba(110,75,35,0.07) 0, rgba(110,75,35,0.07) 1px, transparent 1px, transparent 22px),
+        radial-gradient(ellipse 55% 38% at 62% 42%, rgba(148,168,108,0.65) 0%, transparent 100%),
+        radial-gradient(ellipse 38% 52% at 14% 66%, rgba(128,158,88,0.55)  0%, transparent 100%),
+        radial-gradient(ellipse 32% 26% at 84% 75%, rgba(140,165,100,0.5)  0%, transparent 100%),
+        linear-gradient(160deg, #ddd0aa 0%, #ccc098 50%, #c8b888 100%);
+    }
+    .terrain {
+      background-color: #c8d4a8;
+      background-image:
+        repeating-linear-gradient(28deg,  rgba(70,55,18,0.11) 0, rgba(70,55,18,0.11) 1px, transparent 1px, transparent 16px),
+        repeating-linear-gradient(118deg, rgba(70,55,18,0.07) 0, rgba(70,55,18,0.07) 1px, transparent 1px, transparent 26px),
+        radial-gradient(ellipse 58% 42% at 56% 36%, rgba(108,138,78,0.72) 0%, transparent 100%),
+        radial-gradient(ellipse 44% 58% at 19% 62%, rgba(98,130,68,0.65)  0%, transparent 100%),
+        radial-gradient(ellipse 34% 30% at 80% 72%, rgba(120,148,88,0.55) 0%, transparent 100%),
+        linear-gradient(150deg, #d4dcc0 0%, #c0cc98 50%, #b8c088 100%);
+    }
+
+    /* ── Floating hamburger (the only UI element visible on map) ── */
+    .hbtn {
+      position: absolute;
+      top: 10px; left: 10px;
+      background: #f7f2e4;
+      border: 2px solid #c8b888;
+      border-radius: 4px;
+      padding: 7px 8px;
+      box-shadow: 2px 3px 8px rgba(0,0,0,0.35);
+      cursor: pointer;
+      display: flex; flex-direction: column;
+      justify-content: space-between; gap: 4px;
+      width: 36px; height: 32px;
+      z-index: 10;
+    }
+    .hbtn span { display: block; width: 100%; height: 2px; background: #7a3c20; }
+
+    /* ── Fake pins ── */
+    .pin { position: absolute; width: 22px; height: 22px; }
+    .pin svg { width: 22px; height: 22px; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.4)); }
+
+    /* ── Leaflet zoom ── */
+    .zoom {
+      position: absolute; bottom: 28px; right: 10px;
+      display: flex; flex-direction: column;
+      border: 1px solid #c8b888; border-radius: 3px;
+      overflow: hidden; box-shadow: 1px 2px 4px rgba(0,0,0,0.3);
+    }
+    .zoom button {
+      background: #f7f2e4; color: #2b1a0e;
+      border: none; border-bottom: 1px solid #c8b888;
+      width: 26px; height: 26px; font-size: 16px; line-height: 1;
+      cursor: pointer; padding: 0; font-family: sans-serif;
+    }
+    .zoom button:last-child { border-bottom: none; }
+
+    /* ── Attribution bar ── */
+    .attr {
+      position: absolute; bottom: 0; right: 0;
+      background: rgba(255,255,255,0.72);
+      font-size: 8px; font-family: monospace;
+      color: #444; padding: 2px 6px;
+      border-top-left-radius: 3px;
+    }
+    .attr a { color: #555; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<h1>Mockup 7 — Map Tiles</h1>
+<p class="sub">What users see first: floating hamburger on the map. Vollkorn · P1 palette.</p>
+
+<div class="grid">
+
+  <!-- 1. OSM -->
+  <div class="panel">
+    <div class="panel-name">1 — OSM Standard (current)</div>
+    <span class="harmony-tag ok">workable — blue water fights the earthy palette</span>
+    <div class="tile-url">https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png</div>
+    <div class="panel-desc">Saturated blues + park greens. No API key.</div>
+    <div class="map osm">
+      <div class="hbtn"><span></span><span></span><span></span></div>
+      <div class="pin" style="top:36%;left:42%"><svg viewBox="0 0 24 24" fill="#7a3c20"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/></svg></div>
+      <div class="pin" style="top:54%;left:60%"><svg viewBox="0 0 24 24" fill="#7a3c20"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/></svg></div>
+      <div class="pin" style="top:20%;left:65%"><svg viewBox="0 0 24 24" fill="#7a3c20"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/></svg></div>
+      <div class="pin" style="top:65%;left:28%"><svg viewBox="0 0 24 24" fill="#7a3c20"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/></svg></div>
+      <div class="zoom"><button>+</button><button>−</button></div>
+      <div class="attr">© <a href="#">OpenStreetMap</a> contributors</div>
+    </div>
+  </div>
+
+  <!-- 2. Positron -->
+  <div class="panel">
+    <div class="panel-name">2 — CartoDB Positron</div>
+    <span class="harmony-tag good">great — neutral, pins + button pop clearly</span>
+    <div class="tile-url">https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png</div>
+    <div class="panel-desc">Near-white, minimal colour. No API key.</div>
+    <div class="map positron">
+      <div class="hbtn"><span></span><span></span><span></span></div>
+      <div class="pin" style="top:36%;left:42%"><svg viewBox="0 0 24 24" fill="#7a3c20"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/></svg></div>
+      <div class="pin" style="top:54%;left:60%"><svg viewBox="0 0 24 24" fill="#7a3c20"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/></svg></div>
+      <div class="pin" style="top:20%;left:65%"><svg viewBox="0 0 24 24" fill="#7a3c20"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/></svg></div>
+      <div class="pin" style="top:65%;left:28%"><svg viewBox="0 0 24 24" fill="#7a3c20"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/></svg></div>
+      <div class="zoom"><button>+</button><button>−</button></div>
+      <div class="attr">© <a href="#">CARTO</a> © <a href="#">OpenStreetMap</a></div>
+    </div>
+  </div>
+
+  <!-- 3. OpenTopoMap -->
+  <div class="panel">
+    <div class="panel-name">3 — OpenTopoMap</div>
+    <span class="harmony-tag good">great — shares the earthy palette exactly</span>
+    <div class="tile-url">https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png</div>
+    <div class="panel-desc">Earthy tans, sage greens, contour lines. No API key. CC-BY-SA.</div>
+    <div class="map topo">
+      <div class="hbtn"><span></span><span></span><span></span></div>
+      <div class="pin" style="top:36%;left:42%"><svg viewBox="0 0 24 24" fill="#7a3c20"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/></svg></div>
+      <div class="pin" style="top:54%;left:60%"><svg viewBox="0 0 24 24" fill="#7a3c20"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/></svg></div>
+      <div class="pin" style="top:20%;left:65%"><svg viewBox="0 0 24 24" fill="#7a3c20"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/></svg></div>
+      <div class="pin" style="top:65%;left:28%"><svg viewBox="0 0 24 24" fill="#7a3c20"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/></svg></div>
+      <div class="zoom"><button>+</button><button>−</button></div>
+      <div class="attr">© <a href="#">OpenStreetMap</a> · © <a href="#">OpenTopoMap</a></div>
+    </div>
+  </div>
+
+  <!-- 4. Stadia Terrain -->
+  <div class="panel">
+    <div class="panel-name">4 — Stadia Stamen Terrain</div>
+    <span class="harmony-tag good">great — earthy greens, more illustrated feel</span>
+    <div class="tile-url">https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png</div>
+    <div class="panel-desc">Hand-drawn-feeling earthy greens + cream. Free Stadia API key required.</div>
+    <div class="map terrain">
+      <div class="hbtn"><span></span><span></span><span></span></div>
+      <div class="pin" style="top:36%;left:42%"><svg viewBox="0 0 24 24" fill="#7a3c20"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/></svg></div>
+      <div class="pin" style="top:54%;left:60%"><svg viewBox="0 0 24 24" fill="#7a3c20"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/></svg></div>
+      <div class="pin" style="top:20%;left:65%"><svg viewBox="0 0 24 24" fill="#7a3c20"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/></svg></div>
+      <div class="pin" style="top:65%;left:28%"><svg viewBox="0 0 24 24" fill="#7a3c20"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/></svg></div>
+      <div class="zoom"><button>+</button><button>−</button></div>
+      <div class="attr">© <a href="#">Stadia</a> © <a href="#">Stamen</a> © <a href="#">OSM</a></div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:36px; border-top:1px solid #2a2010; padding-top:16px; max-width:940px;">
+  <p style="color:#4a4030; font-size:9.5px; font-family:monospace; line-height:2; margin:0;">
+    OSM, CartoDB Positron, and OpenTopoMap: no API key required, free.
+    Stadia Stamen Terrain: free tier available at stadiamaps.com — requires API key appended as <code style="color:#5a7040;">?api_key=YOUR_KEY</code>.
+    OpenTopoMap tiles can be slower at high zoom; best at city/neighbourhood scale.
+  </p>
+</div>
+
+</body>
+</html>

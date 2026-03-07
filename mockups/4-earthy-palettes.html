@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mockup 4: Earthy Palettes (Bitter)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 40px 24px 80px;
+      background: #181510;
+      font-family: 'Helvetica Neue', sans-serif;
+    }
+    h1 { color: #e8dfc8; font-size: 18px; margin: 0 0 4px; font-family: 'Bitter', serif; }
+    .subtitle { color: #7a6e58; font-size: 12px; margin: 0 0 6px; font-family: monospace; }
+    .context-note {
+      color: #6a6050; font-size: 11px; font-family: monospace;
+      margin: 0 0 36px; max-width: 700px; line-height: 1.7;
+      border-left: 2px solid #3a3020; padding-left: 12px;
+    }
+    .page-panels { display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start; }
+    .palette-col { display: flex; flex-direction: column; gap: 10px; }
+    .palette-name { color: #e8dfc8; font-size: 13px; font-family: 'Bitter', serif; font-weight: bold; }
+    .palette-desc { color: #7a6e58; font-size: 10px; font-family: monospace; margin-bottom: 2px; line-height: 1.6; }
+    .palette-swatches { display: flex; gap: 4px; margin-bottom: 8px; }
+    .swatch {
+      width: 18px; height: 18px; border-radius: 2px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .device {
+      width: 260px; background: #0e0b08;
+      border-radius: 28px; padding: 20px 10px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.7), inset 0 0 0 1px #2a2418;
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+    }
+    .screen-label { color: #3a3020; font-size: 10px; font-family: monospace; text-align: center; margin-bottom: 2px; }
+    .view-label { color: #4a4030; font-size: 9px; font-family: monospace; text-align: center; text-transform: uppercase; letter-spacing: 1px; margin-top: 6px; margin-bottom: 2px; }
+    .screen { width: 240px; overflow: hidden; border-radius: 4px; }
+
+    /* ── Shared structural CSS (all palettes) ── */
+    .loquat-ui {
+      font-family: 'Bitter', serif;
+      width: 100%;
+    }
+    .map-bg {
+      display: flex; align-items: flex-start;
+      justify-content: flex-start; width: 100%;
+    }
+    .sidebar {
+      width: calc(240px - 16px);
+      box-sizing: border-box;
+      border-radius: 8px;
+      display: flex; flex-direction: column;
+      align-items: center; text-align: center;
+      box-shadow: 5px 6px 10px rgba(0,0,0,0.3);
+      padding: 8px; margin: 8px;
+      border-width: 2px; border-style: solid;
+    }
+    .sidebar-header-row {
+      display: flex; align-items: center;
+      justify-content: center; width: 100%;
+      padding: 4px 0 8px;
+    }
+    .hamburger-btn {
+      background: transparent !important;
+      border: none !important; border-radius: 0 !important;
+      width: 20px !important; height: 16px !important;
+      padding: 0 !important; flex-shrink: 0;
+      cursor: pointer; display: flex;
+      flex-direction: column; justify-content: space-between;
+      margin-right: 8px !important;
+    }
+    .hamburger-btn span { display: block; width: 100%; height: 2px; }
+    .app-title { font-size: 1rem; font-weight: bold; margin: 0; font-family: 'Bitter', serif; }
+    .action-buttons {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 4px;
+      margin-bottom: 8px; width: 100%;
+    }
+    .ui-btn {
+      color: white;
+      padding: 10px 14px;
+      margin: 2px;
+      font-family: 'Bitter', serif;
+      font-size: 0.9rem;
+      font-weight: 400;
+      border-radius: 4px; cursor: pointer;
+      width: 90%; box-sizing: border-box;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      border-width: 2px; border-style: outset;
+    }
+    .user-label { font-size: 0.7rem; margin-bottom: 4px; font-family: 'Bitter', serif; }
+    .divider { width: 90%; border: none; margin: 6px 0; border-top-width: 1px; border-top-style: solid; }
+    /* popup */
+    .pin-popup {
+      width: calc(240px - 16px);
+      background: white;
+      border-radius: 8px; padding: 0;
+      box-shadow: 5px 6px 10px rgba(0,0,0,0.28);
+      overflow: hidden; font-family: 'Bitter', serif;
+      border-width: 2px; border-style: solid;
+    }
+    .popup-header {
+      padding: 8px;
+      border-bottom-width: 1px; border-bottom-style: solid;
+      border-radius: 8px 8px 0 0;
+    }
+    .fruit-title { margin: 0; font-size: 1rem; font-weight: bold; font-family: 'Bitter', serif; }
+    .season-badge {
+      margin-top: 6px; padding: 3px 8px;
+      border-radius: 3px; font-size: 0.72rem;
+      display: inline-block; border-width: 1px; border-style: solid;
+      font-family: 'Bitter', serif;
+    }
+    .popup-content { padding: 8px; }
+    .notes-section {
+      margin-bottom: 8px; padding: 6px;
+      border-radius: 3px;
+      border-left-width: 3px; border-left-style: solid;
+    }
+    .notes-section strong { font-size: 0.72rem; font-weight: bold; font-family: 'Bitter', serif; }
+    .pin-notes { margin: 3px 0 0; font-size: 0.8rem; line-height: 1.35; font-style: italic; font-family: 'Bitter', serif; }
+    .metadata-grid { display: grid; gap: 4px; }
+    .metadata-item {
+      display: flex; justify-content: space-between;
+      align-items: center; padding: 3px 5px;
+      border-radius: 3px; font-size: 0.72rem;
+      font-family: 'Bitter', serif;
+    }
+    .metadata-item strong { font-weight: bold; min-width: 55px; }
+    .metadata-item span { text-align: right; font-size: 0.72rem; }
+    .pin-actions { margin-top: 8px; padding-top: 8px; border-top-width: 1px; border-top-style: solid; text-align: center; }
+    .delete-btn {
+      color: white;
+      border-radius: 4px;
+      padding: 10px 14px;
+      font-family: 'Bitter', serif;
+      font-size: 0.9rem; cursor: pointer; width: 90%;
+      border-width: 2px; border-style: outset;
+    }
+
+    /* ══════════════════════════════════════════════
+       PALETTE A — "Whole Earth Catalog"
+       Deep forest green primary, newsprint cream bg,
+       warm black text, ochre accents
+    ══════════════════════════════════════════════ */
+    .pa-map   { background: linear-gradient(135deg, #c8cbb8 0%, #b8bba8 40%, #a8ab98 100%); }
+    .pa-side  { background: #ede8dc; border-color: #b0a888; }
+    .pa-ham span { background-color: #3d5a3e; }
+    .pa-title { color: #3d5a3e; }
+    .pa-divider { border-top-color: #c8c0a8; }
+    .pa-user  { color: #7a6e50; }
+    .pa-btn   { background-color: #3d5a3e; border-color: #3d5a3e; }
+    .pa-btn:hover { background-color: #2e4430; }
+    .pa-popup { background: #fffef8; border-color: #b0a888; }
+    .pa-hdr   { background: #f5f0e4; border-bottom-color: #d4ccb4; }
+    .pa-ftitle { color: #3d5a3e; }
+    .pa-badge { background: rgba(61,90,62,0.1); color: #2a4020; border-color: rgba(61,90,62,0.3); }
+    .pa-content { background: #fffef8; }
+    .pa-notes { background: #f5f0e4; border-left-color: #3d5a3e; }
+    .pa-nlabel { color: #3d5a3e; }
+    .pa-ntext  { color: #2a2118; }
+    .pa-meta  { background: #f5f0e4; }
+    .pa-mlabel { color: #3d5a3e; }
+    .pa-mval  { color: #2a2118; }
+    .pa-actions { border-top-color: #d4ccb4; }
+    .pa-del   { background-color: #5c3320; border-color: #5c3320; }
+
+    /* ══════════════════════════════════════════════
+       PALETTE B — "L.L. Bean / Field Catalog"
+       Deep navy/indigo action, canvas bg,
+       dark brown text, brick red delete
+    ══════════════════════════════════════════════ */
+    .pb-map   { background: linear-gradient(135deg, #cdd4c0 0%, #bdc4b0 40%, #adb4a0 100%); }
+    .pb-side  { background: #f2ede0; border-color: #c0b498; }
+    .pb-ham span { background-color: #2c3e2c; }
+    .pb-title { color: #2c3e2c; }
+    .pb-divider { border-top-color: #d0c4a8; }
+    .pb-user  { color: #7a6848; }
+    .pb-btn   { background-color: #2c3e2c; border-color: #2c3e2c; }
+    .pb-popup { background: #fdfaf3; border-color: #c0b498; }
+    .pb-hdr   { background: #f0ebe0; border-bottom-color: #d0c4a8; }
+    .pb-ftitle { color: #2c3e2c; }
+    .pb-badge { background: rgba(44,62,44,0.08); color: #1a2c1a; border-color: rgba(44,62,44,0.25); }
+    .pb-content { background: #fdfaf3; }
+    .pb-notes { background: #f0ebe0; border-left-color: #2c3e2c; }
+    .pb-nlabel { color: #2c3e2c; }
+    .pb-ntext  { color: #1a1209; }
+    .pb-meta  { background: #f0ebe0; }
+    .pb-mlabel { color: #2c3e2c; }
+    .pb-mval  { color: #1a1209; }
+    .pb-actions { border-top-color: #d0c4a8; }
+    .pb-del   { background-color: #7a2e2e; border-color: #7a2e2e; }
+
+    /* ══════════════════════════════════════════════
+       PALETTE C — "Seed Packet / Terracotta"
+       Deep brick/terracotta primary, warm wheat bg,
+       espresso text, olive accent on notes
+    ══════════════════════════════════════════════ */
+    .pc-map   { background: linear-gradient(135deg, #d4c8a8 0%, #c8bc98 40%, #bcb088 100%); }
+    .pc-side  { background: #f7f2e4; border-color: #c8b888; }
+    .pc-ham span { background-color: #7a3c20; }
+    .pc-title { color: #7a3c20; }
+    .pc-divider { border-top-color: #d8c898; }
+    .pc-user  { color: #8a7050; }
+    .pc-btn   { background-color: #7a3c20; border-color: #7a3c20; }
+    .pc-popup { background: #fdf9f0; border-color: #c8b888; }
+    .pc-hdr   { background: #f2ece0; border-bottom-color: #d8c898; }
+    .pc-ftitle { color: #7a3c20; }
+    .pc-badge { background: rgba(122,60,32,0.1); color: #5a2810; border-color: rgba(122,60,32,0.3); }
+    .pc-content { background: #fdf9f0; }
+    .pc-notes { background: #f2ece0; border-left-color: #5c6b2e; }  /* olive accent on notes */
+    .pc-nlabel { color: #5c6b2e; }
+    .pc-ntext  { color: #2b1a0e; }
+    .pc-meta  { background: #f2ece0; }
+    .pc-mlabel { color: #7a3c20; }
+    .pc-mval  { color: #2b1a0e; }
+    .pc-actions { border-top-color: #d8c898; }
+    .pc-del   { background-color: #5c3820; border-color: #5c3820; }
+  </style>
+</head>
+<body>
+
+<h1>Mockup 4 — Earthy Palettes</h1>
+<p class="subtitle">Bitter · chunky buttons · compact popup · three color directions</p>
+<p class="context-note">
+  All palettes move away from digital red (#D84747 / white) toward print-era tones.<br>
+  A: WEC forest green + newsprint cream &nbsp;·&nbsp; B: field catalog navy + canvas &nbsp;·&nbsp; C: terracotta/brick + wheat, olive note accent<br>
+  Compare with mockup 3-A (Bitter + current red) open alongside this tab.
+</p>
+
+<div class="page-panels">
+
+  <!-- ══ PALETTE A ══ -->
+  <div class="palette-col">
+    <div class="palette-name">A — Whole Earth</div>
+    <div class="palette-desc">
+      Forest green primary · newsprint cream bg<br>
+      warm black text · dark brick delete
+    </div>
+    <div class="palette-swatches">
+      <div class="swatch" style="background:#3d5a3e;" title="#3d5a3e primary"></div>
+      <div class="swatch" style="background:#ede8dc;" title="#ede8dc surface"></div>
+      <div class="swatch" style="background:#2a2118;" title="#2a2118 text"></div>
+      <div class="swatch" style="background:#5c3320;" title="#5c3320 delete"></div>
+      <div class="swatch" style="background:#b0a888;" title="#b0a888 border"></div>
+    </div>
+    <div class="device">
+      <div class="screen-label">240px · Jelly Star</div>
+      <div class="view-label">sidebar</div>
+      <div class="screen" style="height:278px; overflow-y:auto;">
+        <div class="loquat-ui map-bg pa-map" style="min-height:278px;">
+          <div class="sidebar pa-side">
+            <div class="sidebar-header-row">
+              <button class="hamburger-btn pa-ham">
+                <span></span><span></span><span></span>
+              </button>
+              <p class="app-title pa-title">loquat</p>
+            </div>
+            <hr class="divider pa-divider">
+            <div class="action-buttons">
+              <button class="ui-btn pa-btn">home</button>
+              <button class="ui-btn pa-btn">add fruit</button>
+              <button class="ui-btn pa-btn">my pins</button>
+            </div>
+            <hr class="divider pa-divider">
+            <div class="user-label pa-user">logged in as: user123</div>
+            <button class="ui-btn pa-btn" style="margin-top:4px;">logout</button>
+          </div>
+        </div>
+      </div>
+      <div class="view-label">popup</div>
+      <div class="screen" style="height:296px; overflow-y:auto;">
+        <div class="loquat-ui map-bg pa-map" style="min-height:296px; padding:8px; align-items:flex-start;">
+          <div class="pin-popup pa-popup">
+            <div class="popup-header pa-hdr">
+              <h3 class="fruit-title pa-ftitle">apple</h3>
+              <span class="season-badge pa-badge">in season</span>
+            </div>
+            <div class="popup-content pa-content">
+              <div class="notes-section pa-notes">
+                <strong class="pa-nlabel">notes:</strong>
+                <p class="pin-notes pa-ntext">Large tree near the back fence. Fruit ready in October.</p>
+              </div>
+              <div class="metadata-grid">
+                <div class="metadata-item pa-meta"><strong class="pa-mlabel">location:</strong><span class="pa-mval">37.77, -122.41</span></div>
+                <div class="metadata-item pa-meta"><strong class="pa-mlabel">added by:</strong><span class="pa-mval">user123</span></div>
+                <div class="metadata-item pa-meta"><strong class="pa-mlabel">date:</strong><span class="pa-mval">Jan 1 2026</span></div>
+              </div>
+              <div class="pin-actions pa-actions">
+                <button class="delete-btn pa-del">delete pin</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PALETTE B ══ -->
+  <div class="palette-col">
+    <div class="palette-name">B — Field Catalog</div>
+    <div class="palette-desc">
+      Deep hunter green primary · canvas bg<br>
+      dark brown text · brick red delete
+    </div>
+    <div class="palette-swatches">
+      <div class="swatch" style="background:#2c3e2c;" title="#2c3e2c primary"></div>
+      <div class="swatch" style="background:#f2ede0;" title="#f2ede0 surface"></div>
+      <div class="swatch" style="background:#1a1209;" title="#1a1209 text"></div>
+      <div class="swatch" style="background:#7a2e2e;" title="#7a2e2e delete"></div>
+      <div class="swatch" style="background:#c0b498;" title="#c0b498 border"></div>
+    </div>
+    <div class="device">
+      <div class="screen-label">240px · Jelly Star</div>
+      <div class="view-label">sidebar</div>
+      <div class="screen" style="height:278px; overflow-y:auto;">
+        <div class="loquat-ui map-bg pb-map" style="min-height:278px;">
+          <div class="sidebar pb-side">
+            <div class="sidebar-header-row">
+              <button class="hamburger-btn pb-ham">
+                <span></span><span></span><span></span>
+              </button>
+              <p class="app-title pb-title">loquat</p>
+            </div>
+            <hr class="divider pb-divider">
+            <div class="action-buttons">
+              <button class="ui-btn pb-btn">home</button>
+              <button class="ui-btn pb-btn">add fruit</button>
+              <button class="ui-btn pb-btn">my pins</button>
+            </div>
+            <hr class="divider pb-divider">
+            <div class="user-label pb-user">logged in as: user123</div>
+            <button class="ui-btn pb-btn" style="margin-top:4px;">logout</button>
+          </div>
+        </div>
+      </div>
+      <div class="view-label">popup</div>
+      <div class="screen" style="height:296px; overflow-y:auto;">
+        <div class="loquat-ui map-bg pb-map" style="min-height:296px; padding:8px; align-items:flex-start;">
+          <div class="pin-popup pb-popup">
+            <div class="popup-header pb-hdr">
+              <h3 class="fruit-title pb-ftitle">apple</h3>
+              <span class="season-badge pb-badge">in season</span>
+            </div>
+            <div class="popup-content pb-content">
+              <div class="notes-section pb-notes">
+                <strong class="pb-nlabel">notes:</strong>
+                <p class="pin-notes pb-ntext">Large tree near the back fence. Fruit ready in October.</p>
+              </div>
+              <div class="metadata-grid">
+                <div class="metadata-item pb-meta"><strong class="pb-mlabel">location:</strong><span class="pb-mval">37.77, -122.41</span></div>
+                <div class="metadata-item pb-meta"><strong class="pb-mlabel">added by:</strong><span class="pb-mval">user123</span></div>
+                <div class="metadata-item pb-meta"><strong class="pb-mlabel">date:</strong><span class="pb-mval">Jan 1 2026</span></div>
+              </div>
+              <div class="pin-actions pb-actions">
+                <button class="delete-btn pb-del">delete pin</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PALETTE C ══ -->
+  <div class="palette-col">
+    <div class="palette-name">C — Seed Packet</div>
+    <div class="palette-desc">
+      Deep terracotta/brick primary · warm wheat bg<br>
+      espresso text · olive accent on notes
+    </div>
+    <div class="palette-swatches">
+      <div class="swatch" style="background:#7a3c20;" title="#7a3c20 primary"></div>
+      <div class="swatch" style="background:#f7f2e4;" title="#f7f2e4 surface"></div>
+      <div class="swatch" style="background:#2b1a0e;" title="#2b1a0e text"></div>
+      <div class="swatch" style="background:#5c6b2e;" title="#5c6b2e olive accent"></div>
+      <div class="swatch" style="background:#c8b888;" title="#c8b888 border"></div>
+    </div>
+    <div class="device">
+      <div class="screen-label">240px · Jelly Star</div>
+      <div class="view-label">sidebar</div>
+      <div class="screen" style="height:278px; overflow-y:auto;">
+        <div class="loquat-ui map-bg pc-map" style="min-height:278px;">
+          <div class="sidebar pc-side">
+            <div class="sidebar-header-row">
+              <button class="hamburger-btn pc-ham">
+                <span></span><span></span><span></span>
+              </button>
+              <p class="app-title pc-title">loquat</p>
+            </div>
+            <hr class="divider pc-divider">
+            <div class="action-buttons">
+              <button class="ui-btn pc-btn">home</button>
+              <button class="ui-btn pc-btn">add fruit</button>
+              <button class="ui-btn pc-btn">my pins</button>
+            </div>
+            <hr class="divider pc-divider">
+            <div class="user-label pc-user">logged in as: user123</div>
+            <button class="ui-btn pc-btn" style="margin-top:4px;">logout</button>
+          </div>
+        </div>
+      </div>
+      <div class="view-label">popup</div>
+      <div class="screen" style="height:296px; overflow-y:auto;">
+        <div class="loquat-ui map-bg pc-map" style="min-height:296px; padding:8px; align-items:flex-start;">
+          <div class="pin-popup pc-popup">
+            <div class="popup-header pc-hdr">
+              <h3 class="fruit-title pc-ftitle">apple</h3>
+              <span class="season-badge pc-badge">in season</span>
+            </div>
+            <div class="popup-content pc-content">
+              <div class="notes-section pc-notes">
+                <strong class="pc-nlabel">notes:</strong>
+                <p class="pin-notes pc-ntext">Large tree near the back fence. Fruit ready in October.</p>
+              </div>
+              <div class="metadata-grid">
+                <div class="metadata-item pc-meta"><strong class="pc-mlabel">location:</strong><span class="pc-mval">37.77, -122.41</span></div>
+                <div class="metadata-item pc-meta"><strong class="pc-mlabel">added by:</strong><span class="pc-mval">user123</span></div>
+                <div class="metadata-item pc-meta"><strong class="pc-mlabel">date:</strong><span class="pc-mval">Jan 1 2026</span></div>
+              </div>
+              <div class="pin-actions pc-actions">
+                <button class="delete-btn pc-del">delete pin</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

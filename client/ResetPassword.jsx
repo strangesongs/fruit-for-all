@@ -53,7 +53,7 @@ export default class ResetPassword extends Component {
     return (
       <div style={{
         minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: '#fafafa', fontFamily: "'EB Garamond', serif"
+        background: '#f7f2e4', fontFamily: "'Vollkorn', serif"
       }}>
         <div style={{
           background: '#d3d3d3', border: '2px solid #e0e0e0', borderRadius: '8px',
@@ -68,7 +68,7 @@ export default class ResetPassword extends Component {
               <p style={{ color: '#2e7d32', marginBottom: '16px' }}>Password updated successfully!</p>
               <button onClick={() => window.location.href = '/'} style={{
                 background: '#D84747', color: 'white', border: '2px outset #D84747',
-                padding: '8px 16px', fontFamily: "'EB Garamond', serif", cursor: 'pointer',
+                padding: '8px 16px', fontFamily: "'Vollkorn', serif", cursor: 'pointer',
                 borderRadius: '4px', width: '90%'
               }}>
                 return to map
@@ -86,7 +86,7 @@ export default class ResetPassword extends Component {
                   style={{
                     width: '100%', padding: '8px 10px', boxSizing: 'border-box',
                     background: '#fafafa', border: '2px solid #e0e0e0', borderRadius: '4px',
-                    fontFamily: "'EB Garamond', serif", fontSize: '0.9rem', textAlign: 'center'
+                    fontFamily: "'Vollkorn', serif", fontSize: '0.9rem', textAlign: 'center'
                   }}
                 />
                 <p style={{ fontSize: '0.7rem', color: '#666', margin: '4px 0 0 0', fontStyle: 'italic' }}>
@@ -103,7 +103,7 @@ export default class ResetPassword extends Component {
                   style={{
                     width: '100%', padding: '8px 10px', boxSizing: 'border-box',
                     background: '#fafafa', border: '2px solid #e0e0e0', borderRadius: '4px',
-                    fontFamily: "'EB Garamond', serif", fontSize: '0.9rem', textAlign: 'center'
+                    fontFamily: "'Vollkorn', serif", fontSize: '0.9rem', textAlign: 'center'
                   }}
                 />
               </div>
@@ -113,7 +113,7 @@ export default class ResetPassword extends Component {
                 disabled={loading}
                 style={{
                   background: '#D84747', color: 'white', border: '2px outset #D84747',
-                  padding: '8px 16px', fontFamily: "'EB Garamond', serif", cursor: 'pointer',
+                  padding: '8px 16px', fontFamily: "'Vollkorn', serif", cursor: 'pointer',
                   borderRadius: '4px', width: '90%', opacity: loading ? 0.6 : 1,
                   fontSize: '0.9rem', fontWeight: 'bold'
                 }}
