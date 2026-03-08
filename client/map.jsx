@@ -11,31 +11,24 @@ import L from 'leaflet';
 import './stylesheets/map.css';
 import 'leaflet/dist/leaflet.css';
 
-// Marker icons
-const defaultIcon = new L.Icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
+// Marker icons — SVG teardrops matching the earthy palette
+const makePinIcon = (fill, stroke) => new L.DivIcon({
+    className: '',
+    html: `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" style="filter:drop-shadow(1px 2px 3px rgba(0,0,0,0.35))"><path fill="${fill}" stroke="${stroke}" stroke-width="0.8" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/></svg>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 28],
+    popupAnchor: [0, -30],
 });
 
-const myPinIcon = new L.Icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
-});
+const defaultIcon = makePinIcon('#7a3c20', '#3a1008');
+const myPinIcon  = makePinIcon('#5c6b2e', '#2a3a14');
 
 const makeClusterIcon = (count) => new L.DivIcon({
     className: '',
     html: `<div style="
         width: 28px;
         height: 28px;
-        background: #D84747;
+        background: #7a3c20;
         border-radius: 50%;
         border: 2px solid rgba(0,0,0,0.25);
         box-shadow: 1px 2px 4px rgba(0,0,0,0.3);

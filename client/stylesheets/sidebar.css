@@ -528,7 +528,7 @@ button.auth-submit-btn:disabled {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 15px;
+    padding: 5px 12px;
     border-bottom: 1px solid var(--border);
     background-color: var(--card);
     border-radius: 6px 6px 0 0;
@@ -541,28 +541,28 @@ button.auth-submit-btn:disabled {
     font-weight: 600;
 }
 
-.close-btn {
+button.close-btn {
     background: none;
     border: none;
     font-size: 1.5rem;
     cursor: pointer;
-    color: #666;
+    color: var(--text-muted);
     padding: 0;
     width: auto;
     margin: 0;
     line-height: 1;
 }
 
-.close-btn:hover {
-    color: #333;
+button.close-btn:hover {
+    color: var(--text);
 }
 
 .popup-content {
-    padding: 8px 15px;
+    padding: 6px 12px;
 }
 
 .popup-section {
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .popup-section label {
@@ -590,7 +590,7 @@ button.auth-submit-btn:disabled {
 .popup-section input:focus,
 .popup-section textarea:focus {
     outline: none;
-    border-color: #D84747;
+    border-color: var(--red);
     background-color: white;
 }
 
@@ -613,11 +613,11 @@ button.auth-submit-btn:disabled {
 }
 
 .location-btn:hover {
-    background-color: #C23939;
+    background-color: var(--red-dark);
 }
 
 .location-btn:active {
-    border: 2px inset #D84747;
+    border: 2px inset var(--red);
 }
 
 .location-display {
@@ -637,9 +637,9 @@ button.auth-submit-btn:disabled {
 .popup-footer {
     display: flex;
     gap: 8px;
-    padding: 8px 15px;
-    border-top: 1px solid #e0e0e0;
-    background-color: #fafafa;
+    padding: 5px 12px;
+    border-top: 1px solid var(--border);
+    background-color: var(--card);
     border-radius: 0 0 6px 6px;
     justify-content: flex-end;
 }
@@ -707,12 +707,12 @@ button.auth-submit-btn:disabled {
     display: block;
     width: 100%;
     height: 2px;
-    background-color: #C23939;
+    background-color: var(--red);
     transition: all 0.3s ease;
 }
 
 .hamburger-btn:hover span {
-    background-color: #C23939;
+    background-color: var(--red-dark);
 }
 
 /* Collapsed sidebar state */
@@ -821,8 +821,8 @@ button.auth-submit-btn:disabled {
 
 .fruit-suggestions li:hover,
 .fruit-suggestion-active {
-    background-color: #fdf0f0;
-    color: #D84747;
+    background-color: #f7f0e8;
+    color: var(--red);
 }
 
 .fruit-not-found {

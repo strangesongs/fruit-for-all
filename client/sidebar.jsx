@@ -134,22 +134,22 @@ export default class Sidebar extends React.Component {
         const { currentLocation, fruitType, notes } = this.state;
 
         if (!currentLocation) {
-            alert('Please get your current location first');
+            alert('please get your current location first');
             return;
         }
 
         if (!fruitType.trim()) {
-            alert('Please select a fruit type');
+            alert('please select a fruit type');
             return;
         }
 
         if (!FRUIT_LIST.includes(fruitType.trim().toLowerCase())) {
-            alert('Please select a fruit from the list');
+            alert('please select a fruit from the list');
             return;
         }
 
         if (containsProfanity(notes)) {
-            alert('Please keep notes family-friendly.');
+            alert('please keep notes family-friendly.');
             return;
         }
 
@@ -172,7 +172,7 @@ export default class Sidebar extends React.Component {
             const result = await response.json();
 
             if (result.success) {
-                alert('Pin submitted successfully!');
+                alert('pin submitted successfully!');
                 // Reset form and close popup
                 this.setState({
                     currentLocation: null,
@@ -187,11 +187,11 @@ export default class Sidebar extends React.Component {
                     this.props.onPinSubmitted(result.pin);
                 }
             } else {
-                alert('Error submitting pin: ' + result.message);
+                alert('error submitting pin: ' + result.message);
             }
         } catch (error) {
             console.error('Error submitting pin:', error);
-            alert('Error submitting pin. Please try again.');
+            alert('error submitting pin. please try again.');
         } finally {
             this.setState({ submitting: false });
         }
@@ -234,7 +234,7 @@ export default class Sidebar extends React.Component {
         e.preventDefault();
         const { forgotEmail } = this.state;
         if (!forgotEmail) {
-            this.setState({ forgotError: 'Please enter your email address' });
+            this.setState({ forgotError: 'please enter your email address' });
             return;
         }
         this.setState({ forgotLoading: true, forgotError: '' });
@@ -248,7 +248,7 @@ export default class Sidebar extends React.Component {
             // Always show success (don't reveal if email exists)
             this.setState({ forgotSuccess: true, forgotLoading: false });
         } catch (err) {
-            this.setState({ forgotError: 'Connection error. Please try again.', forgotLoading: false });
+            this.setState({ forgotError: 'connection error. please try again.', forgotLoading: false });
         }
     };
 
@@ -257,7 +257,7 @@ export default class Sidebar extends React.Component {
         const { authUserName, authPassword } = this.state;
 
         if (!authUserName.trim() || !authPassword.trim()) {
-            this.setState({ authError: 'Please enter username and password' });
+            this.setState({ authError: 'please enter username and password' });
             return;
         }
 
@@ -292,7 +292,7 @@ export default class Sidebar extends React.Component {
                     this.props.onAuthSuccess();
                 }
             } else {
-                this.setState({ authError: result.message || 'Login failed' });
+                this.setState({ authError: result.message || 'login failed' });
             }
         } catch (error) {
             console.error('[LOGIN] Exception:', error);
@@ -307,36 +307,36 @@ export default class Sidebar extends React.Component {
         const { authUserName, authPassword, authEmail } = this.state;
 
         if (!authUserName.trim() || !authPassword.trim() || !authEmail.trim()) {
-            this.setState({ authError: 'All fields are required' });
+            this.setState({ authError: 'all fields are required' });
             return;
         }
 
         // Username validation
         if (authUserName.trim().length < 3) {
-            this.setState({ authError: 'Username must be at least 3 characters' });
+            this.setState({ authError: 'username must be at least 3 characters' });
             return;
         }
 
         // Email validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(authEmail)) {
-            this.setState({ authError: 'Please enter a valid email address' });
+            this.setState({ authError: 'please enter a valid email address' });
             return;
         }
 
         // Password validation - match backend requirements
         if (authPassword.length < 10) {
-            this.setState({ authError: 'Password must be at least 10 characters' });
+            this.setState({ authError: 'password must be at least 10 characters' });
             return;
         }
 
         if (!/\d/.test(authPassword)) {
-            this.setState({ authError: 'Password must contain at least one number' });
+            this.setState({ authError: 'password must contain at least one number' });
             return;
         }
 
         if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(authPassword)) {
-            this.setState({ authError: 'Password must contain at least one symbol' });
+            this.setState({ authError: 'password must contain at least one symbol' });
             return;
         }
 
@@ -371,7 +371,7 @@ export default class Sidebar extends React.Component {
                     this.props.onAuthSuccess();
                 }
             } else {
-                this.setState({ authError: result.message || 'Registration failed' });
+                this.setState({ authError: result.message || 'registration failed' });
             }
         } catch (error) {
             console.error('Registration error:', error);
@@ -549,14 +549,6 @@ export default class Sidebar extends React.Component {
                     <div className="action-buttons">
                         <button
                             type="button"
-                            onClick={(e) => {
-                            e.preventDefault();
-                            window.location.href='index.html';}}
-                            className="action-btn"
-                            >home</button>
-
-                        <button
-                            type="button"
                             onClick={this.toggleAddFruitPopup}
                             className="action-btn add-fruit-btn"
                             >add fruit</button>
@@ -602,7 +594,7 @@ export default class Sidebar extends React.Component {
                         <div className="add-fruit-popup-overlay">
                             <div className="add-fruit-popup">
                                 <div className="popup-header">
-                                    <h4>Add Fruit Tree</h4>
+                                    <h4>add fruit tree</h4>
                                     <button 
                                         className="close-btn"
                                         onClick={this.toggleAddFruitPopup}
@@ -615,7 +607,7 @@ export default class Sidebar extends React.Component {
                                 <div className="popup-content">
                                     {/* Location Section */}
                                     <div className="popup-section">
-                                        <label>Location:</label>
+                                        <label>location:</label>
                                         <button 
                                             type="button" 
                                             onClick={this.getCurrentLocation}
@@ -638,7 +630,7 @@ export default class Sidebar extends React.Component {
 
                                     {/* Fruit Type Section */}
                                     <div className="popup-section fruit-autocomplete-wrapper">
-                                        <label htmlFor="popup-fruit-type">Fruit or Tree Type:</label>
+                                        <label htmlFor="popup-fruit-type">fruit or tree type:</label>
                                         <input
                                             type="text"
                                             id="popup-fruit-type"
@@ -670,12 +662,12 @@ export default class Sidebar extends React.Component {
 
                                     {/* Notes Section */}
                                     <div className="popup-section">
-                                        <label htmlFor="popup-notes">Notes (optional):</label>
+                                        <label htmlFor="popup-notes">notes (optional):</label>
                                         <textarea
                                             id="popup-notes"
                                             value={this.state.notes}
                                             onChange={(e) => this.handleInputChange('notes', e.target.value)}
-                                            placeholder="Add details about this fruit tree location... (up to 500 words)"
+                                            placeholder="add details about this fruit tree location... (up to 500 words)"
                                             rows="4"
                                             maxLength="3000"
                                             disabled={this.state.submitting}
@@ -690,7 +682,7 @@ export default class Sidebar extends React.Component {
                                         disabled={this.state.submitting}
                                         className="cancel-btn"
                                     >
-                                        Cancel
+                                        cancel
                                     </button>
                                     <button 
                                         type="submit" 
@@ -698,7 +690,7 @@ export default class Sidebar extends React.Component {
                                         disabled={this.state.submitting || !this.state.currentLocation || !FRUIT_LIST.includes((this.state.fruitType || '').trim().toLowerCase())}
                                         className="submit-btn"
                                     >
-                                        {this.state.submitting ? 'Submitting...' : 'Submit Pin'}
+                                        {this.state.submitting ? 'submitting...' : 'submit pin'}
                                     </button>
                                 </div>
                             </div>
