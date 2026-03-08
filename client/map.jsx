@@ -4,7 +4,7 @@ import { getAuthHeader, isAuthenticated, getUser, isAdmin } from './utils/auth.j
 import { getCache, setCache, clearCache } from './utils/cache.js';
 import { clusterPins } from './utils/clustering.js';
 import { getSeasonForZone, isInSeason, getSeasonDisplay } from './utils/fruitSeasons.js';
-import { API_BASE } from './utils/config.js';
+import { API_BASE, STADIA_API_KEY } from './utils/config.js';
 import { containsProfanity } from './utils/profanity.js';
 import L from 'leaflet';
 
@@ -372,7 +372,7 @@ class Map extends Component {
                         />
                         <TileLayer
                             attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://stamen.com">Stamen Design</a> &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
-                            url='https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}.png'
+                            url={`https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}.png?api_key=${STADIA_API_KEY}`}
                             detectRetina={false}
                         />
                         {loading && (
