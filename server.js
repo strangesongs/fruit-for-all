@@ -25,6 +25,7 @@ app.use(helmet({
     },
   },
   crossOriginEmbedderPolicy: false, // Leaflet map tiles require this off
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' }, // needed for Stadia Maps domain auth
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
