@@ -372,7 +372,8 @@ class Map extends Component {
                         />
                         <TileLayer
                             attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://stamen.com">Stamen Design</a> &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
-                            url='https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png'
+                            url='https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}.png'
+                            detectRetina={false}
                         />
                         {loading && (
                             <div className="loading-overlay">
