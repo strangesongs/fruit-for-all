@@ -430,10 +430,11 @@ export default class Sidebar extends React.Component {
                     {this.state.showAbout ? (
                         <div className="about-panel">
                             <h3 className="about-title">what is fruit for all?</h3>
-                            <p>fruit for all is a community-built map of free street fruit — lemons, figs, oranges, and whatever else is growing near you.</p>
-                            <p>when you spot accessible fruit, log it to the map so others can find it. you can only add fruit when you're standing next to it.</p>
-                            <p>anyone on the map can see what you've shared, so only pin fruit that's genuinely accessible — not fruit behind gates or on private property.</p>
-                            <p className="about-oss">open source — <a href="https://github.com/strangesongs/fruit-for-all" className="about-link-ext" target="_blank" rel="noreferrer">github.com/strangesongs/fruit-for-all</a></p>
+                            <p>fruit for all is a community map of street fruit you can actually pick — figs, loquats, citrus, passionfruit, and whatever else is growing near you.</p>
+                            <p>spot some fruit? log it so others can find it. you need to be on-location to add a pin.</p>
+                            <p>only share fruit that's genuinely accessible to anyone — nothing behind fences or on private property.</p>
+                            <p className="about-oss">open source &mdash; <a href="https://github.com/strangesongs/fruit-for-all" className="about-link-ext" target="_blank" rel="noreferrer">github.com/strangesongs/fruit-for-all</a></p>
+                            <p className="about-oss">say hello &mdash; <a href="mailto:admin@fruitforall.app" className="about-link-ext">admin@fruitforall.app</a></p>
                             <p className="toggle-auth">
                                 <span onClick={() => this.setState({ showAbout: false })} className="toggle-link about-back">← back</span>
                             </p>

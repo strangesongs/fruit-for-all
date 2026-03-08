@@ -17,7 +17,7 @@
     min-width: 0;
     min-height: 0;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(233, 30, 99, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     position: absolute;
     top: 0;
     left: 0;
@@ -76,7 +76,7 @@
     border: none !important;
     font-size: 16px !important;
     font-weight: bold !important;
-    color: #D84747 !important;
+    color: var(--red) !important;
     cursor: pointer !important;
     z-index: 1000 !important;
     width: 20px !important;
@@ -100,7 +100,7 @@
 .leaflet-popup-close-button:visited,
 .leaflet-popup-close-button:link {
     background: transparent !important;
-    color: #D84747 !important;
+    color: var(--red) !important;
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
@@ -113,7 +113,7 @@
 /* Nuclear option - override any Leaflet CSS with maximum specificity */
 .leaflet-container .leaflet-popup-pane .leaflet-popup .leaflet-popup-close-button {
     background: transparent !important;
-    color: #D84747 !important;
+    color: var(--red) !important;
     border: none !important;
     transition: none !important;
 }
@@ -122,30 +122,30 @@
 .leaflet-container .leaflet-popup-pane .leaflet-popup .leaflet-popup-close-button:active,
 .leaflet-container .leaflet-popup-pane .leaflet-popup .leaflet-popup-close-button:focus {
     background: transparent !important;
-    color: #D84747 !important;
+    color: var(--red) !important;
     border: none !important;
     transition: none !important;
 }
 
 .leaflet-popup-close-button:hover {
     background-color: rgba(0, 0, 0, 0.1) !important;
-    color: #333 !important;
+    color: var(--red-dark) !important;
 }
 
 .leaflet-popup-close-button:focus {
-    outline: 2px solid #D84747 !important;
+    outline: 2px solid var(--red) !important;
     outline-offset: 2px !important;
 }
 
 .pin-popup {
     background: white;
-    border: 2px solid #b8b8b8;
+    border: 2px solid var(--border);
     border-radius: 8px;
     padding: 0;
     box-shadow: 5px 6px 10px rgba(0, 0, 0, 0.22);
     overflow: hidden;
     font-family: 'Vollkorn', serif;
-    color: #333;
+    color: var(--text);
 }
 
 .pin-popup .popup-header {
@@ -188,7 +188,7 @@
     margin: 6px 0 0 0;
     font-size: 0.9rem;
     line-height: 1.4;
-    color: #333;
+    color: var(--text);
     font-style: italic;
 }
 
@@ -196,19 +196,19 @@
 }
 
 .clickable-notes:hover {
-    background-color: rgba(216, 71, 71, 0.05) !important;
+    background-color: rgba(122, 60, 32, 0.05) !important;
 }
 
 .add-notes-prompt {
-    color: #aaa !important;
+    color: var(--text-faint) !important;
     font-style: italic;
     font-size: 0.85rem !important;
     margin: 4px 0 0 0;
 }
 
 .add-notes-prompt:hover {
-    color: #D84747 !important;
-    background-color: rgba(216, 71, 71, 0.03) !important;
+    color: var(--red) !important;
+    background-color: rgba(122, 60, 32, 0.04) !important;
 }
 
 /* Edit notes box styles */
@@ -222,18 +222,18 @@
     padding: 8px;
     font-family: inherit;
     font-size: 0.9rem;
-    border: 2px solid #D84747;
+    border: 2px solid var(--red);
     border-radius: 4px;
     background: white;
-    color: #333;
+    color: var(--text);
     resize: vertical;
     box-sizing: border-box;
 }
 
 .notes-textarea:focus {
     outline: none;
-    border-color: #a52a2a;
-    box-shadow: 0 0 4px rgba(216, 71, 71, 0.3);
+    border-color: var(--red-dark);
+    box-shadow: 0 0 4px rgba(122, 60, 32, 0.25);
 }
 
 .edit-notes-actions {
@@ -255,17 +255,17 @@
 }
 
 .save-notes-btn {
-    background-color: #D84747;
+    background-color: var(--red);
     color: white;
-    border-color: #D84747;
+    border-color: var(--red);
 }
 
 .save-notes-btn:hover {
-    background-color: #C23939;
+    background-color: var(--red-dark);
 }
 
 .save-notes-btn:active {
-    border: 2px inset #D84747;
+    border: 2px inset var(--red);
 }
 
 .cancel-notes-btn {
@@ -311,7 +311,7 @@
 }
 
 .metadata-item span {
-    color: #333;
+    color: var(--text);
     text-align: right;
     font-size: 0.75rem;
 }
@@ -327,17 +327,17 @@
 }
 
 .season-badge.in-season {
-    background: rgba(216, 71, 71, 0.1);
-    color: #8B1A1A;
-    border: 1px solid rgba(216, 71, 71, 0.25);
+    background: rgba(122, 60, 32, 0.1);
+    color: var(--red-dark);
+    border: 1px solid rgba(122, 60, 32, 0.25);
 }
 
 .season-badge.upcoming,
 .season-badge.out-of-season,
 .season-badge.general {
-    background: #f4f4f4;
-    color: #888;
-    border: 1px solid #e0e0e0;
+    background: var(--card);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
 }
 
 /* Pin actions section */

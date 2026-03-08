@@ -40,7 +40,7 @@ html, body {
     max-height: calc(100vh - 40px);
     box-sizing: border-box;
     overflow: hidden;
-    border: 2px solid #c8c8c8;
+    border: 2px solid var(--border);
     border-radius: 8px;
     display: flex;
     flex-direction: column;
@@ -61,7 +61,7 @@ html, body {
     width: 100%;
 }
 
-button, .action-btn {
+button:not(.hamburger-btn), .action-btn {
     background-color: var(--red);
     color: white;
     padding: 10px 14px;
@@ -176,6 +176,12 @@ li {
     margin-bottom: 8px;
 }
 
+/* Ensure form elements inside auth-section fill the full width */
+.auth-section form,
+.auth-section > div {
+    width: 100%;
+}
+
 .auth-section h3 {
     font-size: 1.1rem;
     color: var(--red);
@@ -194,13 +200,18 @@ li {
     font-size: 0.9rem;
     border: 2px solid var(--border);
     border-radius: 4px;
-        background: var(--surface);
-    color: #999;
+    background: var(--surface);
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    text-align: center;
+    color: var(--text);
 }
 
 .auth-section .form-group input:focus {
     outline: none;
-        border-color: var(--red);
+    border-color: var(--red);
+    background-color: white;
+}
 
 .auth-section .form-group input:disabled {
     opacity: 0.6;
@@ -209,19 +220,19 @@ li {
 
 .password-hint {
     font-size: 0.75rem;
-    color: #666;
+    color: var(--text-muted);
     margin: 4px 0 0 0;
     font-style: italic;
 }
 
-.auth-submit-btn {
+button.auth-submit-btn {
     width: 90%;
     padding: 8px 12px;
     margin-top: 6px;
     margin-left: auto;
     margin-right: auto;
     font-family: inherit;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     background-color: var(--red);
     color: white;
     border: 2px outset var(--red);
@@ -231,15 +242,15 @@ li {
     display: block;
 }
 
-.auth-submit-btn:hover {
+button.auth-submit-btn:hover {
     background-color: var(--red-dark);
 }
 
-.auth-submit-btn:active {
+button.auth-submit-btn:active {
     border: 2px inset var(--red);
 }
 
-.auth-submit-btn:disabled {
+button.auth-submit-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
@@ -295,7 +306,7 @@ li {
 }
 
 .auth-success-msg {
-    color: #2e7d32;
+    color: var(--del);
     font-size: 0.85rem;
     margin: 8px 0;
     text-align: center;
@@ -310,7 +321,7 @@ li {
 .about-panel {
     font-size: 0.88rem;
     line-height: 1.6;
-    color: #444;
+    color: var(--text);
 }
 
 .about-panel h3.about-title {
@@ -326,8 +337,12 @@ li {
 
 .about-oss {
     font-size: 0.78rem;
-    color: #aaa;
+    color: var(--text-faint);
     margin-top: 14px !important;
+}
+
+.about-oss + .about-oss {
+    margin-top: 4px !important;
 }
 
 .about-link-ext {
@@ -761,7 +776,7 @@ li {
         font-size: 0.8rem;
     }
     
-    button, .action-btn {
+    button:not(.hamburger-btn), .action-btn {
         font-size: 0.8rem;
         padding: 6px 10px;
     }
@@ -853,21 +868,19 @@ li {
         left: 8px;
     }
 
-    /* Auth sidebar: true full-screen, no floating card */
-    .sidebar-auth-modal {
-        top: 0;
-        left: 0;
-        width: 100vw;
-        max-height: 100dvh;
-        height: 100dvh;
-        border-radius: 0;
-        border: none;
-        overflow-y: auto;
+    /* Auth modal stays centered on tiny screens — no full-screen takeover */
+    .sidebar.sidebar-auth-modal {
+        width: calc(100vw - 24px);
     }
 
-    /* No backdrop needed — sidebar already covers whole screen */
-    .auth-modal-backdrop {
+    /* Hide loquat image on tiny screens to save vertical space */
+    .sidebar.sidebar-auth-modal .lil-fruit {
         display: none;
+    }
+
+    /* Restore divider line once logo is gone */
+    .sidebar.sidebar-auth-modal .header-section {
+        border-bottom: 1px solid var(--border);
     }
 
     .header-section p:first-child {
@@ -893,7 +906,7 @@ li {
         padding: 7px 10px;
     }
 
-    button, .action-btn {
+    button:not(.hamburger-btn), .action-btn {
         font-size: 0.75rem;
         padding: 6px 8px;
     }
@@ -926,7 +939,7 @@ li {
     }
 }
 
-/* ── Auth modal: centered sign-in on desktop ─────────────────────────────── */
+/* ── Auth modal: centered floating card at all sizes ────────────────────── */
 
 .auth-modal-backdrop {
     position: fixed;
@@ -937,38 +950,62 @@ li {
     z-index: 999;
 }
 
-/* On screens wide enough for a modal — centered card */
-@media (min-width: 640px) {
-    .sidebar-auth-modal {
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 340px;
-        max-height: 90vh;
-        z-index: 1000;
-    }
-
-    .sidebar-auth-modal .hamburger-btn {
-        display: none;
-    }
+.sidebar.sidebar-auth-modal {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(340px, calc(100vw - 24px));
+    max-height: min(96dvh, 96vh);
+    overflow-y: auto;
+    z-index: 1000;
 }
 
-/* Between 361–639px (typical phones): auth sidebar fills width, no backdrop */
-@media (min-width: 361px) and (max-width: 639px) {
-    .sidebar-auth-modal {
-        width: calc(100vw - 16px);
-        top: 8px;
-        left: 8px;
-        transform: none;
-        max-height: calc(100dvh - 16px);
-        overflow-y: auto;
-    }
+.sidebar.sidebar-auth-modal .hamburger-btn {
+    display: none;
+}
 
-    .auth-modal-backdrop {
-        display: none;
-    }
+/* Compact the header inside the auth modal so form fits without scrolling */
+.sidebar.sidebar-auth-modal .header-section {
+    padding-top: 4px;
+    padding-bottom: 2px;
+    margin-bottom: 0;
+    border-bottom: none;
+}
 
-    .sidebar-auth-modal .hamburger-btn {
-        display: none;
-    }
+.sidebar.sidebar-auth-modal .lil-fruit {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 4px;
+}
+
+.sidebar.sidebar-auth-modal .header-section p:first-child {
+    font-size: 1.1rem;
+    margin-top: 2px;
+}
+
+.sidebar.sidebar-auth-modal .header-section p:nth-child(2) {
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
+.sidebar.sidebar-auth-modal .auth-section {
+    padding: 2px 0;
+    margin-bottom: 4px;
+}
+
+.sidebar.sidebar-auth-modal .auth-section h3 {
+    margin: 4px 0 8px;
+}
+
+.sidebar.sidebar-auth-modal .auth-section .form-group {
+    margin-bottom: 4px;
+}
+
+.sidebar.sidebar-auth-modal .auth-submit-btn {
+    margin-top: 4px;
+}
+
+.sidebar.sidebar-auth-modal .toggle-auth {
+    margin-top: 4px;
+    margin-bottom: 2px;
 }

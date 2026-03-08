@@ -1,8 +1,8 @@
 # fruit for all
 
-**fruit for all** is an open source, community-built map of free street fruit — trees, bushes, and vines on public land where anyone can forage. Find it, pick it, share it.
+**fruit for all** is an open source, community-built map of street fruit you can actually pick — trees, bushes, and vines on public land where anyone can forage. Find it, pick it, share it.
 
-Live at **[fruitforall.app](https://fruitforall.app)**
+Live at **[fruitforall.app](https://fruitforall.app)** &nbsp;·&nbsp; questions? **[admin@fruitforall.app](mailto:admin@fruitforall.app)**
 
 ---
 

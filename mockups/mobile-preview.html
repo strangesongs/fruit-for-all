@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Loquat — Mobile Preview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #1e1e1e;
+    font-family: system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 48px;
+    gap: 32px;
+    min-height: 100vh;
+  }
+  h1 {
+    color: #aaa;
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+  .frames {
+    display: flex;
+    gap: 48px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .device {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .label {
+    color: #888;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .shell {
+    background: #111;
+    border-radius: 24px;
+    padding: 14px 10px;
+    box-shadow:
+      0 0 0 1px #333,
+      0 8px 32px rgba(0,0,0,0.6);
+  }
+  .screen {
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    background: #000;
+  }
+  iframe {
+    border: none;
+    display: block;
+  }
+
+  /* device-specific heights */
+  .jelly { width: 240px; height: 320px; }
+  .phone { width: 375px; height: 667px; }
+  .tablet { width: 390px; height: 844px; }
+
+  .note {
+    color: #555;
+    font-size: 0.7rem;
+    text-align: center;
+    max-width: 600px;
+    line-height: 1.6;
+    margin-top: -8px;
+  }
+  .note a { color: #888; }
+  .dot {
+    width: 6px; height: 6px;
+    background: #333;
+    border-radius: 50%;
+    margin: 0 auto 6px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Loquat — live dev preview</h1>
+
+<div class="frames">
+
+  <div class="device">
+    <span class="label">Jelly Star — 240 × 320</span>
+    <div class="shell">
+      <div class="dot"></div>
+      <div class="screen jelly">
+        <iframe src="http://localhost:3000" width="240" height="320"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <div class="device">
+    <span class="label">iPhone SE — 375 × 667</span>
+    <div class="shell">
+      <div class="dot"></div>
+      <div class="screen phone">
+        <iframe src="http://localhost:3000" width="375" height="667"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <div class="device">
+    <span class="label">iPhone 14 — 390 × 844</span>
+    <div class="shell">
+      <div class="dot"></div>
+      <div class="screen tablet">
+        <iframe src="http://localhost:3000" width="390" height="844"></iframe>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p class="note">
+  App served from <a href="http://localhost:3000" target="_blank">localhost:3000</a> (esbuild dev).
+  Each frame shows the real running app at that exact pixel width — no scaling.
+  Reload this page to refresh all frames.
+</p>
+
+</body>
+</html>
