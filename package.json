@@ -6,9 +6,9 @@
   "source": "client/index.html",
   "scripts": {
     "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
-    "dev:client": "npm run copy:html && esbuild client/index.js --bundle --outdir=dist --servedir=dist --sourcemap --define:process.env.NODE_ENV=\\"development\\" --jsx=automatic --loader:.js=jsx --loader:.jsx=jsx --loader:.png=file --serve=3000",
+    "dev:client": "npm run copy:html && esbuild client/index.js --bundle --outdir=dist --servedir=dist --sourcemap --define:process.env.NODE_ENV=\"development\" --jsx=automatic --loader:.js=jsx --loader:.jsx=jsx --loader:.png=file --serve=3000",
     "dev:server": "nodemon --exec 'node --env-file=.env' server.js",
-    "build": "npm run copy:html && esbuild client/index.js --bundle --outdir=dist --minify --define:process.env.NODE_ENV=\\"production\\" --jsx=automatic --loader:.js=jsx --loader:.jsx=jsx --loader:.png=file",
+    "build": "npm run copy:html && esbuild client/index.js --bundle --outdir=dist --minify --define:process.env.NODE_ENV=\"production\" --jsx=automatic --loader:.js=jsx --loader:.jsx=jsx --loader:.png=file",
     "copy:html": "mkdir -p dist && cp client/map-index.html dist/index.html && cp loquat-48.png dist/loquat-48.png",
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
