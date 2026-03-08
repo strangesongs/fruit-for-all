@@ -10,6 +10,9 @@ const FRUIT_SET = new Set(FRUIT_LIST);
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
+// Escape HTML to prevent injection in admin notification emails
+const escapeHtml = (str) => String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+
 const controller = {};
 
 // JWT secret - MUST be set in production
@@ -121,8 +124,8 @@ controller.registerUser = async (req, res) => {
         html: `
           <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 32px; color: #333;">
             <h2 style="color: #C23939;">new registration</h2>
-            <p><strong>username:</strong> ${userName}</p>
-            <p><strong>email:</strong> ${email}</p>
+            <p><strong>username:</strong> ${escapeHtml(userName)}</p>
+            <p><strong>email:</strong> ${escapeHtml(email)}</p>
             <p><strong>time:</strong> ${new Date().toUTCString()}</p>
             <p style="margin-top: 24px;"><a href="${appUrl}" style="color: #D84747;">fruitforall.app</a></p>
           </div>
@@ -289,9 +292,9 @@ controller.createPin = async (req, res) => {
             <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 32px; color: #333;">
               <h2 style="color: #C23939;">new pin submitted</h2>
               <p><strong>fruit:</strong> ${pin.fruitTypeDisplay || fruitType}</p>
-              <p><strong>submitted by:</strong> ${submittedBy}</p>
+              <p><strong>submitted by:</strong> ${escapeHtml(submittedBy)}</p>
               <p><strong>coordinates:</strong> ${coordinates.lat}, ${coordinates.lng}</p>
-              ${pin.notes ? `<p><strong>notes:</strong> ${pin.notes}</p>` : ''}
+              ${pin.notes ? `<p><strong>notes:</strong> ${escapeHtml(pin.notes)}</p>` : ''}
               <p><strong>time:</strong> ${new Date().toUTCString()}</p>
               <p style="margin-top: 24px;"><a href="${appUrl}" style="color: #D84747;">fruitforall.app</a></p>
             </div>
@@ -325,7 +328,7 @@ controller.getPublicPins = async (req, res) => {
 controller.getAllPins = async (req, res) => {
   try {
     const { limit, cursor, submittedBy, minLat, maxLat, minLng, maxLng } = req.query;
-    const parsedLimit = limit ? parseInt(limit) : 1000; // Increased default for viewport filtering
+    const parsedLimit = Math.min(limit ? (parseInt(limit) || 1000) : 1000, 5000);
     
     // Parse bounds if provided
     const bounds = (minLat && maxLat && minLng && maxLng) ? {
