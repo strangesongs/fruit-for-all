@@ -26,6 +26,19 @@
     outline: none;
 }
 
+/* Promote zoom control to its own compositing layer and offset from
+   the rounded corner to prevent blurry corner antialiasing */
+.leaflet-top.leaflet-right {
+    margin-top: 10px;
+    margin-right: 10px;
+}
+
+.leaflet-control-zoom {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: transform;
+}
+
 .loading-overlay, .error-overlay {
     position: absolute;
     top: 20px;

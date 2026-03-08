@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, ZoomControl } from 'react-leaflet';
 import { getAuthHeader, isAuthenticated, getUser, isAdmin } from './utils/auth.js';
 import { getCache, setCache, clearCache } from './utils/cache.js';
 import { clusterPins } from './utils/clustering.js';
@@ -364,7 +364,8 @@ class Map extends Component {
 
         return (
             <div className='map-area'>
-                    <MapContainer center={[34.061415, -118.293991]} zoom={13} scrollWheelZoom={true}>
+                    <MapContainer center={[34.061415, -118.293991]} zoom={13} scrollWheelZoom={true} zoomControl={false}>
+                        <ZoomControl position="topright" />
                         <MapEvents 
                             onViewportChange={this.handleViewportChange} 
                             onZoomChange={this.handleZoomChange}
