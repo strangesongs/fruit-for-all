@@ -20,7 +20,7 @@ app.use(helmet({
       scriptSrc: ["'self'", "'unsafe-inline'"], // needed for esbuild-bundled inline scripts
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-      imgSrc: ["'self'", 'data:', 'https://raw.githubusercontent.com', 'https://cdnjs.cloudflare.com', 'https://*.tile.openstreetmap.org'],
+      imgSrc: ["'self'", 'data:', 'https://raw.githubusercontent.com', 'https://cdnjs.cloudflare.com', 'https://*.tile.openstreetmap.org', 'https://tiles.stadiamaps.com'],
       connectSrc: ["'self'"],
     },
   },
