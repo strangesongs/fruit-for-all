@@ -87,6 +87,28 @@ function LocateMeButton({ userLocation, onLocate }) {
     );
 }
 
+// Pans to a pin when its popup is opened
+function PanToPin({ target, seq }) {
+    const map = useMap();
+    const lastSeq = React.useRef(-1);
+    React.useEffect(() => {
+        if (!target || seq === lastSeq.current) return;
+        lastSeq.current = seq;
+        // Offset the center downward (northward in lat) so the popup,
+        // which renders above the pin, stays fully visible on small screens.
+        // On narrow phones (≤360px) the map is 100vh but browser chrome eats
+        // ~55px off the top, so we need a larger offset to keep the popup clear.
+        const mapSize = map.getSize();
+        const offsetRatio = mapSize.x <= 360 ? 0.40 : 0.25;
+        const zoom = map.getZoom();
+        const pinPoint = map.project([target.lat, target.lng], zoom);
+        const offsetPx = mapSize.y * offsetRatio;
+        const centreLatLng = map.unproject(pinPoint.subtract([0, offsetPx]), zoom);
+        map.panTo(centreLatLng, { animate: true, duration: 0.5 });
+    }, [seq]); // primitive comparison — fires reliably on every new pin click
+    return null;
+}
+
 // Closes all open Leaflet popups when the signal value changes
 function ClosePopupsOnCommand({ signal }) {
     const map = useMap();
@@ -219,7 +241,9 @@ class Map extends Component {
             editingPinId: null, // Pin currently being edited
             editingNotes: '', // Temp storage for edited notes
             userLocation: null, // User's geolocation once resolved
-            closePopupsSignal: 0 // Increment to close all open popups
+            closePopupsSignal: 0, // Increment to close all open popups
+            pinFlyTarget: null,  // Set to {lat, lng} to pan map to that pin
+            pinFlySeq: 0         // Increments on each pin click to reliably trigger pan
         };
         this.mapRef = null; // Reference to map instance
         this.debounceTimer = null; // Timer for debouncing viewport changes
@@ -589,6 +613,7 @@ class Map extends Component {
                     <MapContainer center={[34.061415, -118.293991]} zoom={13} scrollWheelZoom={true} zoomControl={false}>
                         <ZoomControl position="topright" />
                         <MapFlyTo target={this.state.userLocation} />
+                        <PanToPin target={this.state.pinFlyTarget} seq={this.state.pinFlySeq} />
                         <ClosePopupsOnCommand signal={this.state.closePopupsSignal} />
                         <LocateMeButton userLocation={this.state.userLocation} onLocate={() => { this._blockViewportFetchUntil = Date.now() + 3000; }} />
                         <MapEvents 
@@ -679,7 +704,7 @@ class Map extends Component {
                                         key={pin.pinId}
                                         icon={markerIcon}
                                     >
-                                        <Popup autoPan={false} eventHandlers={{ add: () => this.props.onPinOpen && this.props.onPinOpen() }}>
+                                        <Popup autoPan={false} eventHandlers={{ add: () => { this.setState(prev => ({ pinFlyTarget: { lat: pin.coordinates.lat, lng: pin.coordinates.lng }, pinFlySeq: prev.pinFlySeq + 1 })); this.props.onPinOpen && this.props.onPinOpen(); } }}>
                                             <div className="pin-popup">
                                                 <div className="popup-header">
                                                     <h3 className="fruit-title">{pin.fruitTypeDisplay.toLowerCase()}</h3>
