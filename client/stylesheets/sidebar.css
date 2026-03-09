@@ -80,7 +80,7 @@ html, body {
     width: 100%;
 }
 
-button:not(.hamburger-btn), .action-btn {
+button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn), .action-btn {
     background-color: var(--red);
     color: white;
     padding: 10px 14px;
@@ -101,11 +101,11 @@ button:not(.hamburger-btn), .action-btn {
     transition: background-color 0.2s ease;
 }
 
-button:not(.hamburger-btn):hover, .action-btn:hover {
+button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):hover, .action-btn:hover {
     background-color: var(--red-dark);
 }
 
-button:not(.hamburger-btn):active, .action-btn:active {
+button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):active, .action-btn:active {
     border: 2px inset var(--red);
 }
 
@@ -470,7 +470,7 @@ button.auth-submit-btn:disabled {
     right: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
+    z-index: 1100;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -525,7 +525,7 @@ button.auth-submit-btn:disabled {
     right: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.6);
-    z-index: 2000;
+    z-index: 1100;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -737,20 +737,23 @@ button.close-btn:hover {
 
 /* Collapsed sidebar state */
 .sidebar.collapsed {
-    width: 50px;
-    height: 50px;
+    width: 64px;
+    height: 64px;
     padding: 0;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: transparent;
+    border: none;
+    box-shadow: none;
 }
 
 .sidebar.collapsed .hamburger-btn {
     position: static;
     margin: 0;
-    width: 36px;
-    height: 36px;
+    width: 58px;
+    height: 58px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -763,6 +766,21 @@ button.close-btn:hover {
     object-fit: contain;
 }
 
+.sidebar.collapsed .hamburger-btn .hamburger-icon {
+    width: 58px;
+    height: 58px;
+    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.38));
+}
+
+/* FAB logo — slightly larger since there's no surrounding circle */
+.mobile-fab .hamburger-icon {
+    width: 42px;
+    height: 42px;
+    display: block;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
+}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
     .sidebar {
@@ -771,6 +789,21 @@ button.close-btn:hover {
         top: 15px;
         left: 15px;
         padding: 10px;
+    }
+
+    .sidebar.collapsed {
+        width: 54px;
+        height: 54px;
+    }
+
+    .sidebar.collapsed .hamburger-btn {
+        width: 48px;
+        height: 48px;
+    }
+
+    .sidebar.collapsed .hamburger-btn .hamburger-icon {
+        width: 48px;
+        height: 48px;
     }
     
     .add-fruit-popup {
@@ -808,7 +841,7 @@ button.close-btn:hover {
         font-size: 0.8rem;
     }
     
-    button:not(.hamburger-btn), .action-btn {
+    button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn), .action-btn {
         font-size: 0.8rem;
         padding: 6px 10px;
     }
@@ -875,6 +908,16 @@ button.close-btn:hover {
     .sidebar.collapsed {
         width: 50px;
         height: 50px;
+    }
+
+    .sidebar.collapsed .hamburger-btn {
+        width: 44px;
+        height: 44px;
+    }
+
+    .sidebar.collapsed .hamburger-btn .hamburger-icon {
+        width: 44px;
+        height: 44px;
     }
     
     .add-fruit-popup {
@@ -988,7 +1031,7 @@ button.close-btn:hover {
         padding: 7px 10px;
     }
 
-    button:not(.hamburger-btn), .action-btn {
+    button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn), .action-btn {
         font-size: 0.75rem;
         padding: 6px 8px;
     }
@@ -1012,12 +1055,13 @@ button.close-btn:hover {
         font-size: 0.75rem;
     }
 
-    /* Popups fit full width */
+    /* Popups fit full width and full available height */
     .add-fruit-popup,
     .notes-popup {
         width: calc(100vw - 16px);
         max-width: calc(100vw - 16px);
-        max-height: 90dvh;
+        max-height: 92dvh;
+        border-radius: 8px;
     }
 }
 
@@ -1090,4 +1134,137 @@ button.close-btn:hover {
 .sidebar.sidebar-auth-modal .toggle-auth {
     margin-top: 4px;
     margin-bottom: 2px;
+}
+
+/* ── Mobile compact layout: FAB + panel (≤360px, authenticated) ─────────── */
+
+.mobile-fab {
+    position: fixed;
+    bottom: 12px;
+    left: 12px;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.mobile-fab-close {
+    font-size: 1.6rem;
+    color: var(--red);
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font);
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 2px solid var(--border);
+    box-shadow: 2px 3px 8px rgba(0,0,0,0.22);
+    box-sizing: border-box;
+}
+
+.mobile-panel {
+    position: fixed;
+    bottom: 68px;
+    left: 12px;
+    right: 12px;
+    max-height: calc(100dvh - 82px);
+    overflow-y: auto;
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px 14px;
+    z-index: 1000;
+    box-shadow: 2px 4px 12px rgba(0,0,0,0.22);
+    box-sizing: border-box;
+}
+
+.mobile-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.mobile-panel-logo {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
+.mobile-panel-title {
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--red);
+    font-family: var(--font);
+    line-height: 1.2;
+}
+
+.mobile-panel-subtitle {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-family: var(--font);
+    line-height: 1.2;
+    margin-top: 1px;
+}
+
+.mobile-panel-welcome {
+    font-size: 0.85rem;
+    color: var(--red);
+    margin: 0 0 8px 0;
+    font-weight: 500;
+}
+
+.mobile-panel-actions {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.mobile-panel-btn {
+    flex: 1;
+    background: var(--red);
+    color: white;
+    border: 2px outset var(--red);
+    border-radius: 4px;
+    padding: 8px 6px;
+    font-family: var(--font);
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-align: center;
+    white-space: nowrap;
+    box-sizing: border-box;
+    margin: 0;
+}
+
+.mobile-panel-btn:hover {
+    background: var(--red-dark);
+}
+
+.mobile-panel-btn:active {
+    border: 2px inset var(--red);
+}
+
+.mobile-panel-filter {
+    margin-bottom: 8px;
+}
+
+.mobile-panel-logout-btn {
+    width: 100%;
+    flex: none;
+    margin-top: 2px;
 }

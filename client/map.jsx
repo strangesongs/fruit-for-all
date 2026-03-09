@@ -626,7 +626,7 @@ class Map extends Component {
                                             key={pin.pinId}
                                             icon={makeClusterIcon(pin.count || '+')}
                                         >
-                                            <Popup eventHandlers={{ add: () => this.props.onPinOpen && this.props.onPinOpen() }}>
+                                            <Popup autoPan={false} eventHandlers={{ add: () => this.props.onPinOpen && this.props.onPinOpen() }}>
                                                 <div className="pin-popup">
                                                     <div className="popup-header">
                                                         <h3 className="fruit-title">{pin.count} fruit pins</h3>
@@ -679,7 +679,7 @@ class Map extends Component {
                                         key={pin.pinId}
                                         icon={markerIcon}
                                     >
-                                        <Popup eventHandlers={{ add: () => this.props.onPinOpen && this.props.onPinOpen() }}>
+                                        <Popup autoPan={false} eventHandlers={{ add: () => this.props.onPinOpen && this.props.onPinOpen() }}>
                                             <div className="pin-popup">
                                                 <div className="popup-header">
                                                     <h3 className="fruit-title">{pin.fruitTypeDisplay.toLowerCase()}</h3>
@@ -733,28 +733,29 @@ class Map extends Component {
                                                         </div>
                                                     )}
                                                     
-                                                    <div className="metadata-grid">
-                                                        <div className="metadata-item">
-                                                            <strong>location:</strong>
-                                                            <span>{pin.coordinates.lat.toFixed(4)}, {pin.coordinates.lng.toFixed(4)}</span>
+                                                    <details className="metadata-details">
+                                                        <summary className="metadata-summary">details</summary>
+                                                        <div className="metadata-grid">
+                                                            <div className="metadata-item">
+                                                                <strong>location:</strong>
+                                                                <span>{pin.coordinates.lat.toFixed(4)}, {pin.coordinates.lng.toFixed(4)}</span>
+                                                            </div>
+                                                            
+                                                            <div className="metadata-item">
+                                                                <strong>added by:</strong>
+                                                                <span>{pin.submittedBy || 'anonymous'}</span>
+                                                            </div>
+                                                            
+                                                            <div className="metadata-item">
+                                                                <strong>date:</strong>
+                                                                <span>{new Date(pin.createdAt).toLocaleDateString('en-US', {
+                                                                    year: 'numeric',
+                                                                    month: 'short',
+                                                                    day: 'numeric'
+                                                                })}</span>
+                                                            </div>
                                                         </div>
-                                                        
-                                                        <div className="metadata-item">
-                                                            <strong>added by:</strong>
-                                                            <span>{pin.submittedBy || 'anonymous'}</span>
-                                                        </div>
-                                                        
-                                                        <div className="metadata-item">
-                                                            <strong>date:</strong>
-                                                            <span>{new Date(pin.createdAt).toLocaleDateString('en-US', {
-                                                                year: 'numeric',
-                                                                month: 'short',
-                                                                day: 'numeric',
-                                                                hour: '2-digit',
-                                                                minute: '2-digit'
-                                                            })}</span>
-                                                        </div>
-                                                    </div>
+                                                    </details>
                                                     
                                                     {/* Action buttons - show delete for owner or admin */}
                                                     {(isMyPin || isAdmin()) && (

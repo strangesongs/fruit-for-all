@@ -34,6 +34,7 @@ export default class Sidebar extends React.Component {
             
             // Sidebar collapse state — always collapse on tiny screens (Jelly Star ≤360px)
             isCollapsed: typeof window !== 'undefined' && window.innerWidth <= 360,
+            isTinyScreen: typeof window !== 'undefined' && window.innerWidth <= 360,
 
             // My pins filter active state
             myPinsActive: false,
@@ -403,13 +404,189 @@ export default class Sidebar extends React.Component {
         this.setState({ isCollapsed: true });
     };
 
-   
+    renderAddFruitPopup() {
+        if (!this.state.showAddFruitPopup) return null;
+        return (
+            <div className="add-fruit-popup-overlay">
+                <div className="add-fruit-popup">
+                    <div className="popup-header">
+                        <h4>add fruit tree</h4>
+                        <button
+                            className="close-btn"
+                            onClick={this.toggleAddFruitPopup}
+                            disabled={this.state.submitting}
+                        >×</button>
+                    </div>
+                    <div className="popup-content">
+                        <div className="popup-section">
+                            <label>location:</label>
+                            <button
+                                type="button"
+                                onClick={this.getCurrentLocation}
+                                className="location-btn"
+                                disabled={this.state.submitting || this.state.locationLoading}
+                            >
+                                {this.state.locationLoading ? 'getting location...' : this.state.currentLocation ? 'update location' : 'get current location'}
+                            </button>
+                            {this.state.locationError && (
+                                <p className="error-message" style={{marginTop: '4px'}}>{this.state.locationError}</p>
+                            )}
+                            {this.state.currentLocation && (
+                                <div className="location-display">
+                                    <small>{this.state.currentLocation.lat.toFixed(6)}, {this.state.currentLocation.lng.toFixed(6)}</small>
+                                </div>
+                            )}
+                        </div>
+                        <div className="popup-section fruit-autocomplete-wrapper">
+                            <label htmlFor="popup-fruit-type">fruit or tree type:</label>
+                            <input
+                                type="text"
+                                id="popup-fruit-type"
+                                value={this.state.fruitType}
+                                onChange={this.handleFruitTypeInput}
+                                onFocus={this.handleFruitTypeInput}
+                                onBlur={() => setTimeout(() => this.setState({ showFruitSuggestions: false }), 150)}
+                                placeholder="type to search..."
+                                autoComplete="off"
+                                disabled={this.state.submitting}
+                            />
+                            {this.state.showFruitSuggestions && this.state.fruitTypeSuggestions.length > 0 && (
+                                <ul className="fruit-suggestions">
+                                    {this.state.fruitTypeSuggestions.map(fruit => (
+                                        <li
+                                            key={fruit}
+                                            onMouseDown={() => this.selectFruitType(fruit)}
+                                            className={this.state.fruitType === fruit ? 'fruit-suggestion-active' : ''}
+                                        >{fruit}</li>
+                                    ))}
+                                </ul>
+                            )}
+                            {this.state.fruitType && !FRUIT_LIST.includes(this.state.fruitType.toLowerCase()) && (
+                                <p className="fruit-not-found">no match &mdash; keep typing or select from the list</p>
+                            )}
+                        </div>
+                        <div className="popup-section">
+                            <label htmlFor="popup-notes">notes (optional):</label>
+                            <textarea
+                                id="popup-notes"
+                                value={this.state.notes}
+                                onChange={(e) => this.handleInputChange('notes', e.target.value)}
+                                placeholder="add details about this fruit tree location... (up to 500 words)"
+                                rows="4"
+                                maxLength="3000"
+                                disabled={this.state.submitting}
+                            />
+                        </div>
+                    </div>
+                    <div className="popup-footer">
+                        <button
+                            type="button"
+                            onClick={this.toggleAddFruitPopup}
+                            disabled={this.state.submitting}
+                            className="cancel-btn"
+                        >cancel</button>
+                        <button
+                            type="submit"
+                            onClick={this.submitPin}
+                            disabled={this.state.submitting || !this.state.currentLocation || !FRUIT_LIST.includes((this.state.fruitType || '').trim().toLowerCase())}
+                            className="submit-btn"
+                        >
+                            {this.state.submitting ? 'submitting...' : 'submit pin'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    renderMobileLayout() {
+        const { isCollapsed, myPinsActive } = this.state;
+        const currentUser = getUser();
+
+        return (
+            <>
+            {/* Persistent circular FAB — always visible at bottom-left */}
+            <button
+                className="mobile-fab"
+                onClick={this.toggleSidebar}
+                aria-label={isCollapsed ? 'open menu' : 'close menu'}
+            >
+                {isCollapsed
+                    ? <img src={loquatIcon} className="hamburger-icon" alt="open menu" />
+                    : <span className="mobile-fab-close" aria-hidden="true">×</span>
+                }
+            </button>
+
+            {/* Compact panel — anchored just above the FAB */}
+            {!isCollapsed && (
+                <div className="mobile-panel">
+                    <div className="mobile-panel-header">
+                        <img src={loquatIcon} className="mobile-panel-logo" alt="fruit for all" />
+                        <div>
+                            <div className="mobile-panel-title">fruit for all</div>
+                            <div className="mobile-panel-subtitle">open source orchard</div>
+                        </div>
+                    </div>
+
+                    {currentUser && (
+                        <p className="mobile-panel-welcome">welcome, {currentUser.userName}!</p>
+                    )}
+
+                    <div className="mobile-panel-actions">
+                        <button type="button" onClick={this.toggleAddFruitPopup} className="mobile-panel-btn">
+                            add fruit
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const next = !this.state.myPinsActive;
+                                this.setState({ myPinsActive: next, isCollapsed: next ? true : this.state.isCollapsed });
+                                if (this.props.onToggleMyPins) this.props.onToggleMyPins();
+                            }}
+                            className={`mobile-panel-btn${myPinsActive ? ' btn-active' : ''}`}
+                        >
+                            my pins
+                        </button>
+                    </div>
+
+                    <div className="mobile-panel-filter">
+                        <select
+                            value={this.state.selectedFruitFilter}
+                            onChange={(e) => {
+                                this.setState({ selectedFruitFilter: e.target.value });
+                                if (this.props.onFilterChange) this.props.onFilterChange(e.target.value);
+                            }}
+                            className="fruit-filter-select"
+                        >
+                            <option value="all">all fruits</option>
+                            {this.state.availableFruitTypes.map(fruit => (
+                                <option key={fruit} value={fruit}>{fruit}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <button type="button" className="mobile-panel-btn mobile-panel-logout-btn" onClick={this.handleLogout}>
+                        logout
+                    </button>
+                </div>
+            )}
+
+            {/* Add fruit popup — fixed overlay, renders above panel */}
+            {this.renderAddFruitPopup()}
+            </>
+        );
+    }
 
     render () {
-        const { authenticated, isLoginMode, authUserName, authPassword, authEmail, authLoading, authError } = this.state;
+        const { authenticated, isLoginMode, authUserName, authPassword, authEmail, authLoading, authError, isTinyScreen } = this.state;
         const currentUser = getUser();
 
         const isAuthModal = !authenticated;
+
+        // Tiny screen (Jelly Star ≤360px) + authenticated: dedicated compact mobile layout
+        if (isTinyScreen && authenticated) {
+            return this.renderMobileLayout();
+        }
 
         return (
         <>
@@ -604,112 +781,7 @@ export default class Sidebar extends React.Component {
                     </div>
 
                     {/* Add Fruit Popup */}
-                    {this.state.showAddFruitPopup && (
-                        <div className="add-fruit-popup-overlay">
-                            <div className="add-fruit-popup">
-                                <div className="popup-header">
-                                    <h4>add fruit tree</h4>
-                                    <button 
-                                        className="close-btn"
-                                        onClick={this.toggleAddFruitPopup}
-                                        disabled={this.state.submitting}
-                                    >
-                                        ×
-                                    </button>
-                                </div>
-
-                                <div className="popup-content">
-                                    {/* Location Section */}
-                                    <div className="popup-section">
-                                        <label>location:</label>
-                                        <button 
-                                            type="button" 
-                                            onClick={this.getCurrentLocation}
-                                            className="location-btn"
-                                            disabled={this.state.submitting || this.state.locationLoading}
-                                        >
-                                            {this.state.locationLoading ? 'getting location...' : this.state.currentLocation ? 'update location' : 'get current location'}
-                                        </button>
-                                        {this.state.locationError && (
-                                            <p className="error-message" style={{marginTop: '4px'}}>{this.state.locationError}</p>
-                                        )}
-                                        {this.state.currentLocation && (
-                                            <div className="location-display">
-                                                <small>
-                                                    {this.state.currentLocation.lat.toFixed(6)}, {this.state.currentLocation.lng.toFixed(6)}
-                                                </small>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Fruit Type Section */}
-                                    <div className="popup-section fruit-autocomplete-wrapper">
-                                        <label htmlFor="popup-fruit-type">fruit or tree type:</label>
-                                        <input
-                                            type="text"
-                                            id="popup-fruit-type"
-                                            value={this.state.fruitType}
-                                            onChange={this.handleFruitTypeInput}
-                                            onFocus={this.handleFruitTypeInput}
-                                            onBlur={() => setTimeout(() => this.setState({ showFruitSuggestions: false }), 150)}
-                                            placeholder="type to search..."
-                                            autoComplete="off"
-                                            disabled={this.state.submitting}
-                                        />
-                                        {this.state.showFruitSuggestions && this.state.fruitTypeSuggestions.length > 0 && (
-                                            <ul className="fruit-suggestions">
-                                                {this.state.fruitTypeSuggestions.map(fruit => (
-                                                    <li
-                                                        key={fruit}
-                                                        onMouseDown={() => this.selectFruitType(fruit)}
-                                                        className={this.state.fruitType === fruit ? 'fruit-suggestion-active' : ''}
-                                                    >
-                                                        {fruit}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                        {this.state.fruitType && !FRUIT_LIST.includes(this.state.fruitType.toLowerCase()) && (
-                                            <p className="fruit-not-found">no match &mdash; keep typing or select from the list</p>
-                                        )}
-                                    </div>
-
-                                    {/* Notes Section */}
-                                    <div className="popup-section">
-                                        <label htmlFor="popup-notes">notes (optional):</label>
-                                        <textarea
-                                            id="popup-notes"
-                                            value={this.state.notes}
-                                            onChange={(e) => this.handleInputChange('notes', e.target.value)}
-                                            placeholder="add details about this fruit tree location... (up to 500 words)"
-                                            rows="4"
-                                            maxLength="3000"
-                                            disabled={this.state.submitting}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="popup-footer">
-                                    <button 
-                                        type="button"
-                                        onClick={this.toggleAddFruitPopup}
-                                        disabled={this.state.submitting}
-                                        className="cancel-btn"
-                                    >
-                                        cancel
-                                    </button>
-                                    <button 
-                                        type="submit" 
-                                        onClick={this.submitPin}
-                                        disabled={this.state.submitting || !this.state.currentLocation || !FRUIT_LIST.includes((this.state.fruitType || '').trim().toLowerCase())}
-                                        className="submit-btn"
-                                    >
-                                        {this.state.submitting ? 'submitting...' : 'submit pin'}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    {this.renderAddFruitPopup()}
 
                     {/* Logout button at bottom */}
                     <div className="bottom-section">

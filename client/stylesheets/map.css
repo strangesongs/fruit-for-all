@@ -223,13 +223,13 @@
 
 .pin-popup .popup-content {
     margin: 0;
-    padding: 8px;
+    padding: 6px 8px;
     background-color: white !important;
 }
 
 .notes-section {
-    margin-bottom: 8px;
-    padding: 8px;
+    margin-bottom: 6px;
+    padding: 5px 8px;
     background: #fafafa;
     border-radius: 4px;
     border-left: 3px solid #5c6b2e;
@@ -237,14 +237,14 @@
 
 .notes-section strong {
     color: #5c6b2e;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: bold;
 }
 
 .pin-notes {
-    margin: 6px 0 0 0;
-    font-size: 0.9rem;
-    line-height: 1.4;
+    margin: 3px 0 0 0;
+    font-size: 0.85rem;
+    line-height: 1.35;
     color: var(--text);
     font-style: italic;
 }
@@ -341,23 +341,24 @@
 
 .metadata-grid {
     display: grid;
-    gap: 6px;
+    gap: 3px;
+    margin-top: 4px;
 }
 
 .metadata-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 4px 6px;
+    padding: 3px 5px;
     background: #fafafa;
     border-radius: 3px;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
 }
 
 .metadata-item strong {
     color: #7a3c20;
     font-weight: bold;
-    min-width: 80px;
+    min-width: 70px;
 }
 
 /* Style fruit title to match label colors */
@@ -370,7 +371,46 @@
 .metadata-item span {
     color: var(--text);
     text-align: right;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
+}
+
+/* Details accordion for pin metadata */
+.metadata-details {
+    margin: 4px 0 0 0;
+}
+
+.metadata-summary {
+    font-size: 0.72rem;
+    font-weight: bold;
+    color: var(--text-muted);
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 0;
+    font-family: 'Vollkorn', serif;
+}
+
+.metadata-summary::-webkit-details-marker {
+    display: none;
+}
+
+.metadata-summary::before {
+    content: '▸';
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    transition: transform 0.15s ease;
+    display: inline-block;
+}
+
+.metadata-details[open] .metadata-summary::before {
+    transform: rotate(90deg);
+}
+
+.metadata-summary:hover {
+    color: var(--red);
 }
 
 /* Season strip — month calendar bar in popup header */
@@ -451,9 +491,7 @@
 
 /* Pin actions section */
 .pin-actions {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid #e0e0e0;
+    margin-top: 6px;
     text-align: center;
 }
 
@@ -572,6 +610,35 @@
     border: 2px inset #3d5a3e;
 }
 
+/* Attribution — keep legally required credit but render it unobtrusively */
+.leaflet-control-attribution {
+    font-size: 0.55rem !important;
+    line-height: 1.2 !important;
+    opacity: 0.5 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 1px 4px !important;
+    color: var(--text-muted) !important;
+}
+
+.leaflet-control-attribution a {
+    color: var(--text-muted) !important;
+    text-decoration: none !important;
+}
+
+.leaflet-control-attribution a:hover {
+    text-decoration: underline !important;
+    opacity: 1 !important;
+}
+
+.leaflet-bottom.leaflet-right {
+    pointer-events: none;
+}
+
+.leaflet-control-attribution {
+    pointer-events: auto;
+}
+
 /* Mobile zoom controls positioning - avoid sidebar overlap */
 @media (max-width: 768px) {
     .leaflet-top.leaflet-left {
@@ -614,9 +681,21 @@
         right: 10px;
     }
 
+    /* Hide pin count badge on tiny screens — too little room and it overlaps popups */
     .pin-count-badge {
-        top: 140px;
-        bottom: auto;
-        right: 10px;
+        display: none;
+    }
+
+    /* Constrain Leaflet popup to viewport width — overrides min-width: 240px */
+    .leaflet-popup-content-wrapper {
+        max-width: calc(100vw - 20px) !important;
+        overflow-y: auto;
+    }
+
+    .pin-popup {
+        min-width: 0 !important;
+        width: calc(100vw - 24px);
+        max-height: 72dvh;
+        overflow-y: auto;
     }
 }
