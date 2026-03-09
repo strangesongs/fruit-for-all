@@ -29,7 +29,7 @@ export const FRUIT_SEASONS = {
       9: [6, 7, 8],
       8: [7, 8],
       7: [7, 8],
-      6: [8],
+      6: [7, 8],
     },
     display: "Summer"
   },
@@ -52,6 +52,7 @@ export const FRUIT_SEASONS = {
       8: [6, 7],
       7: [6, 7],
       6: [7],
+      5: [6, 7],                 // Door County WI, Traverse City MI area
     },
     display: "Early Summer"
   },
@@ -138,6 +139,7 @@ export const FRUIT_SEASONS = {
       8: [8, 9, 10],
       7: [9, 10],
       6: [9, 10],
+      5: [9, 10],
     },
     display: "Late Summer - Fall"
   },
@@ -150,6 +152,7 @@ export const FRUIT_SEASONS = {
       8: [6, 7, 8],
       7: [7, 8],
       6: [7, 8],
+      5: [7, 8],
     },
     display: "Summer"
   },
@@ -161,6 +164,7 @@ export const FRUIT_SEASONS = {
       8: [6, 7, 8],
       7: [7, 8],
       6: [7, 8],
+      5: [7, 8],
     },
     display: "Summer"
   },
@@ -182,6 +186,7 @@ export const FRUIT_SEASONS = {
       8: [6, 7, 8],
       7: [7, 8],
       6: [7, 8],
+      5: [7, 8, 9],              // Michigan, Maine highbush blueberry
     },
     display: "Summer"
   },
@@ -391,6 +396,7 @@ export const FRUIT_SEASONS = {
       8: [6, 7],
       7: [6, 7],
       6: [7],
+      5: [7],                    // Traverse City MI, Wisconsin
     },
     display: "Early Summer"
   },
@@ -657,6 +663,7 @@ export const FRUIT_SEASONS = {
       8: [7, 8],
       7: [7, 8],
       6: [7, 8],
+      5: [7, 8],
     },
     display: "Summer"
   },
@@ -688,6 +695,7 @@ export const FRUIT_SEASONS = {
       8: [7, 8],
       7: [7, 8],
       6: [7, 8],
+      5: [7, 8],
     },
     display: "Summer"
   },

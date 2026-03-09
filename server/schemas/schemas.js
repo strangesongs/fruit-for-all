@@ -13,29 +13,84 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 
 // Zone detection for seasonal indicators
-function detectZone(lat, lng) {
-  // Default to zone 9 if outside continental US bounds
+// Tries phzmapi.com first; falls back to local heuristic on timeout/error.
+async function detectZone(lat, lng) {
+  try {
+    const url = `https://phzmapi.com/${lat}/${lng}.json`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(4000) });
+    if (res.ok) {
+      const data = await res.json();
+      // phzmapi returns e.g. "9b" — strip the sub-zone letter
+      const z = parseInt(data.zone);
+      if (z >= 1 && z <= 13) return z;
+    }
+  } catch (_) {
+    // timeout, network error, or unexpected response — fall through to heuristic
+  }
+  return detectZoneFallback(lat, lng);
+}
+
+// Local heuristic fallback (used when phzmapi is unreachable)
+function detectZoneFallback(lat, lng) {
+  // Outside continental US: rough latitude-only fallback
   if (lat < 24 || lat > 49 || lng < -125 || lng > -66) {
-    // Simplified international fallback
     if (lat > 40) return 6;
     if (lat > 30) return 8;
     if (lat > 15) return 10;
     return 11;
   }
-  
-  // Continental US approximation
+
+  // --- South Florida (Zone 10-11) ---
+  if (lat < 25.5) return 11;  // Florida Keys / southernmost tip
   if (lat < 28 && lng > -82) return 10;
+
+  // --- Southern California coast (Zone 10) ---
   if (lat < 33 && lng < -117) return 10;
+
+  // --- Low Sonoran desert (Zone 10): Yuma / low-elevation SW Arizona ---
+  if (lat < 33 && lng >= -115 && lng < -109) return 10;
+
+  // --- Interior desert Southwest (Zone 9): Phoenix, Tucson, Las Vegas ---
+  if (lat < 37 && lng >= -117 && lng < -109) return 9;
+
+  // --- Pacific Coast + Puget Sound / Willamette Valley (maritime climate) ---
+  if (lng < -122) {
+    if (lat < 34) return 10;
+    if (lat < 39) return 9;   // Bay Area, Northern CA coast, Napa/Sonoma
+    if (lat < 49) return 8;   // Oregon coast, WA coast, Portland, Seattle
+  }
+
+  // --- California Central and Sacramento Valleys (Zone 9) ---
+  if (lat < 39 && lng >= -122 && lng < -118) return 9;
+
+  // --- Gulf Coast (Zone 9): Florida north of 28°, Gulf states coastline ---
   if (lat < 31 && lng > -85) return 9;
-  if (lat < 35 && lng < -116) return 9;
-  if (lat < 33 && lng > -100) return 8;
+  if (lat < 32 && lng > -97) return 9;
+
+  // --- Southeast, Deep South, Mid-South (Zone 8) ---
+  if (lat < 36 && lng > -100) return 8;
   if (lat < 38 && lng > -95) return 8;
-  if (lat < 45 && lng < -120) return 8;
   if (lat < 38 && lng > -78) return 8;
+
+  // --- SW high desert (Zone 7): Albuquerque, Santa Fe, El Paso area ---
+  if (lat < 37 && lng > -109 && lng < -100) return 7;
+
+  // --- Great Basin and Intermountain West (Zone 7): Reno, Salt Lake City ---
+  if (lat < 42 && lng > -120 && lng < -109) return 7;
+
+  // --- Mid-Atlantic and Southern Appalachia (Zone 7) ---
   if (lat < 37 && lng > -100 && lng < -75) return 7;
   if (lat < 40 && lng > -80) return 7;
+
+  // --- NY / NE coastal corridor (Zone 7) ---
+  if (lat < 42 && lng > -76) return 7;
+
+  // --- Upper Midwest, Great Plains (Zone 6) ---
   if (lat < 42 && lng > -95) return 6;
   if (lat < 44 && lng > -75) return 6;
+  if (lat < 48 && lng > -118 && lng < -113) return 6; // Western ID / Spokane corridor
+
+  // --- Northern tier ---
   if (lat < 45) return 5;
   if (lat < 47) return 4;
   return 3;
@@ -227,7 +282,7 @@ async function createPin(pinData) {
   const lng = parseFloat(pinData.coordinates.lng);
   
   // Detect USDA hardiness zone from coordinates
-  const zone = detectZone(lat, lng);
+  const zone = await detectZone(lat, lng);
   
   const pin = {
     pinId,
