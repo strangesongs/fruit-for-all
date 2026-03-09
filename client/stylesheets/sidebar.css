@@ -39,7 +39,8 @@ html, body {
     width: 280px;
     max-height: calc(100vh - 40px);
     box-sizing: border-box;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     border: 2px solid var(--border);
     border-radius: 8px;
     display: flex;
@@ -49,6 +50,24 @@ html, body {
     box-shadow: 5px 6px 10px rgba(0, 0, 0, 0.22);
     padding: 12px;
     z-index: 1000;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: #ece5d4;
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: #c8b888;
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: #7a3c20;
 }
 
 .action-buttons {
@@ -531,6 +550,7 @@ button.auth-submit-btn:disabled {
     padding: 5px 12px;
     border-bottom: 1px solid var(--border);
     background-color: var(--card);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
     border-radius: 6px 6px 0 0;
 }
 
@@ -729,6 +749,18 @@ button.close-btn:hover {
 .sidebar.collapsed .hamburger-btn {
     position: static;
     margin: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hamburger-btn .hamburger-icon {
+    width: 32px;
+    height: 32px;
+    display: block;
+    object-fit: contain;
 }
 
 /* Mobile responsiveness */
@@ -851,26 +883,76 @@ button.close-btn:hover {
     }
 }
 
-/* ── Jelly Star / sub-360px screens ────────────────────────────────────── */
+/* ── Jelly Star / sub-360px: bottom-sheet sidebar ────────────────────────── */
 @media (max-width: 360px) {
-    /* Sidebar fills available width with 8px breathing room */
+    /* Full-width sheet anchored to bottom of screen */
     .sidebar {
-        width: calc(100vw - 16px);
-        top: 8px;
-        left: 8px;
-        padding: 8px;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-height: 65dvh;
+        border-radius: 12px 12px 0 0;
+        padding: 10px 12px 24px;
     }
 
+    /* Drag handle at top of sheet */
+    .sidebar::before {
+        content: '';
+        display: block;
+        width: 36px;
+        height: 4px;
+        background: var(--border);
+        border-radius: 2px;
+        margin: 0 auto 8px;
+        flex-shrink: 0;
+    }
+
+    /* Hamburger / close button moves to top-right in sheet mode */
+    .sidebar .hamburger-btn {
+        top: 14px;
+        left: auto;
+        right: 10px;
+    }
+
+    /* Collapsed: small circular floating button at bottom-left */
     .sidebar.collapsed {
         width: 46px;
         height: 46px;
-        top: 8px;
-        left: 8px;
+        left: 12px;
+        right: auto;
+        bottom: 12px;
+        border-radius: 50%;
+        padding: 0;
+        max-height: 46px;
     }
 
-    /* Auth modal stays centered on tiny screens — no full-screen takeover */
+    /* No drag handle on the collapsed button */
+    .sidebar.collapsed::before {
+        display: none;
+    }
+
+    /* Auth modal: centred overlay instead of bottom sheet */
     .sidebar.sidebar-auth-modal {
+        top: 50%;
+        bottom: auto;
+        left: 50%;
+        right: auto;
+        transform: translate(-50%, -50%);
         width: calc(100vw - 24px);
+        max-height: 90dvh;
+        border-radius: 8px;
+    }
+
+    .sidebar.sidebar-auth-modal::before {
+        display: none;
+    }
+
+    .sidebar.sidebar-auth-modal .hamburger-btn {
+        top: 8px;
+        right: 8px;
+        left: auto;
     }
 
     /* Hide loquat image on tiny screens to save vertical space */

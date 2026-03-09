@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>loquat — season badge icon explorations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vollkorn:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red:      #7a3c20;
+    --red-dark: #5c3018;
+    --surface:  #f7f2e4;
+    --card:     #f2ece0;
+    --border:   #c8b888;
+    --text:     #2b1a0e;
+    --muted:    #8a7050;
+    --olive:    #5c6b2e;
+    --del:      #3d5a3e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #1a1a1a;
+    font-family: 'Vollkorn', serif;
+    color: #eee;
+    padding: 40px 32px 80px;
+  }
+  h1 { font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: #777; margin-bottom: 10px; }
+  .section-title {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #555;
+    margin: 48px 0 18px;
+  }
+  .section-title span { color: #aaa; margin-left: 8px; font-style: italic; text-transform: none; letter-spacing: 0; }
+
+  /* popup card container */
+  .popup-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: flex-start;
+  }
+  .popup-card {
+    background: var(--card);
+    border-radius: 8px;
+    width: 220px;
+    overflow: hidden;
+    box-shadow: 5px 6px 10px rgba(0,0,0,0.35);
+    color: var(--text);
+  }
+  .popup-header {
+    padding: 8px 10px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    /* SVG paper noise */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+  }
+  .fruit-title { font-size: 1rem; font-weight: 600; color: var(--red); }
+  .popup-body { padding: 8px 10px 12px; font-size: 0.85rem; color: var(--muted); }
+
+  /* ── OPTION A: current (text-only pill) ── */
+  .badge-a { display: inline-block; margin-top: 6px; padding: 3px 9px; border-radius: 4px; font-size: 0.78rem; }
+  .badge-a.in  { background: rgba(92,107,46,0.12); color: var(--del); border: 1px solid rgba(92,107,46,0.3); }
+  .badge-a.up  { background: var(--card); color: var(--muted); border: 1px solid var(--border); }
+  .badge-a.out { background: var(--card); color: var(--muted); border: 1px solid var(--border); opacity: 0.7; }
+
+  /* ── OPTION B: glyph + label pill ── */
+  .badge-b {
+    display: inline-flex; align-items: center; gap: 5px;
+    margin-top: 6px; padding: 3px 9px; border-radius: 4px; font-size: 0.78rem;
+  }
+  .badge-b svg { flex-shrink: 0; }
+  .badge-b.in  { background: rgba(92,107,46,0.12); color: var(--del);   border: 1px solid rgba(92,107,46,0.3); }
+  .badge-b.up  { background: rgba(122,60,32,0.08); color: var(--red);   border: 1px solid rgba(122,60,32,0.22); }
+  .badge-b.out { background: var(--card);           color: var(--muted); border: 1px solid var(--border); opacity: 0.72; }
+  .badge-b.gen { background: var(--card);           color: var(--muted); border: 1px solid var(--border); }
+
+  /* ── OPTION C: dot pulse ── */
+  .badge-c {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 6px; padding: 3px 9px; border-radius: 4px; font-size: 0.78rem;
+    background: var(--card); color: var(--muted); border: 1px solid var(--border);
+  }
+  .dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  }
+  .dot-green  { background: #5c6b2e; }
+  .dot-amber  { background: #b36a20; }
+  .dot-grey   { background: #b8a888; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(0.85); }
+  }
+  .dot-green { animation: pulse 2s ease-in-out infinite; }
+
+  /* ── OPTION D: season arc / calendar strip ── */
+  .badge-d {
+    display: flex; align-items: center; gap: 7px;
+    margin-top: 6px; padding: 4px 10px; border-radius: 4px; font-size: 0.78rem;
+    background: var(--card); color: var(--muted); border: 1px solid var(--border);
+    width: fit-content;
+  }
+  .arc-wrap { position: relative; width: 28px; height: 14px; }
+  .arc-track { position: absolute; top: 6px; left: 0; width: 28px; height: 4px; background: #ddd4c0; border-radius: 2px; }
+  .arc-fill  { position: absolute; top: 6px; left: 0; height: 4px; border-radius: 2px; }
+  .arc-fill.in  { width: 28px; background: #5c6b2e; }
+  .arc-fill.up  { width: 14px; background: #b36a20; }
+  .arc-fill.out { width: 6px;  background: #b8a888; }
+  .arc-cursor { position: absolute; top: 3px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #f2ece0; }
+  .arc-cursor.in  { left: 18px; background: #5c6b2e; }
+  .arc-cursor.up  { left: 10px; background: #b36a20; }
+  .arc-cursor.out { left: 0;    background: #b8a888; }
+
+  /* ── OPTION E: icon-only chip (hover reveals label) ── */
+  .badge-e {
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-top: 6px; width: 26px; height: 26px; border-radius: 50%;
+    cursor: default; transition: width 0.25s ease, border-radius 0.25s ease, padding 0.25s ease;
+  }
+  .badge-e .label { overflow: hidden; max-width: 0; white-space: nowrap; font-size: 0.72rem; transition: max-width 0.25s ease; }
+  .badge-e:hover { width: auto; border-radius: 13px; padding: 0 9px 0 6px; gap: 5px; }
+  .badge-e:hover .label { max-width: 110px; }
+  .badge-e.in  { background: rgba(92,107,46,0.14);  color: var(--del);   border: 1px solid rgba(92,107,46,0.3); }
+  .badge-e.up  { background: rgba(122,60,32,0.09);  color: var(--red);   border: 1px solid rgba(122,60,32,0.25); }
+  .badge-e.out { background: var(--card);            color: var(--muted); border: 1px solid var(--border); }
+
+  .label-row { font-size: 0.7rem; color: #666; margin-top: 6px; }
+
+  /* ── season strip ── */
+  .strip-wrap { margin-top: 7px; }
+  .strip-label { font-size: 0.65rem; color: var(--muted); margin-bottom: 3px; }
+  .strip {
+    display: flex; width: 100%; height: 8px; border-radius: 4px; overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .strip-seg { flex: 1; }
+  .strip-seg.peak     { background: #5c6b2e; }
+  .strip-seg.shoulder { background: #a4b86a; }
+  .strip-seg.off      { background: #dfd7c4; }
+  .strip-seg.now      outline: none; /* no outline needed */
+  .strip-now-marker {
+    position: relative; display: flex; width: 100%; height: 8px;
+    border-radius: 4px; overflow: visible;
+    margin-top: -8px;
+    pointer-events: none;
+  }
+  .now-tick {
+    position: absolute; top: -3px;
+    width: 2px; height: 14px; background: var(--red); border-radius: 1px;
+  }
+  .strip-month-labels {
+    display: flex; justify-content: space-between;
+    font-size: 0.55rem; color: var(--muted); margin-top: 2px;
+  }
+  .strip-container { position: relative; }
+
+  hr.divider { border: none; border-top: 1px solid #2e2e2e; margin: 40px 0 0; }
+</style>
+</head>
+<body>
+
+<h1>loquat — season badge explorations</h1>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<p class="section-title">① current (reference) <span>text-only pill, no icons</span></p>
+<div class="popup-wrap">
+
+  <div class="popup-card">
+    <div class="popup-header">
+      <div class="fruit-title">loquat</div>
+      <div class="badge-a in">in season now</div>
+    </div>
+    <div class="popup-body">zone 10 · added by jess</div>
+  </div>
+
+  <div class="popup-card">
+    <div class="popup-header">
+      <div class="fruit-title">fig</div>
+      <div class="badge-a up">season: Jun – Sep</div>
+    </div>
+    <div class="popup-body">zone 9 · added by drew</div>
+  </div>
+
+  <div class="popup-card">
+    <div class="popup-header">
+      <div class="fruit-title">persimmon</div>
+      <div class="badge-a out">out of season</div>
+    </div>
+    <div class="popup-body">zone 8 · added by mara</div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<p class="section-title">② glyphs + label <span>small inline SVG icon left of text</span></p>
+<div class="popup-wrap">
+
+  <!-- in season — leaf icon -->
+  <div class="popup-card">
+    <div class="popup-header">
+      <div class="fruit-title">loquat</div>
+      <div class="badge-b in">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+          <path d="M2 10 C2 10 3 5 8 3 C10 2 11 2 11 2 C11 2 11 3 10 5 C8 8 4 10 2 10Z" fill="currentColor"/>
+          <line x1="2" y1="10" x2="6" y2="6" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+        in season now
+      </div>
+    </div>
+    <div class="popup-body">zone 10 · added by jess</div>
+  </div>
+
+  <!-- upcoming — sun icon -->
+  <div class="popup-card">
+    <div class="popup-header">
+      <div class="fruit-title">fig</div>
+      <div class="badge-b up">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+          <circle cx="6" cy="6" r="2.5" fill="currentColor"/>
+          <line x1="6" y1="0.5" x2="6" y2="2"   stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="6" y1="10"  x2="6" y2="11.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="0.5" y1="6" x2="2"   y2="6"  stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="10"  y1="6" x2="11.5" y2="6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="2.2"  y1="2.2"  x2="3.2"  y2="3.2"  stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="8.8"  y1="8.8"  x2="9.8"  y2="9.8"  stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="9.8"  y1="2.2"  x2="8.8"  y2="3.2"  stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="3.2"  y1="8.8"  x2="2.2"  y2="9.8"  stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        Jun – Sep
+      </div>
+    </div>
+    <div class="popup-body">zone 9 · added by drew</div>
+  </div>
+
+  <!-- out of season — moon icon -->
+  <div class="popup-card">
+    <div class="popup-header">
+      <div class="fruit-title">persimmon</div>
+      <div class="badge-b out">
+        <svg width="10" height="11" viewBox="0 0 10 12" fill="none">
+          <path d="M7.5 1.5 A4.5 4.5 0 1 0 7.5 10.5 A3 3 0 1 1 7.5 1.5Z" fill="currentColor"/>
+        </svg>
+        out of season
+      </div>
+    </div>
+    <div class="popup-body">zone 8 · added by mara</div>
+  </div>
+
+  <!-- general — calendar icon -->
+  <div class="popup-card">
+    <div class="popup-header">
+      <div class="fruit-title">apple</div>
+      <div class="badge-b gen">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+          <rect x="1" y="2.5" width="10" height="9" rx="1.5" stroke="currentColor" stroke-width="1.1" fill="none"/>
+          <line x1="1" y1="5.5" x2="11" y2="5.5" stroke="currentColor" stroke-width="1"/>
+          <line x1="4" y1="1"   x2="4"  y2="4"   stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="8" y1="1"   x2="8"  y2="4"   stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        late summer – fall
+      </div>
+    </div>
+    <div class="popup-body">zone 7 · added by theo</div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<p class="section-title">③ dot pulse indicator <span>animated dot left of text — green pulses when in season</span></p>
+<div class="popup-wrap">
+
+  <div class="popup-card">
+    <div class="popup-header">
+      <div class="fruit-title">loquat</div>
+      <div class="badge-c">
+        <span class="dot dot-green"></span>
+        in season now
+      </div>
+    </div>
+    <div class="popup-body">zone 10 · added by jess</div>
+  </div>
+
+  <div class="popup-card">
+    <div class="popup-header">
+      <div class="fruit-title">fig</div>
+      <div class="badge-c">
+        <span class="dot dot-amber"></span>
+        Jun – Sep
+      </div>
+    </div>
+    <div class="popup-body">zone 9 · added by drew</div>
+  </div>
+
+  <div class="popup-card">
+    <div class="popup-header">
+      <div class="fruit-title">persimmon</div>
+      <div class="badge-c" style="opacity:0.65">
+        <span class="dot dot-grey"></span>
+        out of season
+      </div>
+    </div>
+    <div class="popup-body">zone 8 · added by mara</div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<p class="section-title">④ month-strip calendar <span>12-segment bar showing peak / shoulder / off months; red tick = today</span></p>
+<div class="popup-wrap">
+
+  <!-- loquat: in season peak Feb–Apr, zone 10 — current month March -->
+  <div class="popup-card">
+    <div class="popup-header">
+      <div class="fruit-title">loquat</div>
+      <div class="badge-b in" style="margin-bottom:6px">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+          <path d="M2 10 C2 10 3 5 8 3 C10 2 11 2 11 2 C11 2 11 3 10 5 C8 8 4 10 2 10Z" fill="currentColor"/>
+          <line x1="2" y1="10" x2="6" y2="6" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+        in season now
+      </div>
+      <div class="strip-container">
+        <div class="strip-label">jan ———————— dec</div>
+        <!-- loquat peak Nov–Mar (zones 9-10) -->
+        <div class="strip">
+          <div class="strip-seg off"></div>      <!-- jan -->
+          <div class="strip-seg peak"></div>     <!-- feb -->
+          <div class="strip-seg peak"></div>     <!-- mar -->
+          <div class="strip-seg peak"></div>     <!-- apr -->
+          <div class="strip-seg shoulder"></div> <!-- may -->
+          <div class="strip-seg off"></div>      <!-- jun -->
+          <div class="strip-seg off"></div>      <!-- jul -->
+          <div class="strip-seg off"></div>      <!-- aug -->
+          <div class="strip-seg off"></div>      <!-- sep -->
+          <div class="strip-seg off"></div>      <!-- oct -->
+          <div class="strip-seg shoulder"></div> <!-- nov -->
+          <div class="strip-seg peak"></div>     <!-- dec -->
+        </div>
+        <!-- today marker: March = index 2 → left = (2/12)*100% + (1/12/2)*100% -->
+        <div class="strip-now-marker">
+          <div class="now-tick" style="left: calc((2.5 / 12) * 100% - 1px)"></div>
+        </div>
+        <div class="strip-month-labels">
+          <span>J</span><span>F</span><span>M</span><span>A</span><span>M</span><span>J</span>
+          <span>J</span><span>A</span><span>S</span><span>O</span><span>N</span><span>D</span>
+        </div>
+      </div>
+    </div>
+    <div class="popup-body">zone 10 · added by jess</div>
+  </div>
+
+  <!-- fig: peak Jun–Sep -->
+  <div class="popup-card">
+    <div class="popup-header">
+      <div class="fruit-title">fig</div>
+      <div class="badge-b up" style="margin-bottom:6px">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+          <circle cx="6" cy="6" r="2.5" fill="currentColor"/>
+          <line x1="6" y1="0.5" x2="6" y2="2"   stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="6" y1="10"  x2="6" y2="11.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="0.5" y1="6" x2="2"   y2="6"  stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="10"  y1="6" x2="11.5" y2="6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        Jun – Sep
+      </div>
+      <div class="strip-container">
+        <div class="strip-label">jan ———————— dec</div>
+        <div class="strip">
+          <div class="strip-seg off"></div>
+          <div class="strip-seg off"></div>
+          <div class="strip-seg off"></div>
+          <div class="strip-seg off"></div>
+          <div class="strip-seg shoulder"></div>
+          <div class="strip-seg peak"></div>
+          <div class="strip-seg peak"></div>
+          <div class="strip-seg peak"></div>
+          <div class="strip-seg peak"></div>
+          <div class="strip-seg shoulder"></div>
+          <div class="strip-seg off"></div>
+          <div class="strip-seg off"></div>
+        </div>
+        <div class="strip-now-marker">
+          <div class="now-tick" style="left: calc((2.5 / 12) * 100% - 1px)"></div>
+        </div>
+        <div class="strip-month-labels">
+          <span>J</span><span>F</span><span>M</span><span>A</span><span>M</span><span>J</span>
+          <span>J</span><span>A</span><span>S</span><span>O</span><span>N</span><span>D</span>
+        </div>
+      </div>
+    </div>
+    <div class="popup-body">zone 9 · added by drew</div>
+  </div>
+
+  <!-- persimmon: peak Oct–Nov -->
+  <div class="popup-card">
+    <div class="popup-header">
+      <div class="fruit-title">persimmon</div>
+      <div class="badge-b out" style="margin-bottom:6px">
+        <svg width="10" height="11" viewBox="0 0 10 12" fill="none">
+          <path d="M7.5 1.5 A4.5 4.5 0 1 0 7.5 10.5 A3 3 0 1 1 7.5 1.5Z" fill="currentColor"/>
+        </svg>
+        out of season
+      </div>
+      <div class="strip-container">
+        <div class="strip-label">jan ———————— dec</div>
+        <div class="strip">
+          <div class="strip-seg off"></div>
+          <div class="strip-seg off"></div>
+          <div class="strip-seg off"></div>
+          <div class="strip-seg off"></div>
+          <div class="strip-seg off"></div>
+          <div class="strip-seg off"></div>
+          <div class="strip-seg off"></div>
+          <div class="strip-seg off"></div>
+          <div class="strip-seg shoulder"></div>
+          <div class="strip-seg peak"></div>
+          <div class="strip-seg peak"></div>
+          <div class="strip-seg shoulder"></div>
+        </div>
+        <div class="strip-now-marker">
+          <div class="now-tick" style="left: calc((2.5 / 12) * 100% - 1px)"></div>
+        </div>
+        <div class="strip-month-labels">
+          <span>J</span><span>F</span><span>M</span><span>A</span><span>M</span><span>J</span>
+          <span>J</span><span>A</span><span>S</span><span>O</span><span>N</span><span>D</span>
+        </div>
+      </div>
+    </div>
+    <div class="popup-body">zone 8 · added by mara</div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<p class="section-title">⑤ icon-only chip <span>collapses to circular icon; expands with text on hover</span></p>
+<div class="popup-wrap">
+
+  <div class="popup-card">
+    <div class="popup-header">
+      <div class="fruit-title">loquat</div>
+      <div class="badge-e in">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+          <path d="M2 10 C2 10 3 5 8 3 C10 2 11 2 11 2 C11 2 11 3 10 5 C8 8 4 10 2 10Z" fill="currentColor"/>
+          <line x1="2" y1="10" x2="6" y2="6" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+        <span class="label">in season now</span>
+      </div>
+      <div class="label-row">← hover to expand</div>
+    </div>
+    <div class="popup-body">zone 10 · added by jess</div>
+  </div>
+
+  <div class="popup-card">
+    <div class="popup-header">
+      <div class="fruit-title">fig</div>
+      <div class="badge-e up">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+          <circle cx="6" cy="6" r="2.5" fill="currentColor"/>
+          <line x1="6" y1="0.5" x2="6" y2="2"   stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="6" y1="10"  x2="6" y2="11.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="0.5" y1="6" x2="2"   y2="6"  stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="10"  y1="6" x2="11.5" y2="6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        <span class="label">Jun – Sep</span>
+      </div>
+      <div class="label-row">← hover to expand</div>
+    </div>
+    <div class="popup-body">zone 9 · added by drew</div>
+  </div>
+
+  <div class="popup-card">
+    <div class="popup-header">
+      <div class="fruit-title">persimmon</div>
+      <div class="badge-e out">
+        <svg width="10" height="11" viewBox="0 0 10 12" fill="none">
+          <path d="M7.5 1.5 A4.5 4.5 0 1 0 7.5 10.5 A3 3 0 1 1 7.5 1.5Z" fill="currentColor"/>
+        </svg>
+        <span class="label">out of season</span>
+      </div>
+      <div class="label-row">← hover to expand</div>
+    </div>
+    <div class="popup-body">zone 8 · added by mara</div>
+  </div>
+
+</div>
+
+<hr class="divider">
+<p style="font-size:0.62rem;color:#444;margin-top:18px;">
+  strip legend: <span style="display:inline-block;width:10px;height:8px;background:#5c6b2e;border-radius:2px;vertical-align:middle;margin:0 3px"></span> peak &nbsp;
+  <span style="display:inline-block;width:10px;height:8px;background:#a4b86a;border-radius:2px;vertical-align:middle;margin:0 3px"></span> shoulder &nbsp;
+  <span style="display:inline-block;width:10px;height:8px;background:#dfd7c4;border-radius:2px;vertical-align:middle;margin:0 3px"></span> off &nbsp;
+  <span style="display:inline-block;width:2px;height:12px;background:#7a3c20;border-radius:1px;vertical-align:middle;margin:0 3px"></span> today
+</p>
+
+</body>
+</html>

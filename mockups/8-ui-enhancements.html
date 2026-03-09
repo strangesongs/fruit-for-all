@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mockup 8: UI Enhancements</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vollkorn:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 40px 28px 80px;
+      background: #1a1a1a;
+      font-family: 'Vollkorn', serif;
+    }
+    h1 { color: #fff; font-size: 17px; margin: 0 0 4px; font-family: monospace; }
+    .subtitle { color: #888; font-size: 12px; margin: 0 0 6px; font-family: monospace; }
+    .changes-list {
+      color: #7ec87e; font-size: 11px; font-family: monospace;
+      margin: 0 0 40px; line-height: 2; padding-left: 18px;
+    }
+    .section-title {
+      color: #ccc; font-size: 13px; font-family: monospace; font-weight: bold;
+      margin: 0 0 14px; text-transform: uppercase; letter-spacing: 1px;
+      padding-bottom: 6px; border-bottom: 1px solid #333;
+    }
+    .section { margin-bottom: 60px; }
+    .panels { display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start; }
+    .panel-label {
+      color: #aaa; font-size: 10px; font-family: monospace;
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
+    }
+
+    /* ─── Shared palette ─── */
+    :root {
+      --red:       #7a3c20;
+      --red-dark:  #5c3018;
+      --red-deep:  #3d2010;
+      --text:      #2b1a0e;
+      --text-muted:#8a7050;
+      --text-faint:#aaa;
+      --surface:   #f7f2e4;
+      --card:      #f2ece0;
+      --border:    #c8b888;
+      --olive:     #5c6b2e;
+      --del:       #3d5a3e;
+    }
+
+    /* ════════════════════════════════════════
+       SECTION 1 — Popup texture comparison
+    ════════════════════════════════════════ */
+    .popup-demo {
+      width: 220px;
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      font-family: 'Vollkorn', serif;
+      color: var(--text);
+      box-shadow: 5px 6px 10px rgba(0,0,0,0.22);
+    }
+    .popup-header-plain {
+      padding: 10px 12px 8px;
+      background: #f2ece0;
+      border-bottom: 1px solid #c8b888;
+    }
+    /* Textured variant — SVG noise encoded inline */
+    .popup-header-textured {
+      padding: 10px 12px 8px;
+      background-color: #f2ece0;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 160px 160px;
+      border-bottom: 1px solid #c8b888;
+    }
+    .fruit-title { margin: 0; font-size: 1rem; font-weight: 600; color: #7a3c20; }
+    .season-badge {
+      margin-top: 6px; padding: 3px 9px; border-radius: 4px;
+      font-size: 0.78rem; display: inline-block;
+      background: rgba(122,60,32,0.09); color: #5c3018;
+      border: 1px solid rgba(122,60,32,0.22);
+    }
+    .popup-body { padding: 10px 12px; }
+    .meta-row {
+      display: flex; justify-content: space-between;
+      font-size: 0.75rem; padding: 4px 6px;
+      background: #fafafa; border-radius: 3px; margin-bottom: 4px;
+    }
+    .meta-row strong { color: #7a3c20; }
+
+    /* ════════════════════════════════════════
+       SECTION 2 — Sidebar scrollbar
+    ════════════════════════════════════════ */
+    .sidebar-scroll-demo {
+      width: 220px;
+      height: 280px;
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 5px 6px 10px rgba(0,0,0,0.22);
+      font-family: 'Vollkorn', serif;
+    }
+    .sidebar-header-demo {
+      padding: 10px 12px 8px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .sidebar-header-demo p { margin: 0; color: var(--red); font-size: 0.9rem; font-weight: 600; }
+    .sidebar-header-demo .sub { color: var(--text-muted); font-size: 0.7rem; margin-top: 2px; }
+
+    /* plain scrollbar */
+    .sidebar-content-plain {
+      flex: 1; overflow-y: scroll; padding: 10px 12px;
+    }
+    /* styled scrollbar */
+    .sidebar-content-styled {
+      flex: 1; overflow-y: scroll; padding: 10px 12px;
+    }
+    .sidebar-content-styled::-webkit-scrollbar { width: 6px; }
+    .sidebar-content-styled::-webkit-scrollbar-track { background: #ece5d4; border-radius: 3px; }
+    .sidebar-content-styled::-webkit-scrollbar-thumb {
+      background: #c8b888; border-radius: 3px;
+    }
+    .sidebar-content-styled::-webkit-scrollbar-thumb:hover { background: #7a3c20; }
+
+    /* terracotta-forced variant — shows hover state statically */
+    .sidebar-content-terracotta {
+      flex: 1; overflow-y: scroll; padding: 10px 12px;
+    }
+    .sidebar-content-terracotta::-webkit-scrollbar { width: 6px; }
+    .sidebar-content-terracotta::-webkit-scrollbar-track { background: #ece5d4; border-radius: 3px; }
+    .sidebar-content-terracotta::-webkit-scrollbar-thumb {
+      background: #7a3c20; border-radius: 3px;
+    }
+
+    .sidebar-item {
+      font-size: 0.82rem; color: var(--text);
+      padding: 6px 0; border-bottom: 1px solid rgba(200,184,136,0.3);
+    }
+    .sidebar-item:last-child { border-bottom: none; }
+
+    /* ════════════════════════════════════════
+       SECTION 3 — Loading shimmer vs text
+    ════════════════════════════════════════ */
+    .map-control-group {
+      display: flex; flex-direction: column; gap: 6px;
+      align-items: flex-end;
+    }
+    /* current: text pill */
+    .loading-pill-plain {
+      background: rgba(255,255,255,0.95);
+      padding: 10px 14px; border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      font-size: 14px; color: #7a3c20;
+      border-left: 3px solid #7a3c20;
+      font-family: 'Vollkorn', serif;
+      width: 140px;
+    }
+    /* proposed: shimmer on pin count badge */
+    .pin-badge {
+      background: rgba(242,236,224,0.93);
+      color: #7a3c20; font-family: 'Vollkorn', serif;
+      font-size: 0.72rem; padding: 4px 10px;
+      border-radius: 4px; border: 1px solid #c8b888;
+      width: 76px; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .pin-badge.loading-shimmer::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255,255,255,0.55) 40%,
+        rgba(255,255,255,0.55) 60%,
+        transparent 100%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 1.3s infinite;
+    }
+    @keyframes shimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position:  200% 0; }
+    }
+    .zoom-control-demo {
+      background: #f2ece0;
+      border: 2px solid #c8b888;
+      border-radius: 6px;
+      box-shadow: 3px 4px 8px rgba(0,0,0,0.18);
+      overflow: hidden; width: 38px;
+    }
+    .zoom-btn {
+      width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: #7a3c20;
+      font-family: 'Vollkorn', serif;
+      cursor: pointer; background: #f2ece0;
+    }
+    .zoom-btn:first-child { border-bottom: 1px solid #c8b888; }
+    .locate-btn-demo {
+      width: 38px; height: 38px;
+      background: #f2ece0; border: 2px solid #c8b888;
+      border-radius: 6px; box-shadow: 3px 4px 8px rgba(0,0,0,0.18);
+      display: flex; align-items: center; justify-content: center;
+      color: #7a3c20; cursor: pointer;
+    }
+
+    /* ════════════════════════════════════════
+       SECTION 4 — Hamburger → icon toggle
+    ════════════════════════════════════════ */
+    .hamburger-demo-row {
+      display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;
+    }
+    .collapsed-sidebar {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 0;
+    }
+    .hamburger-current {
+      width: 38px; height: 38px;
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      box-shadow: 3px 4px 8px rgba(0,0,0,0.18);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 4px;
+      cursor: pointer;
+    }
+    .bar { width: 16px; height: 2px; background: #7a3c20; border-radius: 1px; }
+
+    /* proposed: loquat icon button */
+    .hamburger-icon {
+      width: 38px; height: 38px;
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      box-shadow: 3px 4px 8px rgba(0,0,0,0.18);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 22px;
+      line-height: 1;
+    }
+
+    /* expanded sidebar snippet */
+    .sidebar-snippet {
+      width: 200px; background: var(--card);
+      border: 2px solid var(--border); border-radius: 8px;
+      box-shadow: 5px 6px 10px rgba(0,0,0,0.22);
+      font-family: 'Vollkorn', serif; overflow: hidden;
+    }
+    .snippet-head {
+      padding: 8px 10px 6px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .snippet-head .icon-btn {
+      width: 28px; height: 28px; background: var(--card);
+      border: 1px solid var(--border); border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; cursor: pointer; flex-shrink: 0;
+    }
+    .snippet-head .brand { color: var(--red); font-size: 0.95rem; font-weight: 600; }
+    .snippet-head .sub-brand { color: var(--text-muted); font-size: 0.68rem; }
+    .snippet-body { padding: 8px 10px; }
+    .snippet-btn {
+      display: block; width: 90%; margin: 4px auto;
+      padding: 7px 0; text-align: center;
+      background: var(--red); color: white;
+      border: 2px outset var(--red); border-radius: 4px;
+      font-family: 'Vollkorn', serif; font-size: 0.82rem; cursor: pointer;
+    }
+
+    /* ════════════════════════════════════════
+       SECTION 5 — Popup slide-in animation
+    ════════════════════════════════════════ */
+    .animation-demo {
+      display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;
+    }
+    .map-tile {
+      width: 260px; height: 200px;
+      background: linear-gradient(135deg, #d8e8c4 0%, #c8d8b0 50%, #b8c89a 100%);
+      border-radius: 8px; position: relative; overflow: hidden;
+      border: 2px solid #bbb;
+    }
+    /* road scribbles */
+    .map-tile::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(255,255,255,0.5) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,0.5) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+    /* current: snap in */
+    .popup-snap {
+      position: absolute; bottom: 28px; left: 50%;
+      transform: translateX(-50%);
+      width: 160px;
+      background: white; border: 2px solid #c8b888; border-radius: 8px;
+      box-shadow: 5px 6px 10px rgba(0,0,0,0.22); overflow: hidden;
+      font-family: 'Vollkorn', serif;
+    }
+    /* proposed: slide up + fade */
+    .popup-slide {
+      position: absolute; bottom: 28px; left: 50%;
+      transform: translateX(-50%);
+      width: 160px;
+      background: white; border: 2px solid #c8b888; border-radius: 8px;
+      box-shadow: 5px 6px 10px rgba(0,0,0,0.22); overflow: hidden;
+      font-family: 'Vollkorn', serif;
+      animation: popupSlide 0.45s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    @keyframes popupSlide {
+      from { opacity: 0; transform: translateX(-50%) translateY(14px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    .replay-btn {
+      margin-top: 8px;
+      background: #333; color: #ccc; border: 1px solid #555; border-radius: 4px;
+      font-family: monospace; font-size: 11px; padding: 4px 10px; cursor: pointer;
+    }
+    .replay-btn:hover { background: #444; }
+    .ph { padding: 7px 10px; background: #f2ece0; border-bottom: 1px solid #c8b888; }
+    .ph .ft { margin: 0; font-size: 0.88rem; font-weight: 600; color: #7a3c20; }
+    .pb { padding: 7px 10px; font-size: 0.72rem; color: #555; }
+  </style>
+</head>
+<body>
+
+<h1>Mockup 8 — UI Enhancement Proposals</h1>
+<p class="subtitle">fruit for all / loquat — earthy crunchy organic offline</p>
+<ul class="changes-list">
+  <li>① Popup header paper texture — subtle SVG noise overlay on .popup-header</li>
+  <li>② Sidebar scrollbar — warm palette instead of OS default grey</li>
+  <li>③ Loading shimmer — animated sweep on pin badge replaces separate text overlay</li>
+  <li>④ Hamburger → loquat icon when collapsed</li>
+  <li>⑤ Popup slide-in animation — translateY + fade on open</li>
+</ul>
+
+<!-- ─────────────────────────── 1. POPUP TEXTURE ─────────────────────────── -->
+<div class="section">
+  <div class="section-title">① popup header — plain vs. paper texture</div>
+  <div class="panels">
+    <div>
+      <div class="panel-label">current — flat parchment</div>
+      <div class="popup-demo">
+        <div class="popup-header-plain">
+          <p class="fruit-title">loquat</p>
+          <span class="season-badge">🌿 in season now</span>
+        </div>
+        <div class="popup-body">
+          <div class="meta-row"><strong>added by:</strong><span>jess</span></div>
+          <div class="meta-row"><strong>location:</strong><span>34.052, -118.24</span></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="panel-label">proposed — SVG noise texture (opacity 4.5%)</div>
+      <div class="popup-demo">
+        <div class="popup-header-textured">
+          <p class="fruit-title">loquat</p>
+          <span class="season-badge">🌿 in season now</span>
+        </div>
+        <div class="popup-body">
+          <div class="meta-row"><strong>added by:</strong><span>jess</span></div>
+          <div class="meta-row"><strong>location:</strong><span>34.052, -118.24</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────── 2. SCROLLBAR ─────────────────────────── -->
+<div class="section">
+  <div class="section-title">② sidebar scrollbar — os default vs. warm palette</div>
+  <p style="color:#888;font-family:monospace;font-size:11px;margin:0 0 16px">
+    The sidebar can overflow with many fruit types in the filter list — the scrollbar shows there.
+  </p>
+  <div class="panels">
+    <div>
+      <div class="panel-label">current — os default grey</div>
+      <div class="sidebar-scroll-demo">
+        <div class="sidebar-header-demo">
+          <p>fruit for all</p>
+          <p class="sub">open source orchard</p>
+        </div>
+        <div class="sidebar-content-plain">
+          <div class="sidebar-item">add fruit</div>
+          <div class="sidebar-item">my pins</div>
+          <div class="sidebar-item">filter: all fruit</div>
+          <div class="sidebar-item">filter: apple</div>
+          <div class="sidebar-item">filter: avocado</div>
+          <div class="sidebar-item">filter: fig</div>
+          <div class="sidebar-item">filter: lemon</div>
+          <div class="sidebar-item">filter: loquat</div>
+          <div class="sidebar-item">filter: mulberry</div>
+          <div class="sidebar-item">filter: orange</div>
+          <div class="sidebar-item">filter: persimmon</div>
+          <div class="sidebar-item">filter: plum</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="panel-label">proposed — warm border / terracotta hover</div>
+      <div class="sidebar-scroll-demo">
+        <div class="sidebar-header-demo">
+          <p>fruit for all</p>
+          <p class="sub">open source orchard</p>
+        </div>
+        <div class="sidebar-content-styled">
+          <div class="sidebar-item">add fruit</div>
+          <div class="sidebar-item">my pins</div>
+          <div class="sidebar-item">filter: all fruit</div>
+          <div class="sidebar-item">filter: apple</div>
+          <div class="sidebar-item">filter: avocado</div>
+          <div class="sidebar-item">filter: fig</div>
+          <div class="sidebar-item">filter: lemon</div>
+          <div class="sidebar-item">filter: loquat</div>
+          <div class="sidebar-item">filter: mulberry</div>
+          <div class="sidebar-item">filter: orange</div>
+          <div class="sidebar-item">filter: persimmon</div>
+          <div class="sidebar-item">filter: plum</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="panel-label">proposed — on hover (terracotta #7a3c20)</div>
+      <div class="sidebar-scroll-demo">
+        <div class="sidebar-header-demo">
+          <p>fruit for all</p>
+          <p class="sub">open source orchard</p>
+        </div>
+        <div class="sidebar-content-terracotta">
+          <div class="sidebar-item">add fruit</div>
+          <div class="sidebar-item">my pins</div>
+          <div class="sidebar-item">filter: all fruit</div>
+          <div class="sidebar-item">filter: apple</div>
+          <div class="sidebar-item">filter: avocado</div>
+          <div class="sidebar-item">filter: fig</div>
+          <div class="sidebar-item">filter: lemon</div>
+          <div class="sidebar-item">filter: loquat</div>
+          <div class="sidebar-item">filter: mulberry</div>
+          <div class="sidebar-item">filter: orange</div>
+          <div class="sidebar-item">filter: persimmon</div>
+          <div class="sidebar-item">filter: plum</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────── 3. SHIMMER ─────────────────────────── -->
+<div class="section">
+  <div class="section-title">③ loading feedback — text overlay vs. badge shimmer</div>
+  <div class="panels">
+    <div>
+      <div class="panel-label">current — separate text pill top-right</div>
+      <div class="map-control-group">
+        <div class="zoom-control-demo">
+          <div class="zoom-btn">+</div>
+          <div class="zoom-btn">−</div>
+        </div>
+        <div class="locate-btn-demo">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+          </svg>
+        </div>
+        <div class="pin-badge">24 pins</div>
+        <br>
+        <div class="loading-pill-plain">Loading pins...</div>
+      </div>
+    </div>
+    <div>
+      <div class="panel-label">proposed — shimmer sweep on badge (no extra element)</div>
+      <div class="map-control-group">
+        <div class="zoom-control-demo">
+          <div class="zoom-btn">+</div>
+          <div class="zoom-btn">−</div>
+        </div>
+        <div class="locate-btn-demo">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+          </svg>
+        </div>
+        <div class="pin-badge loading-shimmer">loading…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────── 4. HAMBURGER TOGGLE ─────────────────────────── -->
+<div class="section">
+  <div class="section-title">④ hamburger → loquat icon when sidebar is collapsed</div>
+  <div class="panels hamburger-demo-row">
+    <div>
+      <div class="panel-label">current — three bars when collapsed</div>
+      <div class="collapsed-sidebar">
+        <div class="hamburger-current">
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="panel-label">proposed — loquat emoji / icon when collapsed</div>
+      <div class="collapsed-sidebar">
+        <div class="hamburger-icon" title="open sidebar">🍑</div>
+      </div>
+    </div>
+    <div>
+      <div class="panel-label">proposed — expanded sidebar, icon in header</div>
+      <div class="sidebar-snippet">
+        <div class="snippet-head">
+          <div class="icon-btn" title="close">🍑</div>
+          <div>
+            <div class="brand">fruit for all</div>
+            <div class="sub-brand">open source orchard</div>
+          </div>
+        </div>
+        <div class="snippet-body">
+          <button class="snippet-btn">add fruit</button>
+          <button class="snippet-btn" style="background:var(--olive);border-color:var(--olive)">my pins</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────── 5. POPUP ANIMATION ─────────────────────────── -->
+<div class="section">
+  <div class="section-title">⑤ pin popup — snap vs. slide-up animation</div>
+  <div class="animation-demo">
+    <div>
+      <div class="panel-label">current — snaps in instantly</div>
+      <div class="map-tile">
+        <div class="popup-snap">
+          <div class="ph"><p class="ft">orange</p></div>
+          <div class="pb">added by marco · Apr–Jun</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="panel-label">proposed — slides up + fades in (0.45 s ease)</div>
+      <div class="map-tile" id="anim-map">
+        <div class="popup-slide" id="anim-popup">
+          <div class="ph"><p class="ft">orange</p></div>
+          <div class="pb">added by marco · Apr–Jun</div>
+        </div>
+      </div>
+      <button class="replay-btn" onclick="
+        const p = document.getElementById('anim-popup');
+        p.style.animation = 'none';
+        p.offsetHeight; // reflow
+        p.style.animation = '';
+      ">↺ replay</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

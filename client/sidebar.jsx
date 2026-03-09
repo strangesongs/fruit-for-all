@@ -32,9 +32,8 @@ export default class Sidebar extends React.Component {
             selectedFruitFilter: 'all',
             availableFruitTypes: [],
             
-            // Sidebar collapse state — auto-collapse on very small screens when authenticated
-            // (keeps map visible on Jelly Star / similar tiny devices)
-            isCollapsed: isAuthenticated() && typeof window !== 'undefined' && window.innerWidth <= 360,
+            // Sidebar collapse state — always collapse on tiny screens (Jelly Star ≤360px)
+            isCollapsed: typeof window !== 'undefined' && window.innerWidth <= 360,
 
             // My pins filter active state
             myPinsActive: false,
@@ -59,6 +58,7 @@ export default class Sidebar extends React.Component {
         if (isAuthenticated()) {
             this.fetchAvailableFruitTypes();
         }
+        // Do not pre-fill location from cache — user must be physically present to add a pin
     }
 
     fetchAvailableFruitTypes = async () => {
@@ -95,13 +95,9 @@ export default class Sidebar extends React.Component {
         this.setState({ locationLoading: true, locationError: '' });
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                this.setState({
-                    locationLoading: false,
-                    currentLocation: {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    }
-                });
+                const loc = { lat: position.coords.latitude, lng: position.coords.longitude };
+                try { sessionStorage.setItem('ffa_last_location', JSON.stringify(loc)); } catch (e) {}
+                this.setState({ locationLoading: false, currentLocation: loc });
             },
             (error) => {
                 console.error('Error getting location:', error);
@@ -121,13 +117,19 @@ export default class Sidebar extends React.Component {
     };
 
     toggleAddFruitPopup = () => {
-        this.setState(prevState => ({
-            showAddFruitPopup: !prevState.showAddFruitPopup,
-            // Reset form when opening popup
-            currentLocation: !prevState.showAddFruitPopup ? null : prevState.currentLocation,
-            fruitType: !prevState.showAddFruitPopup ? '' : prevState.fruitType,
-            notes: !prevState.showAddFruitPopup ? '' : prevState.notes
-        }));
+        this.setState(prevState => {
+            const opening = !prevState.showAddFruitPopup;
+            let currentLocation = opening ? null : prevState.currentLocation;
+            if (opening) {
+                // Always start with null — user must tap "get current location" fresh each time
+            }
+            return {
+                showAddFruitPopup: !prevState.showAddFruitPopup,
+                currentLocation,
+                fruitType: opening ? '' : prevState.fruitType,
+                notes: opening ? '' : prevState.notes,
+            };
+        });
     };
 
     submitPin = async () => {
@@ -390,9 +392,15 @@ export default class Sidebar extends React.Component {
     };
 
     toggleSidebar = () => {
-        this.setState(prevState => ({
-            isCollapsed: !prevState.isCollapsed
-        }));
+        this.setState(prevState => {
+            const opening = prevState.isCollapsed;
+            if (opening && this.props.onSidebarOpen) this.props.onSidebarOpen();
+            return { isCollapsed: !prevState.isCollapsed };
+        });
+    };
+
+    collapse = () => {
+        this.setState({ isCollapsed: true });
     };
 
    
@@ -409,9 +417,15 @@ export default class Sidebar extends React.Component {
         <div className={`sidebar ${this.state.isCollapsed ? 'collapsed' : ''} ${isAuthModal ? 'sidebar-auth-modal' : ''}`}>
             {/* Hamburger menu button */}
             <button className="hamburger-btn" onClick={this.toggleSidebar} aria-label="Toggle menu">
-                <span></span>
-                <span></span>
-                <span></span>
+                {this.state.isCollapsed ? (
+                    <img src={loquatIcon} alt="open menu" className="hamburger-icon" />
+                ) : (
+                    <>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </>
+                )}
             </button>
             
             {/* Only show content when not collapsed */}
@@ -558,7 +572,7 @@ export default class Sidebar extends React.Component {
                             onClick={(e) => {
                             e.preventDefault();
                             const next = !this.state.myPinsActive;
-                            this.setState({ myPinsActive: next });
+                            this.setState({ myPinsActive: next, isCollapsed: next ? true : this.state.isCollapsed });
                             if (this.props.onToggleMyPins) {
                                 this.props.onToggleMyPins();
                             }}}

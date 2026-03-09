@@ -29,14 +29,50 @@
 /* Promote zoom control to its own compositing layer and offset from
    the rounded corner to prevent blurry corner antialiasing */
 .leaflet-top.leaflet-right {
-    margin-top: 10px;
-    margin-right: 10px;
+    margin-top: 12px;
+    margin-right: 12px;
 }
 
 .leaflet-control-zoom {
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
     will-change: transform;
+    border: 2px solid #c8b888 !important;
+    border-radius: 6px !important;
+    box-shadow: 3px 4px 8px rgba(0,0,0,0.18) !important;
+    overflow: hidden;
+}
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+    width: 34px !important;
+    height: 34px !important;
+    line-height: 34px !important;
+    font-size: 18px !important;
+    font-weight: 400 !important;
+    font-family: 'Vollkorn', serif !important;
+    color: #7a3c20 !important;
+    background: #f2ece0 !important;
+    border-bottom: 1px solid #c8b888 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background 0.15s, color 0.15s !important;
+}
+
+.leaflet-control-zoom-out {
+    border-bottom: none !important;
+}
+
+.leaflet-control-zoom-in:hover,
+.leaflet-control-zoom-out:hover {
+    background: #e8dfd0 !important;
+    color: #5c3018 !important;
+}
+
+.leaflet-control-zoom-in:active,
+.leaflet-control-zoom-out:active {
+    background: #d9cfc0 !important;
 }
 
 .loading-overlay, .error-overlay {
@@ -62,12 +98,18 @@
     border-left: 3px solid #f44336;
 }
 
+@keyframes popup-slide-in {
+    from { transform: translateY(14px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
 .leaflet-popup-content-wrapper {
     background: transparent !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     padding: 0 !important;
     margin: 0 !important;
+    animation: popup-slide-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .leaflet-popup-content {
@@ -159,12 +201,14 @@
     overflow: hidden;
     font-family: 'Vollkorn', serif;
     color: var(--text);
+    min-width: 240px;
 }
 
 .pin-popup .popup-header {
     margin-bottom: 0;
     padding: 8px;
     background-color: #f2ece0 !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E") !important;
     border-bottom: 1px solid #c8b888;
     border-radius: 8px 8px 0 0;
     display: block;
@@ -184,7 +228,7 @@
 }
 
 .notes-section {
-    margin-bottom: 16px;
+    margin-bottom: 8px;
     padding: 8px;
     background: #fafafa;
     border-radius: 4px;
@@ -329,28 +373,80 @@
     font-size: 0.75rem;
 }
 
-/* Season badges — two states only */
-.season-badge {
-    margin-top: 8px;
-    padding: 4px 10px;
+/* Season strip — month calendar bar in popup header */
+.season-strip {
+    margin-top: 6px;
+    width: 100%;
+}
+
+.strip-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 8px;
     border-radius: 4px;
-    font-size: 0.8rem;
-    font-weight: normal;
-    display: inline-block;
+    font-size: 0.75rem;
+    margin-bottom: 9px;
 }
 
-.season-badge.in-season {
-    background: rgba(122, 60, 32, 0.1);
-    color: var(--red-dark);
-    border: 1px solid rgba(122, 60, 32, 0.25);
+.strip-pill--in {
+    background: rgba(92, 107, 46, 0.12);
+    color: #3d5a3e;
+    border: 1px solid rgba(92, 107, 46, 0.3);
 }
 
-.season-badge.upcoming,
-.season-badge.out-of-season,
-.season-badge.general {
+.strip-pill--upcoming {
+    background: rgba(122, 60, 32, 0.08);
+    color: var(--red);
+    border: 1px solid rgba(122, 60, 32, 0.22);
+}
+
+.strip-pill--out,
+.strip-pill--general {
     background: var(--card);
     color: var(--text-muted);
     border: 1px solid var(--border);
+}
+
+.season-strip__wrap {
+    position: relative;
+}
+
+.season-strip__bar {
+    display: flex;
+    width: 100%;
+    height: 7px;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.season-strip__seg {
+    flex: 1;
+    background: #dfd7c4;
+}
+
+.season-strip__seg.peak {
+    background: #5c6b2e;
+}
+
+.season-strip__today {
+    position: absolute;
+    top: -3px;
+    width: 2px;
+    height: 13px;
+    background: #7a3c20;
+    border-radius: 1px;
+    pointer-events: none;
+}
+
+.season-strip__labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-family: 'Vollkorn', serif;
 }
 
 /* Pin actions section */
@@ -376,6 +472,100 @@
 
 .delete-pin-btn:hover {
     background-color: #2e4530;
+}
+
+/* Locate-me button — matches zoom control style, sits below them */
+.locate-me-btn {
+    position: absolute;
+    bottom: 80px;
+    right: 12px;
+    z-index: 1000;
+    width: 34px;
+    height: 34px;
+    background: #f2ece0;
+    border: 2px solid #c8b888;
+    border-radius: 6px;
+    box-shadow: 3px 4px 8px rgba(0,0,0,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #7a3c20;
+    transition: background 0.15s, color 0.15s;
+}
+
+.locate-me-btn:hover {
+    background: #e8dfd0;
+    color: #5c3018;
+}
+
+.locate-me-btn:active {
+    background: #d9cfc0;
+}
+
+@keyframes shimmer {
+    0%   { left: -100%; }
+    100% { left: 200%; }
+}
+
+/* Pin count badge — sits just below the locate-me button */
+.pin-count-badge {
+    position: absolute;
+    bottom: 46px;
+    right: 12px;
+    z-index: 1000;
+    background: rgba(242, 236, 224, 0.92);
+    color: #7a3c20;
+    font-family: 'Vollkorn', serif;
+    font-size: 0.72rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid #c8b888;
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.pin-count-badge--loading {
+    color: #8a7050;
+}
+
+.pin-count-badge--loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+    animation: shimmer 1.4s ease-in-out infinite;
+}
+
+/* My-pins empty state */
+.my-pins-empty {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    background: rgba(242, 236, 224, 0.96);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    text-align: center;
+    font-family: 'Vollkorn', serif;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    pointer-events: none;
+    box-shadow: 5px 6px 10px rgba(0,0,0,0.18);
+    max-width: 220px;
+}
+
+.my-pins-empty strong {
+    display: block;
+    font-size: 1rem;
+    color: var(--red);
+    margin-bottom: 6px;
 }
 
 .delete-pin-btn:active {
@@ -412,6 +602,21 @@
     
     .loading-overlay, .error-overlay {
         bottom: 15px;
+        right: 10px;
+    }
+}
+
+/* Jelly Star / sub-360px: move controls to top-right above bottom sheet */
+@media (max-width: 360px) {
+    .locate-me-btn {
+        top: 92px;
+        bottom: auto;
+        right: 10px;
+    }
+
+    .pin-count-badge {
+        top: 140px;
+        bottom: auto;
         right: 10px;
     }
 }

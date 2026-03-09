@@ -11,7 +11,8 @@ import ResetPassword from './ResetPassword.jsx';
 class App extends Component {
   constructor(props) {
     super(props);
-    this.mapRef = React.createRef();
+    this.mapRef     = React.createRef();
+    this.sidebarRef = React.createRef();
   }
 
   // Called when a new pin is successfully submitted
@@ -42,16 +43,32 @@ class App extends Component {
     }
   };
 
+  // Called when user opens the sidebar — close any open pin popups
+  handleSidebarOpen = () => {
+    if (this.mapRef.current) {
+      this.mapRef.current.closePopups();
+    }
+  };
+
+  // Called when a pin popup is opened — collapse sidebar so map is visible
+  handlePinOpen = () => {
+    if (this.sidebarRef.current) {
+      this.sidebarRef.current.collapse();
+    }
+  };
+
   render() {
     return (
       <div className="main-layout">
         <Sidebar 
+          ref={this.sidebarRef}
           onPinSubmitted={this.handlePinSubmitted}
           onAuthSuccess={this.handleAuthSuccess}
           onToggleMyPins={this.handleToggleMyPins}
           onFilterChange={this.handleFilterChange}
+          onSidebarOpen={this.handleSidebarOpen}
         />
-        <Map ref={this.mapRef} />
+        <Map ref={this.mapRef} onPinOpen={this.handlePinOpen} />
       </div>
     );
   }
