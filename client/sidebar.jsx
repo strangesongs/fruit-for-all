@@ -32,8 +32,9 @@ export default class Sidebar extends React.Component {
             selectedFruitFilter: 'all',
             availableFruitTypes: [],
             
-            // Sidebar collapse state — always collapse on tiny screens (Jelly Star ≤360px)
-            isCollapsed: typeof window !== 'undefined' && window.innerWidth <= 360,
+            // Sidebar collapse state — collapse on tiny screens only when already authenticated
+            // (unauthenticated tiny-screen users need to see the auth modal on first load)
+            isCollapsed: typeof window !== 'undefined' && window.innerWidth <= 360 && isAuthenticated(),
             isTinyScreen: typeof window !== 'undefined' && window.innerWidth <= 360,
 
             // My pins filter active state
