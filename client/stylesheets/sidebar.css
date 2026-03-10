@@ -245,11 +245,10 @@ li {
 }
 
 button.auth-submit-btn {
-    width: 90%;
+    width: 100%;
+    box-sizing: border-box;
     padding: 8px 12px;
     margin-top: 6px;
-    margin-left: auto;
-    margin-right: auto;
     font-family: inherit;
     font-size: 0.9rem;
     background-color: var(--red);
@@ -986,6 +985,9 @@ button.close-btn:hover {
         width: calc(100vw - 24px);
         max-height: 90dvh;
         border-radius: 8px;
+        /* Override the bottom-sheet's 24px bottom padding — auth modal is centred,
+           not anchored to the bottom, so top and bottom should be symmetric */
+        padding: 10px 12px;
     }
 
     .sidebar.sidebar-auth-modal::before {
