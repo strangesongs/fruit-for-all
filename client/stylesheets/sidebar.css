@@ -80,7 +80,7 @@ html, body {
     width: 100%;
 }
 
-button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn), .action-btn {
+button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn), .action-btn {
     background-color: var(--red);
     color: white;
     padding: 10px 14px;
@@ -101,11 +101,11 @@ button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn), .action-btn 
     transition: background-color 0.2s ease;
 }
 
-button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):hover, .action-btn:hover {
+button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):hover, .action-btn:hover {
     background-color: var(--red-dark);
 }
 
-button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):active, .action-btn:active {
+button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):active, .action-btn:active {
     border: 2px inset var(--red);
 }
 
@@ -840,7 +840,7 @@ button.close-btn:hover {
         font-size: 0.8rem;
     }
     
-    button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn), .action-btn {
+    button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn), .action-btn {
         font-size: 0.8rem;
         padding: 6px 10px;
     }
@@ -1033,7 +1033,7 @@ button.close-btn:hover {
         padding: 7px 10px;
     }
 
-    button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn), .action-btn {
+    button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn), .action-btn {
         font-size: 0.75rem;
         padding: 6px 8px;
     }
@@ -1094,7 +1094,7 @@ button.close-btn:hover {
 
 /* Compact the header inside the auth modal so form fits without scrolling */
 .sidebar.sidebar-auth-modal .header-section {
-    padding-top: 4px;
+    padding-top: 6px;
     padding-bottom: 2px;
     margin-bottom: 0;
     border-bottom: none;
@@ -1117,8 +1117,9 @@ button.close-btn:hover {
 }
 
 .sidebar.sidebar-auth-modal .auth-section {
-    padding: 2px 0;
-    margin-bottom: 4px;
+    /* 6px top gap under header/icon; 8px bottom so card bottom = card top (both ~20px) */
+    padding: 6px 0 8px 0;
+    margin-bottom: 0;
 }
 
 .sidebar.sidebar-auth-modal .auth-section h3 {
@@ -1126,16 +1127,20 @@ button.close-btn:hover {
 }
 
 .sidebar.sidebar-auth-modal .auth-section .form-group {
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
 .sidebar.sidebar-auth-modal .auth-submit-btn {
-    margin-top: 4px;
+    margin-top: 6px;
+}
+
+.sidebar.sidebar-auth-modal .auth-card-divider {
+    margin: 6px auto;
 }
 
 .sidebar.sidebar-auth-modal .toggle-auth {
-    margin-top: 4px;
-    margin-bottom: 2px;
+    margin-top: 6px;
+    margin-bottom: 0;
 }
 
 /* ── Mobile compact layout: FAB + panel (≤360px, authenticated) ─────────── */
