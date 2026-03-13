@@ -411,7 +411,7 @@ export default class Sidebar extends React.Component {
             <div className="add-fruit-popup-overlay">
                 <div className="add-fruit-popup">
                     <div className="popup-header">
-                        <h4>add fruit tree</h4>
+                        <h4>add a find</h4>
                         <button
                             className="close-btn"
                             onClick={this.toggleAddFruitPopup}
@@ -472,7 +472,7 @@ export default class Sidebar extends React.Component {
                                 id="popup-notes"
                                 value={this.state.notes}
                                 onChange={(e) => this.handleInputChange('notes', e.target.value)}
-                                placeholder="add details about this fruit tree location... (up to 500 words)"
+                                placeholder="add details about this location... (up to 500 words)"
                                 rows="4"
                                 maxLength="3000"
                                 disabled={this.state.submitting}
@@ -535,7 +535,7 @@ export default class Sidebar extends React.Component {
 
                     <div className="mobile-panel-actions">
                         <button type="button" onClick={this.toggleAddFruitPopup} className="mobile-panel-btn">
-                            add fruit
+                            add a find
                         </button>
                         <button
                             type="button"
@@ -623,7 +623,7 @@ export default class Sidebar extends React.Component {
                         <div className="about-panel">
                             <h3 className="about-title">what is fruit for all?</h3>
                             <p>fruit for all is a community map of street fruit you can actually pick — figs, loquats, citrus, passionfruit, and whatever else is growing near you.</p>
-                            <p>spot some fruit? log it so others can find it. you need to be on-location to add a pin.</p>
+                            <p>spot some fruit, mushrooms, or wild greens? log it so others can find it. you need to be on-location to add a pin.</p>
                             <p>only share fruit that's genuinely accessible to anyone — nothing behind fences or on private property.</p>
                             <p className="about-oss">open source &mdash; <a href="https://github.com/strangesongs/fruit-for-all" className="about-link-ext" target="_blank" rel="noreferrer">github.com/strangesongs/fruit-for-all</a></p>
                             <p className="about-oss">say hello &mdash; <a href="mailto:admin@fruitforall.app" className="about-link-ext">admin@fruitforall.app</a></p>
@@ -743,7 +743,7 @@ export default class Sidebar extends React.Component {
                             type="button"
                             onClick={this.toggleAddFruitPopup}
                             className="action-btn add-fruit-btn"
-                            >add fruit</button>
+                            >add a find</button>
 
                         <button
                             type="button"
@@ -781,7 +781,7 @@ export default class Sidebar extends React.Component {
                         </select>
                     </div>
 
-                    {/* Add Fruit Popup */}
+                    {/* Add a Find Popup */}
                     {this.renderAddFruitPopup()}
 
                     {/* Logout button at bottom */}

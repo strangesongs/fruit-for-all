@@ -1,4 +1,4 @@
-// Curated list of fruits and nuts for the add-fruit autocomplete.
+// Curated list of forageable items for the add-a-find autocomplete.
 // Common names only — no varieties (e.g. "apple" not "Macintosh apple").
 // Keep sorted alphabetically for readability; the autocomplete filters dynamically.
 
@@ -73,6 +73,8 @@ export const FRUIT_LIST = [
   'walnut',
 
   // Berries / vines
+  'aronia',
+  'autumn olive',
   'blackberry',
   'blueberry',
   'boysenberry',
@@ -82,11 +84,14 @@ export const FRUIT_LIST = [
   'elderberry',
   'gooseberry',
   'grape',
+  'hawthorn',
   'huckleberry',
   'kiwi',
   'loganberry',
   'raspberry',
+  'rose hip',
   'strawberry',
+  'wintergreen',
 
   // Other
   'coconut',
@@ -95,4 +100,51 @@ export const FRUIT_LIST = [
   'olive',
   'pomegranate',
   'prickly pear',
+
+  // Mushrooms
+  'black trumpet',
+  'cauliflower mushroom',
+  'chanterelle',
+  'chicken of the woods',
+  'giant puffball',
+  'hedgehog mushroom',
+  'hen of the woods',
+  'lion\'s mane',
+  'lobster mushroom',
+  'matsutake',
+  'meadow mushroom',
+  'morel',
+  'oyster mushroom',
+  'porcini',
+  'shaggy mane',
+  'turkey tail',
+  'wine cap',
+
+  // Herbs & Wild Greens
+  'burdock',
+  'cattail',
+  'chickweed',
+  'chicory',
+  'dandelion',
+  'fiddlehead fern',
+  'field garlic',
+  'garlic mustard',
+  'jerusalem artichoke',
+  'lambsquarters',
+  'mallow',
+  'miner\'s lettuce',
+  'nettles',
+  'plantain',
+  'purslane',
+  'ramps',
+  'sheep sorrel',
+  'spicebush',
+  'violet',
+  'watercress',
+  'wild bergamot',
+  'wild ginger',
+  'wild mint',
+  'wild onion',
+  'wood sorrel',
+  'yarrow',
 ];
