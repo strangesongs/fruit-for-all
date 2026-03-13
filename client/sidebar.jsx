@@ -741,7 +741,7 @@ export default class Sidebar extends React.Component {
 
                     <div className="bottom-section">
                         <p className="toggle-auth">
-                            <span onClick={() => this.setState({ guestAddAttempted: true, showAbout: false })} className="toggle-link">sign in</span>
+                            <span onClick={() => this.setState({ guestAddAttempted: true, isLoginMode: true, showAbout: false })} className="toggle-link">sign in</span>
                             {' / '}
                             <span onClick={() => this.setState({ guestAddAttempted: true, isLoginMode: false, showAbout: false })} className="toggle-link">create account</span>
                         </p>
@@ -760,7 +760,7 @@ export default class Sidebar extends React.Component {
                             <p>fruit for all is a community map of street fruit you can actually pick — figs, loquats, citrus, passionfruit, and whatever else is growing near you.</p>
                             <p>spot some fruit, mushrooms, or wild greens? log it so others can find it. you need to be on-location to add a pin.</p>
                             <p>only share fruit that's genuinely accessible to anyone — nothing behind fences or on private property.</p>
-                            <p className="about-oss">open source &mdash; <a href="https://github.com/strangesongs/fruit-for-all" className="about-link-ext" target="_blank" rel="noreferrer">github.com/strangesongs/fruit-for-all</a></p>
+                            <p className="about-oss">open source &mdash; <a href="https://github.com/strangesongs/fruit-for-all" className="about-link-ext" target="_blank" rel="noreferrer">view on github</a></p>
                             <p className="about-oss">say hello &mdash; <a href="mailto:admin@fruitforall.app" className="about-link-ext">admin@fruitforall.app</a></p>
                             <p className="toggle-auth">
                                 <span onClick={() => this.setState({ showAbout: false })} className="toggle-link about-back">← back</span>
@@ -859,8 +859,6 @@ export default class Sidebar extends React.Component {
                                     onClick={() => this.setState({ guestAddAttempted: false, authError: '' })}
                                     className="toggle-link"
                                 >← back</span>
-                                {' · '}
-                                <span onClick={() => this.setState({ showAbout: true })} className="secondary-link">about</span>
                             </p>
                         </form>
                     )}
