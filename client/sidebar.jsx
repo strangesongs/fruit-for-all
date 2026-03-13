@@ -760,7 +760,7 @@ export default class Sidebar extends React.Component {
 
                     {/* Fruit Type Filter */}
                     <div className="filter-section">
-                        <label htmlFor="fruit-filter">filter by fruit:</label>
+                        <label htmlFor="fruit-filter">filter by type:</label>
                         <select 
                             id="fruit-filter"
                             value={this.state.selectedFruitFilter}
