@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mockup 10: Approach A — Guest Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vollkorn:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0; padding: 36px 24px 60px;
+  background: #1a1a1a; font-family: 'Vollkorn', serif;
+}
+h1 { color: #f0e8d8; font-size: 19px; margin: 0 0 2px; font-weight: 600; }
+.approach-tag {
+  display: inline-block; background: #5c6b2e; color: #fff;
+  font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 3px; margin-bottom: 8px;
+}
+.desc {
+  color: #bbb; font-size: 13px; line-height: 1.6; margin: 6px 0 12px;
+  max-width: 660px; border-left: 3px solid #5c6b2e; padding-left: 12px;
+}
+.verdict { display: flex; gap: 32px; margin: 0 0 28px; max-width: 660px; }
+.verdict div { font-size: 12px; line-height: 1.55; color: #aaa; flex: 1; }
+.verdict .pros strong { color: #8ab060; display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
+.verdict .cons strong { color: #c87040; display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
+
+.states { display: flex; gap: 36px; flex-wrap: wrap; align-items: flex-start; }
+.sg { display: flex; flex-direction: column; gap: 8px; }
+.slabel { color: #666; font-size: 10px; text-transform: uppercase; letter-spacing: 1.3px; font-family: monospace; }
+
+.dshell {
+  background: #0e0e0e; border-radius: 8px; padding: 8px;
+  box-shadow: 0 6px 28px rgba(0,0,0,.7), inset 0 0 0 1px #282828;
+}
+.mshell {
+  background: #0e0e0e; border-radius: 26px; padding: 18px 8px;
+  box-shadow: 0 6px 28px rgba(0,0,0,.7), inset 0 0 0 1px #282828;
+  display: flex; flex-direction: column; align-items: center;
+}
+
+:root {
+  --red: #7a3c20; --red-dark: #5c3018; --red-deep: #3d2010;
+  --sur: #f7f2e4; --card: #f2ece0; --bdr: #c8b888;
+  --txt: #2b1a0e; --muted: #8a7050; --olive: #5c6b2e;
+}
+
+.ascreen { width: 560px; height: 360px; background: #d4e0bc; border-radius: 3px; position: relative; overflow: hidden; }
+.mscreen { width: 240px; height: 427px; background: #d4e0bc; border-radius: 6px; position: relative; overflow: hidden; }
+
+.road { position: absolute; background: #ede8d6; }
+.road.h { height: 8px; left: 0; right: 0; }
+.road.h.main { height: 13px; background: #f0ead6; }
+.road.v { width: 8px; top: 0; bottom: 0; }
+.road.v.main { width: 13px; background: #f0ead6; }
+.park { position: absolute; background: #c0d0a0; border-radius: 3px; }
+.water { position: absolute; background: #a4c0d4; border-radius: 40%; }
+.blk { position: absolute; background: #c4bc9c; }
+
+.pin {
+  position: absolute; width: 0; height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 13px solid #7a3c20;
+  transform: translate(-5px, 0);
+  filter: drop-shadow(1px 2px 2px rgba(0,0,0,.35));
+}
+.pin::after {
+  content: ''; position: absolute; width: 6px; height: 6px;
+  background: rgba(255,255,255,.4); border-radius: 50%;
+  top: -12px; left: -3px;
+}
+.pin.g { border-top-color: #5c6b2e; }
+
+.sb {
+  position: absolute; top: 16px; left: 16px; width: 188px;
+  background: var(--card); border: 2px solid var(--bdr);
+  border-radius: 8px; padding: 11px 11px 10px;
+  box-shadow: 5px 6px 10px rgba(0,0,0,.22);
+  font-size: 12px; color: var(--txt); z-index: 10;
+}
+.sb-logo {
+  display: flex; align-items: center; gap: 7px;
+  padding-bottom: 8px; margin-bottom: 8px;
+  border-bottom: 1px solid var(--bdr);
+}
+.sb-icon {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--red); display: flex; align-items: center;
+  justify-content: center; font-size: 12px; flex-shrink: 0;
+}
+.sb-title { font-weight: 600; font-size: 12px; line-height: 1.15; }
+.sb-sub { font-size: 9px; color: var(--muted); line-height: 1.2; }
+.sb-section { margin-bottom: 8px; }
+.sb-section label { display: block; font-size: 10px; color: var(--muted); margin-bottom: 3px; text-align: left; }
+.sb-select {
+  width: 100%; padding: 5px 24px 5px 7px;
+  background: var(--sur); border: 1.5px solid var(--bdr);
+  border-radius: 4px; font-family: 'Vollkorn', serif; font-size: 11px;
+  color: var(--txt); appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath fill='%238a7050' d='M0 0l4 5 4-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 7px center;
+}
+.sb-count { font-size: 10px; color: var(--muted); text-align: center; margin: 4px 0; }
+.sb-hr { border: none; border-top: 1px solid var(--bdr); margin: 8px 0; }
+.sb-cta-head { font-size: 11px; color: var(--muted); text-align: center; margin-bottom: 7px; line-height: 1.4; }
+.sb-btn {
+  display: block; width: 100%; text-align: center; cursor: pointer;
+  font-family: 'Vollkorn', serif; font-size: 11px;
+  border-radius: 4px; padding: 6px 0; margin-bottom: 5px;
+}
+.sb-btn.primary { background: var(--red); color: #fff; border: 2px outset var(--red); }
+.sb-btn.secondary { background: var(--sur); color: var(--red); border: 2px outset var(--bdr); }
+.sb-link { display: block; text-align: center; font-size: 10px; color: var(--muted); text-decoration: underline; margin-top: 6px; cursor: pointer; }
+
+.mapctrl {
+  position: absolute; top: 16px; right: 16px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.mc {
+  width: 28px; height: 28px;
+  background: var(--card); border: 1.5px solid var(--bdr);
+  border-radius: 4px; display: flex; align-items: center;
+  justify-content: center; font-size: 14px; font-weight: 700;
+  color: var(--txt); box-shadow: 2px 2px 4px rgba(0,0,0,.15);
+}
+
+.m-sheet {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: var(--card); border-top: 2px solid var(--bdr);
+  border-radius: 12px 12px 0 0; padding: 10px 12px 14px;
+  z-index: 20;
+}
+.m-handle {
+  width: 32px; height: 3px; background: var(--bdr);
+  border-radius: 2px; margin: 0 auto 10px;
+}
+.m-logo-row { display: flex; align-items: center; gap: 7px; margin-bottom: 9px; }
+.m-icon { width: 20px; height: 20px; background: var(--red); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; }
+.m-title { font-size: 11px; font-weight: 600; }
+.m-sub { font-size: 9px; color: var(--muted); }
+.m-label { font-size: 9px; color: var(--muted); margin-bottom: 3px; }
+.m-select {
+  width: 100%; padding: 5px 7px; border: 1.5px solid var(--bdr);
+  background: var(--sur); border-radius: 4px;
+  font-family: 'Vollkorn', serif; font-size: 11px; color: var(--txt);
+}
+.m-hr { border: none; border-top: 1px solid var(--bdr); margin: 9px 0 8px; }
+.m-cta { font-size: 10px; color: var(--muted); text-align: center; margin-bottom: 7px; }
+.m-btn { display: block; width: 100%; text-align: center; padding: 7px 0; border-radius: 4px; font-family: 'Vollkorn', serif; font-size: 11px; margin-bottom: 5px; }
+.m-btn.primary { background: var(--red); color: #fff; border: 2px outset var(--red); }
+.m-btn.secondary { background: var(--sur); color: var(--red); border: 2px outset var(--bdr); }
+
+.m-fab {
+  position: absolute; bottom: 12px; left: 12px;
+  width: 44px; height: 44px; background: var(--card);
+  border: 2px solid var(--bdr); border-radius: 50%;
+  box-shadow: 2px 3px 8px rgba(0,0,0,.22);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 30;
+}
+.m-fab-dot { width: 22px; height: 22px; background: var(--red); border-radius: 50%; }
+.m-mapctrl { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 3px; z-index: 15; }
+.mmc { width: 24px; height: 24px; background: var(--card); border: 1.5px solid var(--bdr); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--txt); }
+</style>
+</head>
+<body>
+
+<span class="approach-tag">approach a</span>
+<h1>guest panel — always accessible</h1>
+<p class="desc">
+  Remove the blocking modal entirely. Sidebar is visible and useful from first load:
+  the filter works (populated from the existing public pins endpoint), and the pin count
+  gives a sense of community activity. Sign-in is offered as a friendly CTA at the bottom —
+  not a wall. The "add a find" button only appears after signing in, so there are no
+  locked/broken-feeling controls.
+</p>
+<div class="verdict">
+  <div class="pros">
+    <strong>in favour</strong>
+    filter &amp; map usable before committing to an account<br>
+    no broken UI — add-button hidden until relevant<br>
+    sign-in feels like an invitation, not a gate<br>
+    minimal code change from current state
+  </div>
+  <div class="cons">
+    <strong>trade-offs</strong>
+    guests can't preview what the authenticated sidebar looks like<br>
+    "add a find" only appears post-auth (some users won't know it exists)
+  </div>
+</div>
+
+<div class="states">
+
+  <!-- Desktop: guest -->
+  <div class="sg">
+    <div class="slabel">desktop — guest view</div>
+    <div class="dshell">
+      <div class="ascreen">
+        <div class="road h" style="top:148px"></div>
+        <div class="road h main" style="top:74px"></div>
+        <div class="road v" style="left:248px"></div>
+        <div class="road v main" style="left:335px"></div>
+        <div class="park" style="top:18px;left:255px;width:65px;height:48px"></div>
+        <div class="water" style="top:178px;left:305px;width:95px;height:55px"></div>
+        <div class="blk" style="top:94px;left:268px;width:28px;height:18px"></div>
+        <div class="blk" style="top:94px;left:302px;width:22px;height:18px"></div>
+        <div class="blk" style="top:94px;left:358px;width:30px;height:18px"></div>
+        <div class="blk" style="top:94px;left:395px;width:18px;height:18px"></div>
+        <div class="pin" style="top:100px;left:285px"></div>
+        <div class="pin" style="top:58px;left:345px"></div>
+        <div class="pin g" style="top:128px;left:395px"></div>
+        <div class="pin" style="top:210px;left:275px"></div>
+        <div class="pin g" style="top:82px;left:428px"></div>
+        <div class="pin" style="top:248px;left:460px"></div>
+        <div class="pin" style="top:310px;left:362px"></div>
+        <div class="pin g" style="top:288px;left:492px"></div>
+
+        <div class="sb">
+          <div class="sb-logo">
+            <div class="sb-icon">🍋</div>
+            <div>
+              <div class="sb-title">fruit for all</div>
+              <div class="sb-sub">open source orchard</div>
+            </div>
+          </div>
+
+          <div class="sb-section">
+            <label>filter by type:</label>
+            <select class="sb-select"><option>all fruits</option><option>loquat</option><option>fig</option><option>citrus</option></select>
+          </div>
+
+          <div class="sb-count">127 finds in your area</div>
+
+          <div class="sb-hr"></div>
+
+          <p class="sb-cta-head">sign in to add your finds</p>
+          <div class="sb-btn primary">sign in</div>
+          <div class="sb-btn secondary">create account</div>
+          <span class="sb-link">what is fruit for all?</span>
+        </div>
+
+        <div class="mapctrl">
+          <div class="mc">+</div>
+          <div class="mc">−</div>
+          <div class="mc" style="font-size:11px">◎</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile: sheet open -->
+  <div class="sg">
+    <div class="slabel">jelly star — panel open</div>
+    <div class="mshell">
+      <div class="mscreen">
+        <div class="road h" style="top:175px;height:7px"></div>
+        <div class="road h main" style="top:100px;height:11px"></div>
+        <div class="road v" style="left:118px;width:7px"></div>
+        <div class="water" style="top:202px;left:128px;width:68px;height:44px"></div>
+        <div class="pin" style="top:78px;left:76px"></div>
+        <div class="pin g" style="top:128px;left:162px"></div>
+        <div class="pin" style="top:58px;left:178px"></div>
+        <div class="pin" style="top:148px;left:60px"></div>
+
+        <div class="m-sheet">
+          <div class="m-handle"></div>
+          <div class="m-logo-row">
+            <div class="m-icon">🍋</div>
+            <div>
+              <div class="m-title">fruit for all</div>
+              <div class="m-sub">open source orchard</div>
+            </div>
+          </div>
+          <div class="m-label">filter by type:</div>
+          <select class="m-select"><option>all fruits</option><option>loquat</option></select>
+          <div class="m-hr"></div>
+          <div class="m-cta">sign in to add your finds</div>
+          <div class="m-btn primary">sign in</div>
+          <div class="m-btn secondary">create account</div>
+        </div>
+
+        <div class="m-mapctrl">
+          <div class="mmc">+</div>
+          <div class="mmc">−</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile: collapsed (FAB only) -->
+  <div class="sg">
+    <div class="slabel">jelly star — map only</div>
+    <div class="mshell">
+      <div class="mscreen">
+        <div class="road h" style="top:175px;height:7px"></div>
+        <div class="road h main" style="top:100px;height:11px"></div>
+        <div class="road v" style="left:118px;width:7px"></div>
+        <div class="water" style="top:202px;left:128px;width:68px;height:44px"></div>
+        <div class="park" style="top:20px;left:130px;width:55px;height:40px"></div>
+        <div class="pin" style="top:78px;left:76px"></div>
+        <div class="pin g" style="top:128px;left:162px"></div>
+        <div class="pin" style="top:58px;left:178px"></div>
+        <div class="pin" style="top:260px;left:90px"></div>
+        <div class="pin g" style="top:310px;left:148px"></div>
+
+        <div class="m-fab">
+          <div class="m-fab-dot"></div>
+        </div>
+        <div class="m-mapctrl">
+          <div class="mmc">+</div>
+          <div class="mmc">−</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

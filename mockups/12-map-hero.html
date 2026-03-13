@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mockup 12: Approach C — Map Hero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vollkorn:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0; padding: 36px 24px 60px;
+  background: #1a1a1a; font-family: 'Vollkorn', serif;
+}
+h1 { color: #f0e8d8; font-size: 19px; margin: 0 0 2px; font-weight: 600; }
+.approach-tag {
+  display: inline-block; background: #3d5a3e; color: #fff;
+  font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 3px; margin-bottom: 8px;
+}
+.desc {
+  color: #bbb; font-size: 13px; line-height: 1.6; margin: 6px 0 12px;
+  max-width: 660px; border-left: 3px solid #3d5a3e; padding-left: 12px;
+}
+.verdict { display: flex; gap: 32px; margin: 0 0 28px; max-width: 660px; }
+.verdict div { font-size: 12px; line-height: 1.55; color: #aaa; flex: 1; }
+.verdict .pros strong { color: #8ab060; display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
+.verdict .cons strong { color: #c87040; display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
+
+.states { display: flex; gap: 36px; flex-wrap: wrap; align-items: flex-start; }
+.sg { display: flex; flex-direction: column; gap: 8px; }
+.slabel { color: #666; font-size: 10px; text-transform: uppercase; letter-spacing: 1.3px; font-family: monospace; }
+
+.dshell { background: #0e0e0e; border-radius: 8px; padding: 8px; box-shadow: 0 6px 28px rgba(0,0,0,.7), inset 0 0 0 1px #282828; }
+.mshell { background: #0e0e0e; border-radius: 26px; padding: 18px 8px; box-shadow: 0 6px 28px rgba(0,0,0,.7), inset 0 0 0 1px #282828; display: flex; align-items: center; }
+
+:root {
+  --red: #7a3c20; --red-dark: #5c3018;
+  --sur: #f7f2e4; --card: #f2ece0; --bdr: #c8b888;
+  --txt: #2b1a0e; --muted: #8a7050; --olive: #5c6b2e;
+}
+
+.ascreen { width: 560px; height: 360px; background: #d4e0bc; border-radius: 3px; position: relative; overflow: hidden; }
+.mscreen { width: 240px; height: 427px; background: #d4e0bc; border-radius: 6px; position: relative; overflow: hidden; }
+
+.road { position: absolute; background: #ede8d6; }
+.road.h { height: 8px; left: 0; right: 0; }
+.road.h.main { height: 13px; background: #f0ead6; }
+.road.v { width: 8px; top: 0; bottom: 0; }
+.road.v.main { width: 13px; background: #f0ead6; }
+.park { position: absolute; background: #c0d0a0; border-radius: 3px; }
+.water { position: absolute; background: #a4c0d4; border-radius: 40%; }
+.blk { position: absolute; background: #c4bc9c; }
+
+.pin { position: absolute; width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 13px solid #7a3c20; transform: translate(-5px,0); filter: drop-shadow(1px 2px 2px rgba(0,0,0,.3)); }
+.pin::after { content:''; position: absolute; width:6px; height:6px; background: rgba(255,255,255,.4); border-radius: 50%; top:-12px; left:-3px; }
+.pin.g { border-top-color: #5c6b2e; }
+
+.banner {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 40px;
+  background: var(--card);
+  border-bottom: 2px solid var(--bdr);
+  display: flex; align-items: center;
+  padding: 0 12px;
+  gap: 10px;
+  z-index: 20;
+  font-family: 'Vollkorn', serif;
+  font-size: 12px;
+  color: var(--txt);
+}
+.banner-logo { display: flex; align-items: center; gap: 6px; }
+.banner-icon { width: 22px; height: 22px; background: var(--red); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; }
+.banner-name { font-weight: 600; font-size: 12px; }
+.banner-sep { color: var(--bdr); margin: 0 4px; }
+.banner-msg { color: var(--muted); font-size: 11px; flex: 1; }
+.banner-btns { display: flex; gap: 6px; }
+.banner-btn {
+  padding: 4px 10px; border-radius: 4px; font-family: 'Vollkorn', serif;
+  font-size: 10px; cursor: pointer; white-space: nowrap;
+}
+.banner-btn.primary { background: var(--red); color: #fff; border: 1.5px outset var(--red); }
+.banner-btn.ghost { background: transparent; color: var(--red); border: 1.5px solid var(--bdr); }
+
+.mapctrl { position: absolute; top: 52px; right: 14px; display: flex; flex-direction: column; gap: 4px; z-index: 15; }
+.mc { width: 28px; height: 28px; background: var(--card); border: 1.5px solid var(--bdr); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--txt); box-shadow: 2px 2px 4px rgba(0,0,0,.15); }
+
+.sidebar-tab {
+  position: absolute;
+  top: 52px; left: 14px;
+  background: var(--card); border: 1.5px solid var(--bdr);
+  border-radius: 6px; padding: 7px 10px;
+  box-shadow: 2px 3px 6px rgba(0,0,0,.18);
+  font-family: 'Vollkorn', serif; font-size: 11px; color: var(--txt);
+  z-index: 15; cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+}
+.sidebar-tab-open {
+  position: absolute;
+  top: 52px; left: 14px; width: 188px;
+  background: var(--card); border: 2px solid var(--bdr);
+  border-radius: 8px; padding: 11px;
+  box-shadow: 5px 6px 10px rgba(0,0,0,.22);
+  font-size: 12px; color: var(--txt); z-index: 15;
+}
+.sb-head { font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+.sb-section label { display: block; font-size: 10px; color: var(--muted); margin-bottom: 3px; text-align: left; }
+.sb-select {
+  width: 100%; padding: 5px 24px 5px 7px; background: var(--sur);
+  border: 1.5px solid var(--bdr); border-radius: 4px;
+  font-family: 'Vollkorn', serif; font-size: 11px; color: var(--txt); appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath fill='%238a7050' d='M0 0l4 5 4-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 7px center;
+}
+.sb-add-btn {
+  display: block; width: 100%; text-align: center; padding: 7px 0;
+  background: var(--red); color: #fff; border: 2px outset var(--red);
+  border-radius: 4px; font-family: 'Vollkorn', serif; font-size: 11px;
+  margin-top: 8px; cursor: pointer;
+}
+
+.m-banner {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 36px; background: var(--card); border-bottom: 2px solid var(--bdr);
+  display: flex; align-items: center; padding: 0 10px; gap: 6px;
+  z-index: 20; font-family: 'Vollkorn', serif; font-size: 11px; color: var(--txt);
+}
+.m-banner-icon { width: 18px; height: 18px; background: var(--red); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; flex-shrink: 0; }
+.m-banner-name { font-weight: 600; font-size: 11px; flex: 1; }
+.m-banner-btn {
+  padding: 3px 8px; border-radius: 3px; font-family: 'Vollkorn', serif;
+  font-size: 9px; white-space: nowrap;
+}
+.m-banner-btn.primary { background: var(--red); color: #fff; border: 1.5px outset var(--red); }
+.m-banner-btn.ghost { background: transparent; color: var(--muted); border: 1.5px solid var(--bdr); }
+
+.m-fab { position: absolute; bottom: 12px; left: 12px; width: 44px; height: 44px; background: var(--card); border: 2px solid var(--bdr); border-radius: 50%; box-shadow: 2px 3px 8px rgba(0,0,0,.22); display: flex; align-items: center; justify-content: center; z-index: 30; }
+.m-fab-dot { width: 22px; height: 22px; background: var(--red); border-radius: 50%; }
+.m-filter-fab { position: absolute; bottom: 12px; right: 12px; background: var(--card); border: 2px solid var(--bdr); border-radius: 6px; padding: 8px 10px; box-shadow: 2px 3px 8px rgba(0,0,0,.22); z-index: 30; font-family: 'Vollkorn', serif; font-size: 10px; color: var(--txt); }
+.m-filter-label { font-size: 8px; color: var(--muted); margin-bottom: 2px; }
+.m-filter-select { border: 1px solid var(--bdr); background: var(--sur); border-radius: 3px; font-family: 'Vollkorn', serif; font-size: 9px; color: var(--txt); padding: 2px 4px; width: 80px; }
+.m-mapctrl { position: absolute; top: 46px; right: 10px; display: flex; flex-direction: column; gap: 3px; z-index: 15; }
+.mmc { width: 24px; height: 24px; background: var(--card); border: 1.5px solid var(--bdr); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--txt); }
+</style>
+</head>
+<body>
+
+<span class="approach-tag">approach c</span>
+<h1>map hero — banner + contextual sign-in</h1>
+<p class="desc">
+  The map is the first and only thing you see. A slim (40px) sticky banner at the top carries the
+  branding and sign-in / create account buttons. The sidebar is collapsed by default; its hamburger
+  tab is clickable to open the filter panel. "Add a find" is in that panel but triggers auth if guest.
+  Zero sign-in pressure until the user decides they want to contribute.
+</p>
+<div class="verdict">
+  <div class="pros">
+    <strong>in favour</strong>
+    most impressive first impression — the map speaks for itself<br>
+    zero sign-in friction — banner is easily ignored<br>
+    filter still accessible (sidebar tab or FAB on mobile)<br>
+    works well as a "try before you commit" product
+  </div>
+  <div class="cons">
+    <strong>trade-offs</strong>
+    filter harder to discover (sidebar collapsed by default)<br>
+    banner adds vertical real estate (especially on mobile)<br>
+    biggest departure from current code
+  </div>
+</div>
+
+<div class="states">
+
+  <!-- Desktop: map hero with banner -->
+  <div class="sg">
+    <div class="slabel">desktop — first load (sidebar tab)</div>
+    <div class="dshell">
+      <div class="ascreen">
+        <div class="road h" style="top:148px"></div>
+        <div class="road h main" style="top:74px"></div>
+        <div class="road v" style="left:248px"></div>
+        <div class="road v main" style="left:335px"></div>
+        <div class="park" style="top:18px;left:120px;width:100px;height:48px"></div>
+        <div class="water" style="top:178px;left:305px;width:95px;height:55px"></div>
+        <div class="blk" style="top:94px;left:268px;width:28px;height:18px"></div>
+        <div class="blk" style="top:94px;left:302px;width:22px;height:18px"></div>
+        <div class="blk" style="top:94px;left:358px;width:30px;height:18px"></div>
+        <div class="pin" style="top:100px;left:165px"></div>
+        <div class="pin" style="top:60px;left:225px"></div>
+        <div class="pin" style="top:58px;left:345px"></div>
+        <div class="pin g" style="top:128px;left:395px"></div>
+        <div class="pin" style="top:210px;left:275px"></div>
+        <div class="pin g" style="top:82px;left:428px"></div>
+        <div class="pin" style="top:248px;left:460px"></div>
+        <div class="pin" style="top:310px;left:362px"></div>
+        <div class="pin g" style="top:288px;left:492px"></div>
+        <div class="pin" style="top:300px;left:130px"></div>
+
+        <div class="banner">
+          <div class="banner-logo">
+            <div class="banner-icon">🍋</div>
+            <div class="banner-name">fruit for all</div>
+          </div>
+          <span class="banner-sep">·</span>
+          <div class="banner-msg">browse freely — sign in to add finds</div>
+          <div class="banner-btns">
+            <div class="banner-btn ghost">sign in</div>
+            <div class="banner-btn primary">register</div>
+          </div>
+        </div>
+
+        <div class="sidebar-tab">
+          <span>☰</span> filter &amp; menu
+        </div>
+
+        <div class="mapctrl">
+          <div class="mc">+</div>
+          <div class="mc">−</div>
+          <div class="mc" style="font-size:11px">◎</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Desktop: sidebar open -->
+  <div class="sg">
+    <div class="slabel">desktop — sidebar expanded</div>
+    <div class="dshell">
+      <div class="ascreen">
+        <div class="road h" style="top:148px"></div>
+        <div class="road h main" style="top:74px"></div>
+        <div class="road v" style="left:248px"></div>
+        <div class="road v main" style="left:335px"></div>
+        <div class="park" style="top:18px;left:120px;width:100px;height:48px"></div>
+        <div class="water" style="top:178px;left:305px;width:95px;height:55px"></div>
+        <div class="pin" style="top:100px;left:225px"></div>
+        <div class="pin" style="top:58px;left:345px"></div>
+        <div class="pin g" style="top:128px;left:395px"></div>
+        <div class="pin" style="top:210px;left:275px"></div>
+        <div class="pin g" style="top:82px;left:428px"></div>
+        <div class="pin" style="top:248px;left:460px"></div>
+        <div class="pin" style="top:310px;left:362px"></div>
+
+        <div class="banner">
+          <div class="banner-logo">
+            <div class="banner-icon">🍋</div>
+            <div class="banner-name">fruit for all</div>
+          </div>
+          <span class="banner-sep">·</span>
+          <div class="banner-msg">browse freely — sign in to add finds</div>
+          <div class="banner-btns">
+            <div class="banner-btn ghost">sign in</div>
+            <div class="banner-btn primary">register</div>
+          </div>
+        </div>
+
+        <div class="sidebar-tab-open">
+          <div class="sb-head">filter &amp; options</div>
+          <div class="sb-section">
+            <label>filter by type:</label>
+            <select class="sb-select"><option>all fruits</option><option>loquat</option><option>fig</option></select>
+          </div>
+          <div class="sb-add-btn">add a find →</div>
+        </div>
+
+        <div class="mapctrl">
+          <div class="mc">+</div>
+          <div class="mc">−</div>
+          <div class="mc" style="font-size:11px">◎</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile: map hero -->
+  <div class="sg">
+    <div class="slabel">jelly star — first load</div>
+    <div class="mshell">
+      <div class="mscreen">
+        <div class="road h" style="top:175px;height:7px"></div>
+        <div class="road h main" style="top:100px;height:11px"></div>
+        <div class="road v" style="left:118px;width:7px"></div>
+        <div class="water" style="top:202px;left:128px;width:68px;height:44px"></div>
+        <div class="park" style="top:20px;left:130px;width:55px;height:40px"></div>
+        <div class="pin" style="top:78px;left:76px"></div>
+        <div class="pin g" style="top:128px;left:162px"></div>
+        <div class="pin" style="top:58px;left:178px"></div>
+        <div class="pin" style="top:260px;left:90px"></div>
+        <div class="pin g" style="top:310px;left:148px"></div>
+        <div class="pin" style="top:350px;left:60px"></div>
+
+        <div class="m-banner">
+          <div class="m-banner-icon">🍋</div>
+          <div class="m-banner-name">fruit for all</div>
+          <div class="m-banner-btn ghost">sign in</div>
+          <div class="m-banner-btn primary">register</div>
+        </div>
+
+        <div class="m-fab">
+          <div class="m-fab-dot"></div>
+        </div>
+
+        <div class="m-filter-fab">
+          <div class="m-filter-label">filter</div>
+          <select class="m-filter-select"><option>all fruits</option></select>
+        </div>
+
+        <div class="m-mapctrl">
+          <div class="mmc">+</div>
+          <div class="mmc">−</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

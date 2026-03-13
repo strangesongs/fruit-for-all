@@ -169,6 +169,10 @@ li {
     padding-top: 8px;
     padding-bottom: 10px;
     flex: 0 0 auto;
+}
+
+/* Only show the header divider in the authenticated sidebar (where it separates header from action buttons) */
+.sidebar--authenticated .header-section {
     border-bottom: 1px solid var(--border);
 }
 
@@ -392,6 +396,8 @@ button.auth-submit-btn:disabled {
     flex: 0 0 auto;
     width: 100%;
     display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
 }
 
@@ -1274,4 +1280,39 @@ button.close-btn:hover {
     width: 100%;
     flex: none;
     margin-top: 2px;
+}
+
+/* Guest inline auth inside the mobile panel */
+.mobile-panel-auth {
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.mobile-panel-auth-head {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 8px;
+    text-align: center;
+}
+
+.mobile-panel-auth .form-group {
+    margin-bottom: 6px;
+}
+
+.mobile-panel-auth .form-group input {
+    font-size: 0.82rem;
+    padding: 6px 8px;
+}
+
+.mobile-panel-auth .auth-submit-btn {
+    font-size: 0.82rem;
+    padding: 7px 10px;
+    margin-top: 4px;
+}
+
+.mobile-panel-auth .toggle-auth {
+    font-size: 0.78rem;
+    margin-top: 6px;
+    margin-bottom: 0;
 }
