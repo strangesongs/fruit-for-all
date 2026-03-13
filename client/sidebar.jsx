@@ -32,10 +32,12 @@ export default class Sidebar extends React.Component {
             selectedFruitFilter: 'all',
             availableFruitTypes: [],
             
-            // Sidebar collapse state — collapse on tiny screens only when already authenticated
-            // (unauthenticated tiny-screen users need to see the auth modal on first load)
-            isCollapsed: typeof window !== 'undefined' && window.innerWidth <= 360 && isAuthenticated(),
+            // Sidebar collapse state — collapse on tiny screens by default for all users
+            isCollapsed: typeof window !== 'undefined' && window.innerWidth <= 360,
             isTinyScreen: typeof window !== 'undefined' && window.innerWidth <= 360,
+
+            // Guest mode: tracks when an unauthenticated user has tapped "add a find"
+            guestAddAttempted: false,
 
             // My pins filter active state
             myPinsActive: false,
@@ -59,8 +61,9 @@ export default class Sidebar extends React.Component {
     componentDidMount() {
         if (isAuthenticated()) {
             this.fetchAvailableFruitTypes();
+        } else {
+            this.fetchAvailableFruitTypesPublic();
         }
-        // Do not pre-fill location from cache — user must be physically present to add a pin
     }
 
     fetchAvailableFruitTypes = async () => {
@@ -86,6 +89,26 @@ export default class Sidebar extends React.Component {
             }
         } catch (error) {
             console.error('Error fetching fruit types:', error);
+        }
+    };
+
+    fetchAvailableFruitTypesPublic = async () => {
+        try {
+            const response = await fetch(`${API_BASE}/api/pins/public`);
+            const data = await response.json();
+            if (data.success && data.pins) {
+                const excludeWords = ['test', 'tests', 'demo', 'testing', 'user'];
+                const fruitTypes = [...new Set(data.pins.map(pin => pin.fruitType))]
+                    .filter(type => type)
+                    .filter(type => {
+                        const lowerType = type.toLowerCase();
+                        return !excludeWords.some(word => lowerType.includes(word));
+                    })
+                    .sort();
+                this.setState({ availableFruitTypes: fruitTypes });
+            }
+        } catch (error) {
+            console.error('Error fetching public fruit types:', error);
         }
     };
 
@@ -119,12 +142,13 @@ export default class Sidebar extends React.Component {
     };
 
     toggleAddFruitPopup = () => {
+        if (!isAuthenticated()) {
+            this.setState({ guestAddAttempted: true });
+            return;
+        }
         this.setState(prevState => {
             const opening = !prevState.showAddFruitPopup;
             let currentLocation = opening ? null : prevState.currentLocation;
-            if (opening) {
-                // Always start with null — user must tap "get current location" fresh each time
-            }
             return {
                 showAddFruitPopup: !prevState.showAddFruitPopup,
                 currentLocation,
@@ -203,8 +227,10 @@ export default class Sidebar extends React.Component {
 
     handleLogout = () => {
         clearAuth();
+        this.fetchAvailableFruitTypesPublic();
         this.setState({ 
             authenticated: false,
+            guestAddAttempted: false,
             authUserName: '',
             authPassword: '',
             authEmail: '',
@@ -280,14 +306,16 @@ export default class Sidebar extends React.Component {
             const result = await response.json();
 
             if (result.success) {
+                const wasGuestAddAttempted = this.state.guestAddAttempted;
                 saveAuth(result.token, result.user);
                 this.setState({ 
                     authenticated: true,
+                    guestAddAttempted: false,
                     authUserName: '',
                     authPassword: '',
                     authError: '',
-                    // On tiny screens, collapse after login so the map is visible
                     isCollapsed: window.innerWidth <= 360,
+                    showAddFruitPopup: wasGuestAddAttempted,
                 });
                 // Load fruit types now that we're authenticated
                 this.fetchAvailableFruitTypes();
@@ -360,15 +388,17 @@ export default class Sidebar extends React.Component {
             const result = await response.json();
 
             if (result.success) {
+                const wasGuestAddAttempted = this.state.guestAddAttempted;
                 saveAuth(result.token, result.user);
                 this.setState({ 
                     authenticated: true,
+                    guestAddAttempted: false,
                     authUserName: '',
                     authPassword: '',
                     authEmail: '',
                     authError: '',
-                    // On tiny screens, collapse after registration so the map is visible
                     isCollapsed: window.innerWidth <= 360,
+                    showAddFruitPopup: wasGuestAddAttempted,
                 });
                 // Notify parent to refresh pins
                 if (this.props.onAuthSuccess) {
@@ -412,11 +442,6 @@ export default class Sidebar extends React.Component {
                 <div className="add-fruit-popup">
                     <div className="popup-header">
                         <h4>add a find</h4>
-                        <button
-                            className="close-btn"
-                            onClick={this.toggleAddFruitPopup}
-                            disabled={this.state.submitting}
-                        >×</button>
                     </div>
                     <div className="popup-content">
                         <div className="popup-section">
@@ -501,7 +526,8 @@ export default class Sidebar extends React.Component {
     }
 
     renderMobileLayout() {
-        const { isCollapsed, myPinsActive } = this.state;
+        const { isCollapsed, myPinsActive, authenticated, guestAddAttempted,
+                isLoginMode, authUserName, authPassword, authEmail, authLoading, authError } = this.state;
         const currentUser = getUser();
 
         return (
@@ -529,26 +555,88 @@ export default class Sidebar extends React.Component {
                         </div>
                     </div>
 
-                    {currentUser && (
+                    {authenticated && currentUser && (
                         <p className="mobile-panel-welcome">welcome, {currentUser.userName}!</p>
                     )}
 
-                    <div className="mobile-panel-actions">
-                        <button type="button" onClick={this.toggleAddFruitPopup} className="mobile-panel-btn">
-                            add a find
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                const next = !this.state.myPinsActive;
-                                this.setState({ myPinsActive: next, isCollapsed: next ? true : this.state.isCollapsed });
-                                if (this.props.onToggleMyPins) this.props.onToggleMyPins();
-                            }}
-                            className={`mobile-panel-btn${myPinsActive ? ' btn-active' : ''}`}
-                        >
-                            my pins
-                        </button>
-                    </div>
+                    {/* Guest: inline auth form when "add a find" was tapped */}
+                    {!authenticated && guestAddAttempted ? (
+                        <div className="mobile-panel-auth">
+                            <p className="mobile-panel-auth-head">
+                                {isLoginMode ? 'sign in to add a find' : 'create account'}
+                            </p>
+                            <form onSubmit={isLoginMode ? this.handleLogin : this.handleRegister}>
+                                <div className="form-group">
+                                    <input
+                                        type="text"
+                                        value={authUserName}
+                                        onChange={(e) => this.handleInputChange('authUserName', e.target.value)}
+                                        placeholder="username"
+                                        disabled={authLoading}
+                                    />
+                                </div>
+                                {!isLoginMode && (
+                                    <div className="form-group">
+                                        <input
+                                            type="email"
+                                            value={authEmail}
+                                            onChange={(e) => this.handleInputChange('authEmail', e.target.value)}
+                                            placeholder="email"
+                                            disabled={authLoading}
+                                        />
+                                    </div>
+                                )}
+                                <div className="form-group">
+                                    <input
+                                        type="password"
+                                        value={authPassword}
+                                        onChange={(e) => this.handleInputChange('authPassword', e.target.value)}
+                                        placeholder="password"
+                                        disabled={authLoading}
+                                    />
+                                    {!isLoginMode && (
+                                        <p className="password-hint">min 10 chars, 1 number, 1 symbol</p>
+                                    )}
+                                </div>
+                                {authError && <p className="error-message">{authError}</p>}
+                                <button type="submit" className="auth-submit-btn" disabled={authLoading}>
+                                    {authLoading ? 'please wait...' : (isLoginMode ? 'sign in' : 'create account')}
+                                </button>
+                            </form>
+                            <p className="toggle-auth">
+                                {isLoginMode ? 'no account? ' : 'have account? '}
+                                <span onClick={this.toggleAuthMode} className="toggle-link">
+                                    {isLoginMode ? 'register' : 'sign in'}
+                                </span>
+                            </p>
+                            <p className="toggle-auth">
+                                <span
+                                    onClick={() => this.setState({ guestAddAttempted: false, authError: '' })}
+                                    className="toggle-link"
+                                >← back</span>
+                            </p>
+                        </div>
+                    ) : (
+                        /* Default panel actions */
+                        <div className="mobile-panel-actions">
+                            <button type="button" onClick={this.toggleAddFruitPopup} className="mobile-panel-btn">
+                                add a find
+                            </button>
+                            {authenticated && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const next = !myPinsActive;
+                                        this.setState({ myPinsActive: next, isCollapsed: next ? true : isCollapsed });
+                                        if (this.props.onToggleMyPins) this.props.onToggleMyPins();
+                                    }}
+                                    className={`mobile-panel-btn${myPinsActive ? ' btn-active' : ''}`}
+                                >
+                                    my pins
+                                </button>
+                            )}
+                        </div>
+                    )}
 
                     <div className="mobile-panel-filter">
                         <select
@@ -566,9 +654,18 @@ export default class Sidebar extends React.Component {
                         </select>
                     </div>
 
-                    <button type="button" className="mobile-panel-btn mobile-panel-logout-btn" onClick={this.handleLogout}>
-                        logout
-                    </button>
+                    {authenticated ? (
+                        <button type="button" className="mobile-panel-btn mobile-panel-logout-btn" onClick={this.handleLogout}>
+                            logout
+                        </button>
+                    ) : !guestAddAttempted && (
+                        <p className="toggle-auth" style={{marginTop: '8px', marginBottom: '2px'}}>
+                            <span
+                                onClick={() => this.setState({ guestAddAttempted: true })}
+                                className="toggle-link"
+                            >sign in / register</span>
+                        </p>
+                    )}
                 </div>
             )}
 
@@ -579,20 +676,17 @@ export default class Sidebar extends React.Component {
     }
 
     render () {
-        const { authenticated, isLoginMode, authUserName, authPassword, authEmail, authLoading, authError, isTinyScreen } = this.state;
+        const { authenticated, guestAddAttempted, isLoginMode, authUserName, authPassword, authEmail, authLoading, authError, isTinyScreen } = this.state;
         const currentUser = getUser();
 
-        const isAuthModal = !authenticated;
-
-        // Tiny screen (Jelly Star ≤360px) + authenticated: dedicated compact mobile layout
-        if (isTinyScreen && authenticated) {
+        // Tiny screen (Jelly Star ≤360px): always use the mobile panel layout
+        if (isTinyScreen) {
             return this.renderMobileLayout();
         }
 
         return (
         <>
-        {isAuthModal && <div className="auth-modal-backdrop" />}
-        <div className={`sidebar ${this.state.isCollapsed ? 'collapsed' : ''} ${isAuthModal ? 'sidebar-auth-modal' : ''}`}>
+        <div className={`sidebar ${this.state.isCollapsed ? 'collapsed' : ''} ${authenticated ? 'sidebar--authenticated' : ''}`}>
             {/* Hamburger menu button */}
             <button className="hamburger-btn" onClick={this.toggleSidebar} aria-label="Toggle menu">
                 {this.state.isCollapsed ? (
@@ -616,8 +710,49 @@ export default class Sidebar extends React.Component {
                 <img className="lil-fruit" src={loquatIcon} alt={"fruit for all"}/>
             </div>
 
-            {/* Show login/register form if not authenticated */}
-            {!authenticated ? (
+            {/* Guest browsing: map + filter visible, sign-in offered as CTA */}
+            {!authenticated && !guestAddAttempted ? (
+                <>
+                    <div className="action-buttons">
+                        <button
+                            type="button"
+                            onClick={this.toggleAddFruitPopup}
+                            className="action-btn add-fruit-btn"
+                        >add a find</button>
+                    </div>
+
+                    <div className="filter-section">
+                        <label htmlFor="fruit-filter">filter by type:</label>
+                        <select
+                            id="fruit-filter"
+                            value={this.state.selectedFruitFilter}
+                            onChange={(e) => {
+                                this.setState({ selectedFruitFilter: e.target.value });
+                                if (this.props.onFilterChange) this.props.onFilterChange(e.target.value);
+                            }}
+                            className="fruit-filter-select"
+                        >
+                            <option value="all">all fruits</option>
+                            {this.state.availableFruitTypes.map(fruit => (
+                                <option key={fruit} value={fruit}>{fruit}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="bottom-section">
+                        <p className="toggle-auth">
+                            <span onClick={() => this.setState({ guestAddAttempted: true, isLoginMode: true, showAbout: false })} className="toggle-link">sign in</span>
+                            {' / '}
+                            <span onClick={() => this.setState({ guestAddAttempted: true, isLoginMode: false, showAbout: false })} className="toggle-link">create account</span>
+                        </p>
+                        <p className="toggle-auth">
+                            <span onClick={() => this.setState({ guestAddAttempted: true, showAbout: true })} className="secondary-link">what is fruit for all?</span>
+                        </p>
+                    </div>
+                </>
+
+            ) : !authenticated && guestAddAttempted ? (
+                /* Guest has tapped "add a find" or sign-in: show inline auth */
                 <div className="auth-section">
                     {this.state.showAbout ? (
                         <div className="about-panel">
@@ -625,7 +760,7 @@ export default class Sidebar extends React.Component {
                             <p>fruit for all is a community map of street fruit you can actually pick — figs, loquats, citrus, passionfruit, and whatever else is growing near you.</p>
                             <p>spot some fruit, mushrooms, or wild greens? log it so others can find it. you need to be on-location to add a pin.</p>
                             <p>only share fruit that's genuinely accessible to anyone — nothing behind fences or on private property.</p>
-                            <p className="about-oss">open source &mdash; <a href="https://github.com/strangesongs/fruit-for-all" className="about-link-ext" target="_blank" rel="noreferrer">github.com/strangesongs/fruit-for-all</a></p>
+                            <p className="about-oss">open source &mdash; <a href="https://github.com/strangesongs/fruit-for-all" className="about-link-ext" target="_blank" rel="noreferrer">view on github</a></p>
                             <p className="about-oss">say hello &mdash; <a href="mailto:admin@fruitforall.app" className="about-link-ext">admin@fruitforall.app</a></p>
                             <p className="toggle-auth">
                                 <span onClick={() => this.setState({ showAbout: false })} className="toggle-link about-back">← back</span>
@@ -637,7 +772,7 @@ export default class Sidebar extends React.Component {
                                 <div>
                                     <p className="auth-success-msg">If that email is registered, a reset link has been sent.</p>
                                     <p className="toggle-auth">
-                                        <span onClick={() => this.setState({ isForgotMode: false, forgotSuccess: false, forgotEmail: '' })} className="toggle-link">back to login</span>
+                                        <span onClick={() => this.setState({ isForgotMode: false, forgotSuccess: false, forgotEmail: '' })} className="toggle-link">back to sign in</span>
                                     </p>
                                 </div>
                             ) : (
@@ -656,141 +791,133 @@ export default class Sidebar extends React.Component {
                                         {this.state.forgotLoading ? 'please wait...' : 'send reset link'}
                                     </button>
                                     <p className="toggle-auth">
-                                        <span onClick={() => this.setState({ isForgotMode: false, forgotError: '', forgotEmail: '' })} className="toggle-link">back to login</span>
+                                        <span onClick={() => this.setState({ isForgotMode: false, forgotError: '', forgotEmail: '' })} className="toggle-link">back to sign in</span>
                                     </p>
                                 </form>
                             )}
                         </div>
                     ) : (
-                    <form onSubmit={isLoginMode ? this.handleLogin : this.handleRegister}>
-                        <div className="form-group">
-                            <input
-                                type="text"
-                                value={authUserName}
-                                onChange={(e) => this.handleInputChange('authUserName', e.target.value)}
-                                placeholder="username"
-                                disabled={authLoading}
-                            />
-                        </div>
-
-                        {!isLoginMode && (
+                        <form onSubmit={isLoginMode ? this.handleLogin : this.handleRegister}>
                             <div className="form-group">
                                 <input
-                                    type="email"
-                                    value={authEmail}
-                                    onChange={(e) => this.handleInputChange('authEmail', e.target.value)}
-                                    placeholder="email"
+                                    type="text"
+                                    value={authUserName}
+                                    onChange={(e) => this.handleInputChange('authUserName', e.target.value)}
+                                    placeholder="username"
                                     disabled={authLoading}
                                 />
                             </div>
-                        )}
 
-                        <div className="form-group">
-                            <input
-                                type="password"
-                                value={authPassword}
-                                onChange={(e) => this.handleInputChange('authPassword', e.target.value)}
-                                placeholder="password"
-                                disabled={authLoading}
-                            />
                             {!isLoginMode && (
-                                <p className="password-hint">min 10 chars, 1 number, 1 symbol</p>
+                                <div className="form-group">
+                                    <input
+                                        type="email"
+                                        value={authEmail}
+                                        onChange={(e) => this.handleInputChange('authEmail', e.target.value)}
+                                        placeholder="email"
+                                        disabled={authLoading}
+                                    />
+                                </div>
                             )}
-                        </div>
 
-                        {authError && <p className="error-message">{authError}</p>}
+                            <div className="form-group">
+                                <input
+                                    type="password"
+                                    value={authPassword}
+                                    onChange={(e) => this.handleInputChange('authPassword', e.target.value)}
+                                    placeholder="password"
+                                    disabled={authLoading}
+                                />
+                                {!isLoginMode && (
+                                    <p className="password-hint">min 10 chars, 1 number, 1 symbol</p>
+                                )}
+                            </div>
 
-                        <button 
-                            type="submit" 
-                            className="auth-submit-btn"
-                            disabled={authLoading}
-                        >
-                            {authLoading ? 'please wait...' : (isLoginMode ? 'login' : 'create account')}
-                        </button>
+                            {authError && <p className="error-message">{authError}</p>}
 
-                        <p className="toggle-auth">
-                            {isLoginMode ? "no account? " : "have account? "}
-                            <span onClick={this.toggleAuthMode} className="toggle-link">
-                                {isLoginMode ? 'register' : 'login'}
-                            </span>
-                        </p>
-                        {isLoginMode && (
-                            <>
+                            <button
+                                type="submit"
+                                className="auth-submit-btn"
+                                disabled={authLoading}
+                            >
+                                {authLoading ? 'please wait...' : (isLoginMode ? 'sign in' : 'create account')}
+                            </button>
+
+                            <p className="toggle-auth">
+                                {isLoginMode ? 'no account? ' : 'have account? '}
+                                <span onClick={this.toggleAuthMode} className="toggle-link">
+                                    {isLoginMode ? 'register' : 'sign in'}
+                                </span>
+                            </p>
+                            {isLoginMode && (
                                 <p className="toggle-auth">
                                     <span onClick={() => this.setState({ isForgotMode: true, authError: '' })} className="toggle-link">forgot password?</span>
                                 </p>
-                                <div className="auth-card-divider" />
-                                <p className="toggle-auth">
-                                    <span onClick={() => this.setState({ showAbout: true })} className="secondary-link">what is fruit for all?</span>
-                                </p>
-                            </>
-                        )}
-                    </form>
+                            )}
+                            <p className="toggle-auth" style={{marginTop: '10px'}}>
+                                <span
+                                    onClick={() => this.setState({ guestAddAttempted: false, authError: '' })}
+                                    className="toggle-link"
+                                >← back</span>
+                            </p>
+                        </form>
                     )}
                 </div>
+
             ) : (
+                /* Authenticated UI */
                 <>
-                    {/* User info section */}
                     {currentUser && (
                         <div className="user-info">
                             <p className="welcome-text">welcome, {currentUser.userName}!</p>
                         </div>
                     )}
 
-                    {/* Main action buttons */}
                     <div className="action-buttons">
                         <button
                             type="button"
                             onClick={this.toggleAddFruitPopup}
                             className="action-btn add-fruit-btn"
-                            >add a find</button>
+                        >add a find</button>
 
                         <button
                             type="button"
                             onClick={(e) => {
-                            e.preventDefault();
-                            const next = !this.state.myPinsActive;
-                            this.setState({ myPinsActive: next, isCollapsed: next ? true : this.state.isCollapsed });
-                            if (this.props.onToggleMyPins) {
-                                this.props.onToggleMyPins();
-                            }}}
+                                e.preventDefault();
+                                const next = !this.state.myPinsActive;
+                                this.setState({ myPinsActive: next, isCollapsed: next ? true : this.state.isCollapsed });
+                                if (this.props.onToggleMyPins) this.props.onToggleMyPins();
+                            }}
                             className={`action-btn${this.state.myPinsActive ? ' btn-active' : ''}`}
-                            >my pins</button>
+                        >my pins</button>
                     </div>
 
-                    {/* Fruit Type Filter */}
                     <div className="filter-section">
                         <label htmlFor="fruit-filter">filter by type:</label>
-                        <select 
+                        <select
                             id="fruit-filter"
                             value={this.state.selectedFruitFilter}
                             onChange={(e) => {
                                 this.setState({ selectedFruitFilter: e.target.value });
-                                if (this.props.onFilterChange) {
-                                    this.props.onFilterChange(e.target.value);
-                                }
+                                if (this.props.onFilterChange) this.props.onFilterChange(e.target.value);
                             }}
                             className="fruit-filter-select"
                         >
                             <option value="all">all fruits</option>
                             {this.state.availableFruitTypes.map(fruit => (
-                                <option key={fruit} value={fruit}>
-                                    {fruit}
-                                </option>
+                                <option key={fruit} value={fruit}>{fruit}</option>
                             ))}
                         </select>
                     </div>
 
-                    {/* Add a Find Popup */}
                     {this.renderAddFruitPopup()}
 
-                    {/* Logout button at bottom */}
                     <div className="bottom-section">
                         <button
                             type="button"
                             className="logout-btn"
                             onClick={this.handleLogout}
-                            >logout</button>
+                        >logout</button>
                     </div>
                 </>
             )}

@@ -50,9 +50,9 @@ class App extends Component {
     }
   };
 
-  // Called when a pin popup is opened — collapse sidebar so map is visible
+  // Called when a pin popup is opened — collapse sidebar on narrow screens only
   handlePinOpen = () => {
-    if (this.sidebarRef.current) {
+    if (this.sidebarRef.current && window.innerWidth <= 600) {
       this.sidebarRef.current.collapse();
     }
   };

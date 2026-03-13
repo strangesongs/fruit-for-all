@@ -165,10 +165,14 @@ li {
     font-size: 0.6rem;
     color: var(--text-muted);
     text-align: center;
-    margin-bottom: 8px;
+    margin-bottom: 2px;
     padding-top: 8px;
-    padding-bottom: 10px;
+    padding-bottom: 2px;
     flex: 0 0 auto;
+}
+
+/* Only show the header divider in the authenticated sidebar (where it separates header from action buttons) */
+.sidebar--authenticated .header-section {
     border-bottom: 1px solid var(--border);
 }
 
@@ -191,8 +195,8 @@ li {
 /* Auth section styles */
 .auth-section {
     width: 100%;
-    padding: 10px 0;
-    margin-bottom: 8px;
+    padding: 0;
+    margin-bottom: 0;
 }
 
 /* Ensure form elements inside auth-section fill the full width */
@@ -336,6 +340,27 @@ button.auth-submit-btn:disabled {
     font-weight: 400;
 }
 
+/* When showing the about panel, fill remaining sidebar height and pin back-link to bottom */
+.auth-section:has(.about-panel) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-top: 4px;
+    margin-bottom: 0;
+}
+
+.auth-section:has(.about-panel) .about-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.about-panel .toggle-auth:last-child {
+    margin-top: auto;
+    padding-top: 12px;
+    padding-bottom: 4px;
+}
+
 .about-panel {
     font-size: 0.88rem;
     line-height: 1.6;
@@ -392,6 +417,8 @@ button.auth-submit-btn:disabled {
     flex: 0 0 auto;
     width: 100%;
     display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
 }
 
@@ -412,7 +439,7 @@ button.auth-submit-btn:disabled {
     width: 24px;
     height: 24px;
     margin-top: 4px;
-    margin-bottom: 8px;
+    margin-bottom: 2px;
 }
 
 /* Fruit type filter section */
@@ -420,8 +447,8 @@ button.auth-submit-btn:disabled {
     width: 100%;
     padding: 12px 0;
     margin-bottom: 12px;
-    border-top: 1px solid #e0e0e0;
-    border-bottom: 1px solid #e0e0e0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
 }
 
 .filter-section label {
@@ -975,41 +1002,6 @@ button.close-btn:hover {
         display: none;
     }
 
-    /* Auth modal: centred overlay instead of bottom sheet */
-    .sidebar.sidebar-auth-modal {
-        top: 50%;
-        bottom: auto;
-        left: 50%;
-        right: auto;
-        transform: translate(-50%, -50%);
-        width: calc(100vw - 24px);
-        max-height: 90dvh;
-        border-radius: 8px;
-        /* Override the bottom-sheet's 24px bottom padding — auth modal is centred,
-           not anchored to the bottom, so top and bottom should be symmetric */
-        padding: 10px 12px;
-    }
-
-    .sidebar.sidebar-auth-modal::before {
-        display: none;
-    }
-
-    .sidebar.sidebar-auth-modal .hamburger-btn {
-        top: 8px;
-        right: 8px;
-        left: auto;
-    }
-
-    /* Hide loquat image on tiny screens to save vertical space */
-    .sidebar.sidebar-auth-modal .lil-fruit {
-        display: none;
-    }
-
-    /* Restore divider line once logo is gone */
-    .sidebar.sidebar-auth-modal .header-section {
-        border-bottom: 1px solid var(--border);
-    }
-
     .header-section p:first-child {
         font-size: 0.95rem;
     }
@@ -1065,82 +1057,6 @@ button.close-btn:hover {
         max-height: 92dvh;
         border-radius: 8px;
     }
-}
-
-/* ── Auth modal: centered floating card at all sizes ────────────────────── */
-
-.auth-modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.35);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
-    z-index: 999;
-}
-
-.sidebar.sidebar-auth-modal {
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: min(340px, calc(100vw - 24px));
-    max-height: min(96dvh, 96vh);
-    overflow-y: auto;
-    z-index: 1000;
-}
-
-.sidebar.sidebar-auth-modal .hamburger-btn {
-    display: none;
-}
-
-/* Compact the header inside the auth modal so form fits without scrolling */
-.sidebar.sidebar-auth-modal .header-section {
-    padding-top: 6px;
-    padding-bottom: 2px;
-    margin-bottom: 0;
-    border-bottom: none;
-}
-
-.sidebar.sidebar-auth-modal .lil-fruit {
-    width: 40px;
-    height: 40px;
-    margin-bottom: 4px;
-}
-
-.sidebar.sidebar-auth-modal .header-section p:first-child {
-    font-size: 1.1rem;
-    margin-top: 2px;
-}
-
-.sidebar.sidebar-auth-modal .header-section p:nth-child(2) {
-    font-size: 0.8rem;
-    margin-top: 2px;
-}
-
-.sidebar.sidebar-auth-modal .auth-section {
-    /* 6px top gap under header/icon; 8px bottom so card bottom = card top (both ~20px) */
-    padding: 6px 0 8px 0;
-    margin-bottom: 0;
-}
-
-.sidebar.sidebar-auth-modal .auth-section h3 {
-    margin: 4px 0 8px;
-}
-
-.sidebar.sidebar-auth-modal .auth-section .form-group {
-    margin-bottom: 6px;
-}
-
-.sidebar.sidebar-auth-modal .auth-submit-btn {
-    margin-top: 6px;
-}
-
-.sidebar.sidebar-auth-modal .auth-card-divider {
-    margin: 6px auto;
-}
-
-.sidebar.sidebar-auth-modal .toggle-auth {
-    margin-top: 6px;
-    margin-bottom: 0;
 }
 
 /* ── Mobile compact layout: FAB + panel (≤360px, authenticated) ─────────── */
@@ -1274,4 +1190,39 @@ button.close-btn:hover {
     width: 100%;
     flex: none;
     margin-top: 2px;
+}
+
+/* Guest inline auth inside the mobile panel */
+.mobile-panel-auth {
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.mobile-panel-auth-head {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 8px;
+    text-align: center;
+}
+
+.mobile-panel-auth .form-group {
+    margin-bottom: 6px;
+}
+
+.mobile-panel-auth .form-group input {
+    font-size: 0.82rem;
+    padding: 6px 8px;
+}
+
+.mobile-panel-auth .auth-submit-btn {
+    font-size: 0.82rem;
+    padding: 7px 10px;
+    margin-top: 4px;
+}
+
+.mobile-panel-auth .toggle-auth {
+    font-size: 0.78rem;
+    margin-top: 6px;
+    margin-bottom: 0;
 }

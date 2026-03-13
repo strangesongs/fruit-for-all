@@ -325,7 +325,7 @@ class Map extends Component {
         if (!isAuthenticated()) {
             this.setState({ loading: true });
             try {
-                const response = await fetch('/api/pins/public');
+                const response = await fetch(`${API_BASE}/api/pins/public`);
                 const data = await response.json();
                 this.setState({
                     pins: data.success ? data.pins : [],
