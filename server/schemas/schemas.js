@@ -669,5 +669,10 @@ export {
   deletePin,
   updatePin,
   validatePassword,
-  validateEmail 
+  validateEmail,
+  // Pure utility exports for testing
+  detectZoneFallback,
+  escapeHtml,
+  sanitizeString,
+  validateCoordinates
 };

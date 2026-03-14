@@ -13,12 +13,25 @@ Thanks for your interest. This is a community project and all contributions are 
 
 See [README.md](README.md) for full setup instructions.
 
+## running the tests
+
+```bash
+npm test
+```
+
+Tests use Node's built-in test runner (no extra dependencies). They cover server-side validation utilities and client-side auth helpers. A pre-commit hook runs `npm test` automatically when you commit.
+
+If you add new utility functions, please add corresponding tests in `tests/`.
+
 ## pull requests
 
 1. Fork the repo and create a branch from `main`
 2. Run `npm run dev` to work locally
-3. Test on desktop and on narrow mobile (360px width)
-4. Open a PR with a clear description of what changed and why
+3. Run `npm test` and make sure all tests pass
+4. Test on desktop and on narrow mobile (360px width)
+5. Open a PR with a clear description of what changed and why
+
+All PRs must pass CI checks and receive a review from the repo owner before merging.
 
 ## code style
 

@@ -11,7 +11,8 @@
     "build": "npm run copy:html && esbuild client/index.js --bundle --outdir=dist --minify --define:process.env.NODE_ENV=\\\"production\\\" --jsx=automatic --loader:.js=jsx --loader:.jsx=jsx --loader:.png=file",
     "copy:html": "mkdir -p dist && cp client/map-index.html dist/index.html && cp loquat-48.png dist/loquat-48.png",
     "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test tests/server/*.test.js tests/client/*.test.js",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -53,6 +54,7 @@
     "@types/leaflet": "^1.9.12",
     "concurrently": "^8.2.2",
     "esbuild": "^0.20.2",
+    "husky": "^9.1.7",
     "nodemon": "^3.1.10",
     "prettier": "^3.2.5"
   },
