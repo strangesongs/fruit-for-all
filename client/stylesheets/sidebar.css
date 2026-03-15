@@ -1211,6 +1211,8 @@ button.close-btn:hover {
 }
 
 .mobile-panel-auth .form-group input {
+    width: 100%;
+    box-sizing: border-box;
     font-size: 0.82rem;
     padding: 6px 8px;
 }

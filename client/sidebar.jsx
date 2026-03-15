@@ -638,6 +638,7 @@ export default class Sidebar extends React.Component {
                         </div>
                     )}
 
+                    {(!guestAddAttempted || authenticated) && (
                     <div className="mobile-panel-filter">
                         <select
                             value={this.state.selectedFruitFilter}
@@ -653,6 +654,7 @@ export default class Sidebar extends React.Component {
                             ))}
                         </select>
                     </div>
+                    )}
 
                     {authenticated ? (
                         <button type="button" className="mobile-panel-btn mobile-panel-logout-btn" onClick={this.handleLogout}>
