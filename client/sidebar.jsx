@@ -464,7 +464,7 @@ export default class Sidebar extends React.Component {
                             )}
                         </div>
                         <div className="popup-section fruit-autocomplete-wrapper">
-                            <label htmlFor="popup-fruit-type">fruit or tree type:</label>
+                            <label htmlFor="popup-fruit-type">forage type:</label>
                             <input
                                 type="text"
                                 id="popup-fruit-type"
@@ -506,12 +506,6 @@ export default class Sidebar extends React.Component {
                     </div>
                     <div className="popup-footer">
                         <button
-                            type="button"
-                            onClick={this.toggleAddFruitPopup}
-                            disabled={this.state.submitting}
-                            className="cancel-btn"
-                        >cancel</button>
-                        <button
                             type="submit"
                             onClick={this.submitPin}
                             disabled={this.state.submitting || !this.state.currentLocation || !FRUIT_LIST.includes((this.state.fruitType || '').trim().toLowerCase())}
@@ -519,6 +513,12 @@ export default class Sidebar extends React.Component {
                         >
                             {this.state.submitting ? 'submitting...' : 'submit pin'}
                         </button>
+                        <button
+                            type="button"
+                            onClick={this.toggleAddFruitPopup}
+                            disabled={this.state.submitting}
+                            className="cancel-btn"
+                        >cancel</button>
                     </div>
                 </div>
             </div>
@@ -759,9 +759,10 @@ export default class Sidebar extends React.Component {
                     {this.state.showAbout ? (
                         <div className="about-panel">
                             <h3 className="about-title">what is fruit for all?</h3>
-                            <p>fruit for all is a community map of street fruit you can actually pick — figs, loquats, citrus, passionfruit, and whatever else is growing near you.</p>
-                            <p>spot some fruit, mushrooms, or wild greens? log it so others can find it. you need to be on-location to add a pin.</p>
-                            <p>only share fruit that's genuinely accessible to anyone — nothing behind fences or on private property.</p>
+                            <p>free food is growing all around you — figs dropping on sidewalks, citrus trees heavy with fruit, blackberries along the trail, herbs perfuming the street corner.</p>
+                            <p>fruit for all maps it all so anyone can find it.</p>
+                            <p>spot something? add a pin and some notes. the map gets richer every time someone shares a find — a living record of a world blossoming with abundance.</p>
+                            <p>only add finds that are genuinely accessible to anyone — nothing behind fences or on private property.</p>
                             <p className="about-oss">open source &mdash; <a href="https://github.com/strangesongs/fruit-for-all" className="about-link-ext" target="_blank" rel="noreferrer">view on github</a></p>
                             <p className="about-oss">say hello &mdash; <a href="mailto:admin@fruitforall.app" className="about-link-ext">admin@fruitforall.app</a></p>
                             <p className="toggle-auth">

@@ -652,10 +652,12 @@ button.close-btn:hover {
     padding: 8px 10px;
     font-size: 0.8rem;
     font-weight: normal;
-    width: auto;
-    margin-bottom: 6px;
+    display: block;
+    width: 100% !important;
+    margin: 0 0 6px !important;
     border-radius: 4px;
     cursor: pointer;
+    box-sizing: border-box;
 }
 
 .location-btn:hover {
