@@ -23,6 +23,10 @@ export {
   validateEmail,
   sanitizeString,
   validateCoordinates,
+  validateUserName,
+  isReservedUserName,
+  validateNotes,
+  validatePinInput,
 } from './validation.js';
 export { detectZone, detectZoneFallback } from './zone.js';
 export { escapeHtml } from '../utils/html.js';

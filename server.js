@@ -7,6 +7,8 @@ import helmet from 'helmet';
 import { createClient } from 'redis';
 import { RedisStore } from 'rate-limit-redis';
 import controllers from './server/controllers/index.js';
+import { createMemoryDedupStore } from './server/utils/confirmDedup.js';
+import { wrap } from './server/utils/wrap.js';
 
 const app = express();
 const PORT = Number.parseInt(process.env.PORT || '8080', 10);
@@ -62,7 +64,7 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', origin || '*');
   }
 
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   res.header(
     'Access-Control-Allow-Headers',
     'Origin, X-Requested-With, Content-Type, Accept, Authorization',
@@ -177,30 +179,55 @@ async function createAppWithRateLimiters() {
     },
   );
 
+  // Without Redis, "still good?" dedup falls back to this process's memory.
+  const memoryDedupStore = createMemoryDedupStore();
+
   // Public endpoints (no auth required)
-  app.get('/api/locate', controllers.getIpLocation);
-  app.get('/api/pins/public', publicPinsLimiter, controllers.getPublicPins);
+  app.get('/api/locate', wrap(controllers.getIpLocation));
+  app.get('/api/pins/public', publicPinsLimiter, wrap(controllers.getPublicPins));
 
   // Authentication endpoints
-  app.post('/api/auth/register', authLimiter, controllers.registerUser);
-  app.post('/api/auth/login', authLimiter, controllers.loginUser);
-  app.post('/api/auth/forgot-password', authLimiter, controllers.forgotPassword);
-  app.post('/api/auth/reset-password', authLimiter, controllers.resetPassword);
+  app.post('/api/auth/register', authLimiter, wrap(controllers.registerUser));
+  app.post('/api/auth/login', authLimiter, wrap(controllers.loginUser));
+  app.post('/api/auth/forgot-password', authLimiter, wrap(controllers.forgotPassword));
+  app.post('/api/auth/reset-password', authLimiter, wrap(controllers.resetPassword));
 
   // Protected API endpoints
-  app.get('/api/auth/me', controllers.verifyToken, controllers.getCurrentUser);
-  app.post('/api/pins', controllers.verifyToken, pinLimiter, controllers.createPin);
-  app.get('/api/pins', controllers.verifyToken, controllers.getAllPins);
-  app.get('/api/pins/my', controllers.verifyToken, controllers.getMyPins);
-  app.patch('/api/pins/:pinId', controllers.verifyToken, pinLimiter, controllers.updatePin);
-  app.delete('/api/pins/:pinId', controllers.verifyToken, controllers.deletePin);
+  app.get('/api/auth/me', controllers.verifyToken, wrap(controllers.getCurrentUser));
+  app.post('/api/pins', controllers.verifyToken, pinLimiter, wrap(controllers.createPin));
+  app.get('/api/pins', controllers.verifyToken, wrap(controllers.getAllPins));
+  app.get('/api/pins/my', controllers.verifyToken, wrap(controllers.getMyPins));
+  app.patch('/api/pins/:pinId', controllers.verifyToken, pinLimiter, wrap(controllers.updatePin));
+  app.delete('/api/pins/:pinId', controllers.verifyToken, wrap(controllers.deletePin));
   app.post(
     '/api/pins/:pinId/confirm',
-    (req, _res, next) => { req.redisClient = redisClient; next(); },
+    (req, _res, next) => { req.redisClient = redisClient ?? memoryDedupStore; next(); },
     confirmLimiter,
-    controllers.confirmPin,
+    wrap(controllers.confirmPin),
   );
+
+  // Unknown API routes → JSON 404 (instead of Express's HTML page)
+  app.use('/api', (req, res) => {
+    res.status(404).json({ success: false, message: 'Not found' });
+  });
+
+  // Last-resort error handler: malformed JSON bodies, errors forwarded by wrap(), etc.
+  // eslint-disable-next-line no-unused-vars
+  app.use((err, req, res, next) => {
+    const status = Number.isInteger(err.status) && err.status >= 400 && err.status < 500 ? err.status : 500;
+    if (status >= 500) console.error('[error]', req.method, req.originalUrl, err);
+    if (res.headersSent) return;
+    res.status(status).json({
+      success: false,
+      message: status === 500 ? 'Internal server error' : 'Bad request',
+    });
+  });
 }
+
+// An async handler that throws must never take the process down.
+process.on('unhandledRejection', (reason) => {
+  console.error('[unhandledRejection]', reason);
+});
 
 // Boot
 createAppWithRateLimiters()

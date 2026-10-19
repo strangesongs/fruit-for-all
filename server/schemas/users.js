@@ -5,6 +5,7 @@ import { dynamoClient, USERS_TABLE } from '../db/dynamo.js';
 import {
   validateEmail,
   validatePassword,
+  validateUserName,
 } from './validation.js';
 
 export async function getUser(userName) {
@@ -84,9 +85,8 @@ export async function getUserByEmail(email) {
 
 export async function createUser(userData) {
   const { userName, password, email } = userData;
-  if (!userName || typeof userName !== 'string' || userName.trim().length < 3) {
-    throw new Error('Username must be at least 3 characters long');
-  }
+  const userNameValidation = validateUserName(userName);
+  if (!userNameValidation.valid) throw new Error(userNameValidation.message);
   if (!email || typeof email !== 'string') {
     throw new Error('Email is required');
   }
@@ -115,7 +115,8 @@ export async function createUser(userData) {
     email: email.trim().toLowerCase(),
     createdAt: now,
     lastLogin: now,
-    isAdmin: userName.trim().toLowerCase() === 'admin',
+    // Admin is granted only by editing the record in DynamoDB, never by choice of name.
+    isAdmin: false,
     savedPins: [],
   };
   if (!(await saveUser(user))) {

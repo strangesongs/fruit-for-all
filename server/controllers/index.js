@@ -3,7 +3,6 @@ import {
   registerUser,
   loginUser,
   getCurrentUser,
-  saveButton,
   forgotPassword,
   resetPassword,
 } from './auth.js';
@@ -22,7 +21,6 @@ export default {
   registerUser,
   loginUser,
   getCurrentUser,
-  saveButton,
   forgotPassword,
   resetPassword,
   createPin,
