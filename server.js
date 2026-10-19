@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import { createClient } from 'redis';
 import { RedisStore } from 'rate-limit-redis';
 import controllers from './server/controllers/index.js';
+import { REGION, USERS_TABLE, PINS_TABLE } from './server/db/dynamo.js';
 import { createMemoryDedupStore } from './server/utils/confirmDedup.js';
 import { wrap } from './server/utils/wrap.js';
 
@@ -232,7 +233,15 @@ process.on('unhandledRejection', (reason) => {
 // Boot
 createAppWithRateLimiters()
   .then(() => {
-    app.listen(PORT, () => console.log(`Server listening on port: ${PORT}`));
+    app.listen(PORT, () => {
+      console.log(`Server listening on port: ${PORT}`);
+      // Which data this instance talks to — the first thing to check when prod and local disagree.
+      console.log(
+        `[config] NODE_ENV=${process.env.NODE_ENV || '(unset)'} region=${REGION} ` +
+          `usersTable=${USERS_TABLE} pinsTable=${PINS_TABLE} ` +
+          `email=${process.env.RESEND_API_KEY ? 'resend' : 'off'} redis=${process.env.REDIS_URL ? 'on' : 'off'}`,
+      );
+    });
   })
   .catch((err) => {
     console.error('Failed to start server', err);

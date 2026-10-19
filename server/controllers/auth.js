@@ -2,6 +2,7 @@ import * as db from '../schemas/schemas.js';
 import { escapeHtml } from '../utils/html.js';
 import jwt from 'jsonwebtoken';
 import { Resend } from 'resend';
+import { logEmailResult } from '../utils/email.js';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -78,7 +79,7 @@ export const registerUser = async (req, res) => {
             </p>
           </div>
         `,
-      }).catch((err) => console.error('[EMAIL] Welcome email failed:', err.message));
+      }).then(logEmailResult('Welcome email')).catch((err) => console.error('[EMAIL] Welcome email failed:', err.message));
     }
     const adminEmail = process.env.ADMIN_EMAIL;
     if (resend && adminEmail) {
@@ -95,7 +96,7 @@ export const registerUser = async (req, res) => {
             <p style="margin-top: 24px;"><a href="${appUrl}" style="color: #D84747;">fruitforall.app</a></p>
           </div>
         `,
-      }).catch((err) => console.error('[EMAIL] Admin notification failed:', err.message));
+      }).then(logEmailResult('Admin notification')).catch((err) => console.error('[EMAIL] Admin notification failed:', err.message));
     }
     res.status(201).json({
       success: true,
@@ -157,7 +158,7 @@ export const forgotPassword = async (req, res) => {
     const appUrl = process.env.APP_URL || 'http://localhost:3000';
     const resetUrl = `${appUrl}/reset-password?token=${token}`;
     if (resend) {
-      await resend.emails.send({
+      const sent = await resend.emails.send({
         from: 'fruit for all <noreply@fruitforall.app>',
         to: email,
         subject: 'reset your fruit for all password',
@@ -180,6 +181,7 @@ export const forgotPassword = async (req, res) => {
           </div>
         `,
       });
+      logEmailResult('Password reset')(sent);
     } else {
       console.log(`[RESET DEV] Password reset URL for ${userName}: ${resetUrl}`);
     }

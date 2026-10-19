@@ -5,6 +5,7 @@ import { containsProfanity } from '../utils/profanity.js';
 import { isDuplicateConfirm, markConfirmed } from '../utils/confirmDedup.js';
 import crypto from 'crypto';
 import { Resend } from 'resend';
+import { logEmailResult } from '../utils/email.js';
 import { FRUIT_LIST } from '../../client/utils/fruitList.js';
 
 const FRUIT_SET = new Set(FRUIT_LIST);
@@ -73,6 +74,7 @@ export const createPin = async (req, res) => {
             </div>
           `,
         })
+        .then(logEmailResult('Pin notification'))
         .catch((err) => console.error('[EMAIL] Pin notification failed:', err.message));
     }
   } catch (error) {
