@@ -1,5 +1,5 @@
 // Kinds of find and their hand-cut marks. One mark per kind (not per fruit), so the
-// ~165 entries in FRUIT_LIST need only 8 drawings + a fallback. The shape says what a
+// ~190 entries in FRUIT_LIST need only 9 drawings + a fallback. The shape says what a
 // find is; the pin's ring says whether it's ripe (see map.jsx).
 //
 // Dependency-free so it can be unit-tested and shared like fruitList.js.
@@ -37,6 +37,13 @@ const MARKS = {
   greens:
     '<path d="M12 21 C6 17 5 10 9 5 C10.5 3.4 13.5 3.4 15 5 C19 10 18 17 12 21Z"/>' +
     '<path d="M12 21 V6.5 M12 11 L9 8.6 M12 11 L15 8.6 M12 15 L8.4 12.4 M12 15 L15.6 12.4"/>',
+  medicinal:
+    '<ellipse cx="12" cy="6.2" rx="2.3" ry="3.2"/>' +
+    '<ellipse cx="12" cy="6.2" rx="2.3" ry="3.2" transform="rotate(72 12 12)"/>' +
+    '<ellipse cx="12" cy="6.2" rx="2.3" ry="3.2" transform="rotate(144 12 12)"/>' +
+    '<ellipse cx="12" cy="6.2" rx="2.3" ry="3.2" transform="rotate(216 12 12)"/>' +
+    '<ellipse cx="12" cy="6.2" rx="2.3" ry="3.2" transform="rotate(288 12 12)"/>' +
+    '<circle cx="12" cy="12" r="2.3" fill="currentColor"/>',
   seed:
     '<path d="M12 3.6 C16.2 7.8 16.2 16.2 12 20.4 C7.8 16.2 7.8 7.8 12 3.6Z"/><path d="M12 7 V17"/>',
 };
@@ -68,17 +75,50 @@ const MEMBERS = {
     'meadow mushroom', 'morel', 'oyster mushroom', 'porcini', 'shaggy mane', 'turkey tail', 'wine cap',
   ],
   herbs: [
-    'basil', 'bay laurel', 'borage', 'chamomile', 'chervil', 'chives', 'cilantro', 'curry leaf', 'dill',
+    'basil', 'bay laurel', 'borage', 'chervil', 'chives', 'cilantro', 'curry leaf', 'dill',
     'epazote', 'fennel', 'holy basil', 'hyssop', 'lavender', 'lemon verbena', 'lovage', 'marjoram', 'mint',
     'oregano', 'parsley', 'perilla', 'rosemary', 'rue', 'sage', 'shiso', 'sorrel', 'summer savory',
     'stevia', 'tarragon', 'thyme', 'vietnamese coriander', 'winter savory',
   ],
   greens: [
-    'anise hyssop', 'burdock', 'catnip', 'cattail', 'chickweed', 'chicory', 'cleavers', 'dandelion',
+    'anise hyssop', 'burdock', 'cattail', 'chickweed', 'chicory', 'dandelion',
     'fiddlehead fern', 'field garlic', 'garlic mustard', 'ground ivy', 'jerusalem artichoke',
-    'lambsquarters', 'lemon balm', 'mallow', "miner's lettuce", 'nettles', 'plantain', 'purslane',
+    'lambsquarters', 'mallow', "miner's lettuce", 'nettles', 'purslane',
     'ramps', 'sheep sorrel', 'spicebush', 'sweet cicely', 'violet', 'watercress', 'wild bergamot',
-    'wild ginger', 'wild mint', 'wild onion', 'wood nettle', 'wood sorrel', 'yarrow',
+    'wild ginger', 'wild mint', 'wild onion', 'wood nettle', 'wood sorrel',
+  ],
+  medicinal: [
+    'aloe vera',
+    'calendula',
+    'california poppy',
+    'catnip',
+    'chamomile',
+    'cleavers',
+    'comfrey',
+    'echinacea',
+    'elderflower',
+    'feverfew',
+    'ginkgo',
+    'gotu kola',
+    'hibiscus',
+    'horehound',
+    'horsetail',
+    'lemon balm',
+    'linden',
+    'marshmallow',
+    'motherwort',
+    'mugwort',
+    'mullein',
+    'passionflower',
+    'plantain',
+    'red clover',
+    'self-heal',
+    'skullcap',
+    "st. john's wort",
+    'valerian',
+    'white sage',
+    'yarrow',
+    'yerba santa',
   ],
 };
 
@@ -91,6 +131,7 @@ export const FAMILIES = [
   { id: 'mushrooms', label: 'mushrooms' },
   { id: 'herbs', label: 'herbs' },
   { id: 'greens', label: 'wild greens' },
+  { id: 'medicinal', label: 'medicinal' },
 ];
 
 export const FALLBACK_FAMILY = { id: 'seed', label: 'find' };

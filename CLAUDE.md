@@ -74,7 +74,7 @@ Rules:
 - Tokens live in `:root` in sidebar.css: `--red #7a3c20`, `--red-dark`, `--red-deep`, `--surface #f7f2e4`, `--card #f2ece0`, `--border #c8b888`, `--text #2b1a0e`, `--text-muted #6e5838` (darkened Oct 2026 for contrast), `--olive #5c6b2e`, `--del`. Use the tokens, not new hex values (map.css and ResetPassword.jsx still hardcode some; that's legacy).
 - Type: **Vollkorn** (`--font`) for names, headings and italic notes; **Hanken Grotesk** (`--font-sans`) for labels, counts and access/season lines — the catalog set reviews against Univers. Both load **only** via the `<link>` in `client/map-index.html` (never CSS `@import`).
 - Catalog vocabulary: thick-over-thin rules for section heads, a thin meandering rule between entries, thick dotted boxes for editorial asides, italic notes signed `—name`. Physical-object skeuomorphism (torn paper, tags, ovals around images) was explored and rejected.
-- Pins: one hand-cut mark per *kind of find* (`client/utils/fruitFamilies.js`: tree, citrus, tropical, berries, nuts, mushrooms, herbs, greens + `seed` fallback). Every FRUIT_LIST item must map to a family (a test enforces it). Ring = state: olive ripe, terracotta yours, small/faded not in season; ink-stamp clusters.
+- Pins: one hand-cut mark per *kind of find* (`client/utils/fruitFamilies.js`: tree, citrus, tropical, berries, nuts, mushrooms, herbs, greens, medicinal + `seed` fallback). Every FRUIT_LIST item must map to a family (a test enforces it). Medicinal plants also need `FRUIT_SEASONS` data (tested), and their popup carries a dotted-box caution (`.entry-caution`). Ring = state: olive ripe, terracotta yours, small/faded not in season; ink-stamp clusters.
 - Lowercase copy and labels. Restrained shadows (≤ `5px 6px 10px rgba(0,0,0,.22)`), tactile outset/inset borders, no slick gradients.
 - Map controls must match the card style (same border, background and radius as the sidebar/bar).
 - A huge global `button:not(.a):not(.b)…` rule in sidebar.css gives every button the red style. A new button class that should look different must be added to **every** copy of that selector (base, :hover, :active, and the 768/360 media blocks). They have already drifted, so check all of them.
@@ -99,6 +99,9 @@ Rules:
 Never print or paste `.env` values. AWS creds come from env or `~/.aws`.
 
 ## Known issues / open review items
+
+The working checklist for the next session is `docs/HANDOFF.md`.
+
 
 See the improvement review (Oct 2026). Still open:
 - **Decided Oct 2026: move off DynamoDB to Postgres (+ PostGIS on Railway)** for location queries, real constraints (unique email, case-insensitive usernames) and reporting. Until then, local `npm run dev` writes to the production tables.

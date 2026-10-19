@@ -1,6 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { FRUIT_LIST } from '../../client/utils/fruitList.js';
+import { FRUIT_SEASONS } from '../../client/utils/fruitSeasons.js';
 import { FAMILIES, familyOf, familyLabel, markSvg, _members } from '../../client/utils/fruitFamilies.js';
 
 describe('fruit families', () => {
@@ -35,8 +36,18 @@ describe('fruit families', () => {
     assert.equal(familyLabel('nope'), 'find');
   });
 
-  test('there are 8 families, each with a mark', () => {
-    assert.equal(FAMILIES.length, 8);
+  test('medicinal plants have their own family', () => {
+    assert.equal(familyOf("St. John's Wort"), 'medicinal');
+    assert.equal(familyOf('yarrow'), 'medicinal');
+    assert.equal(familyLabel('medicinal'), 'medicinal');
+  });
+
+  test('there are 9 families, each with a mark', () => {
+    assert.equal(FAMILIES.length, 9);
     for (const f of FAMILIES) assert.match(markSvg(f.id), /^<svg[^>]*viewBox="0 0 24 24".*<\/svg>$/);
+  });
+
+  test('every medicinal plant has harvest-season data', () => {
+    for (const n of _members.medicinal) assert.ok(FRUIT_SEASONS[n], `${n} has no season data`);
   });
 });

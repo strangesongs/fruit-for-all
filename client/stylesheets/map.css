@@ -1041,6 +1041,17 @@
 }
 .entry-ripe { color: #3f4b18; }
 
+/* Editorial aside on medicinal finds: the catalog's dotted box */
+.leaflet-popup-content .entry-caution {
+    margin: 0 16px 10px;
+    padding: 7px 10px;
+    border: 2px dotted var(--text);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--text);
+}
+
 .entry-band {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));

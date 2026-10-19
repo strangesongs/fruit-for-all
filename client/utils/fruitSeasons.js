@@ -1370,6 +1370,342 @@ export const FRUIT_SEASONS = {
     },
     display: "Spring - Early Summer"
   },
+
+  // ── Medicinal plants: months are when the usual part (flower or leaf) is picked ──
+  "aloe vera": {
+    zones: {
+      10: [1,  2,  3,  4,  5,  6,  7,  8,  9,  10,  11,  12],
+      9: [1,  2,  3,  4,  5,  6,  7,  8,  9,  10,  11,  12],
+    },
+    display: "Year-round (leaf, frost-free only)"
+  },
+
+  calendula: {
+    zones: {
+      10: [1,  2,  3,  4,  5,  10,  11,  12],
+      9: [3,  4,  5,  6,  10,  11],
+      8: [5,  6,  7,  8,  9,  10],
+      7: [6,  7,  8,  9],
+      6: [6,  7,  8,  9],
+      5: [7,  8,  9],
+    },
+    display: "Flowers, cool seasons"
+  },
+
+  "california poppy": {
+    zones: {
+      10: [2,  3,  4,  5],
+      9: [3,  4,  5,  6],
+      8: [4,  5,  6,  7],
+      7: [5,  6,  7],
+    },
+    display: "Spring (flowering plant)"
+  },
+
+  catnip: {
+    zones: {
+      10: [4,  5,  6,  7,  8,  9],
+      9: [5,  6,  7,  8,  9],
+      8: [6,  7,  8,  9],
+      7: [6,  7,  8],
+      6: [6,  7,  8],
+      5: [6,  7,  8],
+      4: [7,  8],
+    },
+    display: "Summer (leaf, flowering tops)"
+  },
+
+  chamomile: {
+    zones: {
+      10: [2,  3,  4,  5],
+      9: [4,  5,  6],
+      8: [5,  6,  7],
+      7: [6,  7],
+      6: [6,  7,  8],
+      5: [6,  7,  8],
+    },
+    display: "Spring - Early Summer (flowers)"
+  },
+
+  cleavers: {
+    zones: {
+      10: [1,  2,  3],
+      9: [2,  3,  4],
+      8: [3,  4,  5],
+      7: [4,  5],
+      6: [4,  5,  6],
+      5: [5,  6],
+    },
+    display: "Early Spring (young stems)"
+  },
+
+  comfrey: {
+    zones: {
+      10: [3,  4,  5,  6,  7,  8,  9,  10],
+      9: [4,  5,  6,  7,  8,  9],
+      8: [5,  6,  7,  8,  9],
+      7: [5,  6,  7,  8],
+      6: [5,  6,  7,  8],
+      5: [6,  7,  8],
+      4: [6,  7,  8],
+    },
+    display: "Spring - Fall (leaf, topical use)"
+  },
+
+  echinacea: {
+    zones: {
+      9: [6,  7,  8],
+      8: [6,  7,  8,  9],
+      7: [7,  8,  9],
+      6: [7,  8,  9],
+      5: [7,  8],
+      4: [7,  8],
+    },
+    display: "Summer (flowers, leaves)"
+  },
+
+  elderflower: {
+    zones: {
+      10: [3,  4,  5],
+      9: [4,  5,  6],
+      8: [5,  6],
+      7: [6,  7],
+      6: [6,  7],
+      5: [6,  7],
+      4: [7],
+    },
+    display: "Late Spring - Early Summer"
+  },
+
+  feverfew: {
+    zones: {
+      10: [4,  5,  6,  7,  8],
+      9: [5,  6,  7,  8],
+      8: [6,  7,  8],
+      7: [6,  7,  8],
+      6: [7,  8],
+      5: [7,  8],
+    },
+    display: "Summer (leaves, flowers)"
+  },
+
+  ginkgo: {
+    zones: {
+      10: [5,  6,  7,  8,  9],
+      9: [5,  6,  7,  8,  9],
+      8: [5,  6,  7,  8,  9],
+      7: [5,  6,  7,  8,  9],
+      6: [6,  7,  8,  9],
+      5: [6,  7,  8],
+      4: [6,  7,  8],
+    },
+    display: "Summer (green leaves; not the seeds)"
+  },
+
+  "gotu kola": {
+    zones: {
+      10: [1,  2,  3,  4,  5,  6,  7,  8,  9,  10,  11,  12],
+      9: [4,  5,  6,  7,  8,  9,  10],
+    },
+    display: "Warm months (leaf)"
+  },
+
+  hibiscus: {
+    zones: {
+      10: [10,  11,  12,  1],
+      9: [10,  11],
+    },
+    display: "Fall - Winter (calyces)"
+  },
+
+  horehound: {
+    zones: {
+      10: [3,  4,  5,  6,  7],
+      9: [4,  5,  6,  7],
+      8: [5,  6,  7,  8],
+      7: [6,  7,  8],
+      6: [6,  7,  8],
+      5: [7,  8],
+    },
+    display: "Late Spring - Summer (leaf)"
+  },
+
+  horsetail: {
+    zones: {
+      10: [2,  3,  4],
+      9: [3,  4,  5],
+      8: [4,  5],
+      7: [4,  5,  6],
+      6: [5,  6],
+      5: [5,  6],
+      4: [6],
+    },
+    display: "Spring (young green stems)"
+  },
+
+  "lemon balm": {
+    zones: {
+      10: [3,  4,  5,  6,  7,  8,  9,  10],
+      9: [4,  5,  6,  7,  8,  9],
+      8: [5,  6,  7,  8,  9],
+      7: [5,  6,  7,  8],
+      6: [6,  7,  8],
+      5: [6,  7,  8],
+      4: [6,  7,  8],
+    },
+    display: "Spring - Fall (leaf)"
+  },
+
+  linden: {
+    zones: {
+      9: [5,  6],
+      8: [6,  7],
+      7: [6,  7],
+      6: [6,  7],
+      5: [7],
+      4: [7],
+    },
+    display: "Early Summer (flowers)"
+  },
+
+  marshmallow: {
+    zones: {
+      10: [4,  5,  6,  7,  8],
+      9: [5,  6,  7,  8],
+      8: [6,  7,  8],
+      7: [6,  7,  8],
+      6: [7,  8],
+      5: [7,  8],
+      4: [7,  8],
+    },
+    display: "Summer (leaf, flowers)"
+  },
+
+  motherwort: {
+    zones: {
+      9: [5,  6,  7],
+      8: [6,  7,  8],
+      7: [6,  7,  8],
+      6: [6,  7,  8],
+      5: [7,  8],
+      4: [7,  8],
+    },
+    display: "Summer (flowering tops)"
+  },
+
+  mugwort: {
+    zones: {
+      10: [4,  5,  6,  7,  8],
+      9: [5,  6,  7,  8],
+      8: [6,  7,  8],
+      7: [6,  7,  8],
+      6: [7,  8],
+      5: [7,  8],
+      4: [7,  8],
+    },
+    display: "Summer (leaf)"
+  },
+
+  mullein: {
+    zones: {
+      10: [4,  5,  6,  7,  8],
+      9: [5,  6,  7,  8],
+      8: [6,  7,  8],
+      7: [6,  7,  8],
+      6: [6,  7,  8],
+      5: [7,  8],
+      4: [7,  8],
+    },
+    display: "Summer (leaf, flowers)"
+  },
+
+  passionflower: {
+    zones: {
+      10: [5,  6,  7,  8,  9],
+      9: [6,  7,  8,  9],
+      8: [6,  7,  8],
+      7: [7,  8],
+    },
+    display: "Summer (leaf, flowers)"
+  },
+
+  "red clover": {
+    zones: {
+      10: [3,  4,  5,  6],
+      9: [4,  5,  6,  7],
+      8: [5,  6,  7,  8],
+      7: [5,  6,  7,  8],
+      6: [6,  7,  8],
+      5: [6,  7,  8],
+      4: [6,  7,  8],
+    },
+    display: "Late Spring - Summer (blossoms)"
+  },
+
+  "self-heal": {
+    zones: {
+      10: [4,  5,  6,  7],
+      9: [5,  6,  7,  8],
+      8: [6,  7,  8],
+      7: [6,  7,  8],
+      6: [6,  7,  8],
+      5: [7,  8],
+      4: [7,  8],
+    },
+    display: "Summer (flowering tops)"
+  },
+
+  skullcap: {
+    zones: {
+      9: [6,  7,  8],
+      8: [6,  7,  8,  9],
+      7: [7,  8,  9],
+      6: [7,  8],
+      5: [7,  8],
+      4: [7,  8],
+    },
+    display: "Summer (flowering tops)"
+  },
+
+  "st. john's wort": {
+    zones: {
+      10: [5,  6],
+      9: [5,  6,  7],
+      8: [6,  7],
+      7: [6,  7],
+      6: [6,  7,  8],
+      5: [7,  8],
+      4: [7,  8],
+    },
+    display: "Around midsummer (flowering tops)"
+  },
+
+  valerian: {
+    zones: {
+      8: [6,  7],
+      7: [6,  7],
+      6: [6,  7],
+      5: [6,  7],
+      4: [7],
+    },
+    display: "Early Summer (flowers)"
+  },
+
+  "white sage": {
+    zones: {
+      10: [3,  4,  5,  6,  7,  8],
+      9: [4,  5,  6,  7,  8],
+    },
+    display: "Spring - Summer (leaf, take sparingly)"
+  },
+
+  "yerba santa": {
+    zones: {
+      10: [3,  4,  5,  6,  7],
+      9: [4,  5,  6,  7],
+    },
+    display: "Spring - Summer (leaf)"
+  },
 };
 
 /**

@@ -212,6 +212,12 @@ export default function PinPopup({
         )}
       </dl>
 
+      {family === 'medicinal' && (
+        <p className="entry-caution">
+          know the plant for certain before you pick it, and check with a clinician before using it as medicine.
+        </p>
+      )}
+
       <div className="entry-actions">
         {!confirmed ? (
           <button type="button" className="still-good-btn" onClick={handleConfirm}>still good →</button>
