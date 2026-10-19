@@ -732,19 +732,23 @@ class Map extends Component {
     };
 
     // Start editing notes for a pin
+    // Both of these swap the popup's contents. Doing that inside the click handler
+    // detaches the clicked button before Leaflet sees the click, so Leaflet treats
+    // it as a click on the bare map and closes the popup. Waiting one tick lets
+    // Leaflet handle the click first.
     startEditingNotes = (pinId, currentNotes) => {
-        this.setState({
+        setTimeout(() => this.setState({
             editingPinId: pinId,
             editingNotes: currentNotes || ''
-        });
+        }), 0);
     };
 
     // Cancel editing notes
     cancelEditingNotes = () => {
-        this.setState({
+        setTimeout(() => this.setState({
             editingPinId: null,
             editingNotes: ''
-        });
+        }), 0);
     };
 
     // Save edited notes
