@@ -185,6 +185,9 @@ function ClosePopupsOnCommand({ signal }) {
 import PinPopup from './components/PinPopup.jsx';
 import MapControls from './components/MapControls.jsx';
 
+// Where the map opens before any location is known (central LA).
+const DEFAULT_CENTER = [34.061415, -118.293991];
+
 // Component to handle map events
 function MapEvents({ onViewportChange, onZoomChange }) {
     const map = useMapEvents({
@@ -457,8 +460,17 @@ class Map extends Component {
                 this._requestControllers.ipLocate = null;
             }
         }
-        // Fall back: fetch all pins without a bounding box (map stays on default center)
-        this.fetchPins();
+        // No IP location: load the area around where the map is (the default centre on
+        // first load), not an unbounded list from anywhere in the world.
+        this.fetchPins(false, this.getFallbackBounds());
+    };
+
+    // ~100 miles around the map's current centre, or the default centre before the
+    // map has mounted.
+    getFallbackBounds = () => {
+        const c = this._leafletMap ? this._leafletMap.getCenter() : null;
+        const [lat, lng] = c ? [c.lat, c.lng] : DEFAULT_CENTER;
+        return this.getLocationBounds(lat, lng);
     };
 
     // Returns a bounding box approximately 100 miles around (lat, lng)
@@ -627,7 +639,7 @@ class Map extends Component {
         if (userLocation) {
             this.fetchPins(true, this.getLocationBounds(userLocation.lat, userLocation.lng));
         } else {
-            this.fetchPins(true);
+            this.fetchPins(true, this.getFallbackBounds());
         }
     };
 
@@ -826,7 +838,7 @@ class Map extends Component {
 
         return (
             <div className='map-area'>
-                    <MapContainer center={[34.061415, -118.293991]} zoom={13} scrollWheelZoom={true} zoomControl={false}>
+                    <MapContainer center={DEFAULT_CENTER} zoom={13} scrollWheelZoom={true} zoomControl={false}>
                         <ZoomControl position="topright" />
                         <MapRefCapture onMap={(map) => { this._leafletMap = map; }} />
                         <MapFlyTo target={this.state.userLocation} />
