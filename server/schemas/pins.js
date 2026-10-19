@@ -122,6 +122,7 @@ export async function getAllPins(options = {}) {
         IndexName: 'submittedBy-index',
         KeyConditionExpression: 'submittedBy = :user',
         ExpressionAttributeValues: { ':user': { S: submittedBy } },
+        ScanIndexForward: false, // newest first
         Limit: queryLimit,
       };
       if (startKey) p.ExclusiveStartKey = startKey;
@@ -133,6 +134,9 @@ export async function getAllPins(options = {}) {
       KeyConditionExpression: '#s = :active',
       ExpressionAttributeNames: { '#s': 'status' },
       ExpressionAttributeValues: { ':active': { S: 'active' } },
+      // Newest first: when a limit cuts the list short, keep recent finds,
+      // not the oldest pins in the table.
+      ScanIndexForward: false,
       Limit: queryLimit,
     };
     if (startKey) p.ExclusiveStartKey = startKey;
