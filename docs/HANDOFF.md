@@ -5,9 +5,9 @@ Read `CLAUDE.md` first. This is the to-do list for whoever picks up next.
 ## Start here
 
 - Repo: `strangesongs/fruit-for-all`. `main` is live at fruitforall.app (Railway deploys on push to `main`).
-- Newest work is on **`feat/in-season`** (head `ca1db90`). It includes everything from the two branches below it, so checking out `feat/in-season` gives the full stack.
+- Newest work is on **`feat/in-season`**. It includes everything from the two branches below it, so checking out `feat/in-season` gives the full stack.
 - Nothing on these branches is merged or live yet. The owner is testing them on Firefox, iPhone Safari and the Jelly Star before merging.
-- Tests: `npm test` (131 passing at `ca1db90`).
+- Tests: `npm test` (131 passing as of Oct 19).
 - Don't start the Postgres migration code before the owner approves a written plan (section 3).
 - The owner prefers small PR-sized branches. Stack new work on `feat/in-season` until it's merged, or branch from `main` after.
 
