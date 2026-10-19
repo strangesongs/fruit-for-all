@@ -1,5 +1,6 @@
 // USDA Hardiness Zone-based fruit seasons
 // Months are 1-indexed (1 = January, 12 = December)
+// Sources and verification status per entry: docs/season-sources.md
 
 export const FRUIT_SEASONS = {
   // Stone Fruits
@@ -70,11 +71,11 @@ export const FRUIT_SEASONS = {
   // Citrus (mostly warm zones)
   orange: {
     zones: {
-      10: [11, 12, 1, 2, 3],      // Winter citrus
+      10: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], // navels Jan–Apr, then Valencias
       9: [12, 1, 2, 3, 4],
       8: [1, 2, 3],               // Limited areas
     },
-    display: "Winter - Early Spring"
+    display: "Winter - Fall (navels, then Valencias)"
   },
   
   lemon: {
@@ -88,10 +89,10 @@ export const FRUIT_SEASONS = {
   
   grapefruit: {
     zones: {
-      10: [12, 1, 2, 3, 4],
+      10: [12, 1, 2, 3, 4, 5, 6],
       9: [1, 2, 3, 4],
     },
-    display: "Winter - Spring"
+    display: "Winter - Early Summer"
   },
   
   lime: {
@@ -112,11 +113,11 @@ export const FRUIT_SEASONS = {
   
   kumquat: {
     zones: {
-      10: [11, 12, 1, 2, 3],
+      10: [10, 11, 12, 1, 2, 3],
       9: [12, 1, 2, 3],
       8: [1, 2],
     },
-    display: "Winter"
+    display: "Fall - Winter"
   },
   
   // Pome Fruits
@@ -193,7 +194,7 @@ export const FRUIT_SEASONS = {
   
   mulberry: {
     zones: {
-      10: [4, 5, 6],
+      10: [4, 5, 6, 7],
       9: [5, 6, 7],
       8: [6, 7],
       7: [6, 7],
@@ -204,10 +205,10 @@ export const FRUIT_SEASONS = {
   // Tropical/Subtropical
   avocado: {
     zones: {
-      10: [2, 3, 4, 5, 6, 7, 8, 9], // Long season
+      10: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], // Hass Jan–Oct; Fuerte, Bacon, Zutano Nov–Mar
       9: [3, 4, 5, 6, 7, 8],
     },
-    display: "Spring - Fall (warm zones)"
+    display: "Year-round (Hass Jan - Oct, others winter)"
   },
   
   guava: {
@@ -220,7 +221,7 @@ export const FRUIT_SEASONS = {
   
   mango: {
     zones: {
-      10: [6, 7, 8, 9],           // Tropical zones only
+      10: [5, 6, 7, 8, 9, 10],           // Tropical zones only
     },
     display: "Summer (tropical only)"
   },
@@ -297,7 +298,7 @@ export const FRUIT_SEASONS = {
   
   'passion fruit': {
     zones: {
-      10: [6, 7, 8, 9, 10],
+      10: [5, 6, 7, 8, 9, 10, 11, 12],
       9: [7, 8, 9],
     },
     display: "Summer - Fall (warm zones)"
@@ -349,7 +350,7 @@ export const FRUIT_SEASONS = {
 
   pawpaw: {
     zones: {
-      10: [8, 9],
+      10: [9, 10],
       9: [9, 10],
       8: [9, 10],
       7: [9, 10],
@@ -360,7 +361,7 @@ export const FRUIT_SEASONS = {
 
   pluot: {
     zones: {
-      10: [5, 6, 7],
+      10: [6, 7, 8, 9],
       9: [6, 7, 8],
       8: [7, 8],
       7: [7, 8],
@@ -437,7 +438,7 @@ export const FRUIT_SEASONS = {
 
   clementine: {
     zones: {
-      10: [11, 12, 1, 2],
+      10: [12, 1, 2],
       9: [12, 1, 2, 3],
     },
     display: "Winter"
@@ -445,11 +446,11 @@ export const FRUIT_SEASONS = {
 
   mandarin: {
     zones: {
-      10: [11, 12, 1, 2, 3],
+      10: [11, 12, 1, 2, 3, 4, 5],
       9: [12, 1, 2, 3],
       8: [1, 2],
     },
-    display: "Winter"
+    display: "Late Fall - Spring"
   },
 
   pomelo: {
@@ -487,10 +488,10 @@ export const FRUIT_SEASONS = {
 
   cherimoya: {
     zones: {
-      10: [11, 12, 1, 2, 3],
+      10: [10, 11, 12, 1, 2, 3, 4, 5],
       9: [12, 1, 2],
     },
-    display: "Winter - Spring (warm zones)"
+    display: "Fall - Spring"
   },
 
   'dragon fruit': {
@@ -502,16 +503,16 @@ export const FRUIT_SEASONS = {
 
   feijoa: {
     zones: {
-      10: [9, 10, 11],
+      10: [10, 11, 12],
       9: [10, 11],
       8: [10, 11],
     },
-    display: "Fall"
+    display: "Fall - Early Winter"
   },
 
   jackfruit: {
     zones: {
-      10: [6, 7, 8, 9],
+      10: [5, 6, 7, 8, 9, 10],
     },
     display: "Summer (tropical only)"
   },
@@ -525,7 +526,7 @@ export const FRUIT_SEASONS = {
 
   longan: {
     zones: {
-      10: [7, 8, 9],
+      10: [7, 8],
     },
     display: "Summer (tropical only)"
   },
@@ -553,28 +554,28 @@ export const FRUIT_SEASONS = {
 
   sapote: {
     zones: {
-      10: [11, 12, 1, 2, 3],
+      10: [10, 11, 12, 1, 2, 3],
     },
     display: "Winter - Spring (tropical only)"
   },
 
   soursop: {
     zones: {
-      10: [6, 7, 8, 9, 10, 11, 12],
+      10: [6, 7, 8, 9],
     },
-    display: "Summer - Winter (tropical only)"
+    display: "Summer (tropical only)"
   },
 
   starfruit: {
     zones: {
-      10: [8, 9, 10, 11, 12, 1, 2],
+      10: [6, 7, 8, 9, 10, 11, 12, 1, 2, 3],
     },
-    display: "Late Summer - Winter (tropical only)"
+    display: "Most of the year (tropical only)"
   },
 
   'surinam cherry': {
     zones: {
-      10: [4, 5, 6, 9, 10],       // Two crops per year
+      10: [3, 4, 5, 6, 9, 10, 11],       // Two crops per year
     },
     display: "Spring & Fall (tropical only)"
   },
@@ -610,9 +611,9 @@ export const FRUIT_SEASONS = {
 
   macadamia: {
     zones: {
-      10: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      10: [11, 12, 1, 2, 3, 4, 5],
     },
-    display: "Spring - Winter (warm zones)"
+    display: "Late Fall - Spring"
   },
 
   'pine nut': {
@@ -746,11 +747,11 @@ export const FRUIT_SEASONS = {
 
   olive: {
     zones: {
-      10: [11, 12, 1],
-      9: [11, 12, 1],
+      10: [9, 10, 11, 12, 1, 2],
+      9: [9, 10, 11, 12, 1, 2],
       8: [10, 11],
     },
-    display: "Fall - Winter"
+    display: "Fall (curing) - Winter (oil)"
   },
 
   'prickly pear': {
