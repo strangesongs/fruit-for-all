@@ -20,15 +20,45 @@ export function buildPinsCacheKey(bounds = null) {
  * @param {number} ttl - Time to live in milliseconds (default: 5 min)
  */
 export function setCache(key, data, ttl = DEFAULT_TTL) {
+  const value = JSON.stringify({ data, timestamp: Date.now(), ttl });
   try {
-    const cacheItem = {
-      data,
-      timestamp: Date.now(),
-      ttl
-    };
-    localStorage.setItem(CACHE_PREFIX + key, JSON.stringify(cacheItem));
+    pruneCaches(MAX_ENTRIES - 1);
+    localStorage.setItem(CACHE_PREFIX + key, value);
   } catch (error) {
-    console.warn('Failed to set cache:', error);
+    // Most likely the storage quota: drop every cached entry and try once more.
+    try {
+      clearAllCaches();
+      localStorage.setItem(CACHE_PREFIX + key, value);
+    } catch (retryError) {
+      console.warn('Failed to set cache:', retryError);
+    }
+  }
+}
+
+// Each map view gets its own key, so without this entries pile up until the
+// localStorage quota is full. Expired entries go first, then the oldest.
+const MAX_ENTRIES = 30;
+
+export function pruneCaches(maxEntries = MAX_ENTRIES) {
+  try {
+    const now = Date.now();
+    const live = [];
+    for (const key of Object.keys(localStorage)) {
+      if (!key.startsWith(CACHE_PREFIX)) continue;
+      let item = null;
+      try { item = JSON.parse(localStorage.getItem(key)); } catch { /* unreadable */ }
+      if (!item || typeof item.timestamp !== 'number' || now - item.timestamp > item.ttl) {
+        localStorage.removeItem(key);
+      } else {
+        live.push([key, item.timestamp]);
+      }
+    }
+    live.sort((a, b) => a[1] - b[1]);
+    while (live.length > maxEntries) {
+      localStorage.removeItem(live.shift()[0]);
+    }
+  } catch (error) {
+    console.warn('Failed to prune caches:', error);
   }
 }
 

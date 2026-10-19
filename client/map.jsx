@@ -250,6 +250,9 @@ class Map extends Component {
             viewportPins: null,
         };
         this._etagByCacheKey = new globalThis.Map();
+        // After a pin changes, skip the browser's HTTP cache for a while: pin lists are
+        // served with max-age, so a revisited view could otherwise show the old list.
+        this._skipHttpCacheUntil = 0;
         this._viewBounds = null; // last viewport bounds, for the "in this view" summary
     }
 
@@ -505,6 +508,7 @@ class Map extends Component {
                 }
                 const response = await fetchWithRetry(`${API_BASE}/api/pins/public?${params.toString()}`, {
                     signal: controller.signal,
+                    cache: this.pinsCacheMode(),
                 }, {
                     timeoutMs: 9000,
                     retries: 2,
@@ -563,6 +567,7 @@ class Map extends Component {
             const response = await fetchWithRetry(url, {
                 headers,
                 signal: controller.signal,
+                cache: this.pinsCacheMode(),
             }, {
                 timeoutMs: 12000,
                 retries: 2,
@@ -635,10 +640,21 @@ class Map extends Component {
     };
 
     // Method to refresh pins (called from parent when new pin is submitted)
-    refreshPins = () => {
+    // Forget every cached pin list (localStorage, ETags, and the browser HTTP cache
+    // for the next few minutes). Call after creating, editing or deleting a pin.
+    invalidatePinCaches = () => {
         clearCache('allPins');
         clearCachesByPrefix('pins_');
         this._etagByCacheKey.clear();
+        this._skipHttpCacheUntil = Date.now() + 5 * 60 * 1000;
+    };
+
+    // fetch() cache mode for pin lists: revalidate with the server while a recent
+    // change could still be hidden by a cached response.
+    pinsCacheMode = () => (Date.now() < this._skipHttpCacheUntil ? 'no-cache' : 'default');
+
+    refreshPins = () => {
+        this.invalidatePinCaches();
         this.cancelRequest('viewportPins');
         this.setState({ loading: true });
         const { userLocation } = this.state;
@@ -693,6 +709,7 @@ class Map extends Component {
                 const response = await fetchWithRetry(`${API_BASE}${path}?${params}`, {
                     ...(authed ? { headers: getAuthHeader() } : {}),
                     signal: controller.signal,
+                    cache: this.pinsCacheMode(),
                 }, {
                     timeoutMs: 10000,
                     retries: 2,
@@ -739,10 +756,7 @@ class Map extends Component {
             if (result.success) {
                 // Optimistic update: remove from state immediately, clear cache
                 const updatedPins = this.state.pins.filter(pin => pin.pinId !== pinId);
-                clearCache('allPins');
-                clearCachesByPrefix('pins_');
-                this._etagByCacheKey.clear();
-                setCache('allPins', updatedPins);
+                this.invalidatePinCaches();
                 this.updatePinsState(updatedPins);
             } else {
                 alert('Error deleting pin: ' + result.message);
@@ -802,8 +816,8 @@ class Map extends Component {
                     editingPinId: null,
                     editingNotes: ''
                 }, () => this.publishPinSummary(updatedPins));
-                // Update cache
-                setCache('allPins', updatedPins);
+                // Every cached view that holds this pin now has the old notes
+                this.invalidatePinCaches();
             } else {
                 alert('Error saving notes: ' + result.message);
             }
