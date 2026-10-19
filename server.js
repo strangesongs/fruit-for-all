@@ -123,6 +123,7 @@ async function createAppWithRateLimiters() {
   const pinLimiter = limiter('pin');
   const confirmLimiter = limiter('confirm');
   const publicPinsLimiter = limiter('publicPins');
+  const locateLimiter = limiter('locate');
 
   // Serve static files from dist/ at the root FIRST
   app.use(
@@ -169,7 +170,7 @@ async function createAppWithRateLimiters() {
   const memoryDedupStore = createMemoryDedupStore();
 
   // Public endpoints (no auth required)
-  app.get('/api/locate', wrap(controllers.getIpLocation));
+  app.get('/api/locate', locateLimiter, wrap(controllers.getIpLocation));
   app.get('/api/pins/public', publicPinsLimiter, wrap(controllers.getPublicPins));
 
   // Authentication endpoints

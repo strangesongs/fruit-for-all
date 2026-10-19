@@ -33,6 +33,12 @@ export const RATE_LIMITS = {
     max: 10,
     message: 'Too many confirmations, please slow down.',
   },
+  // IP → location lookups (ipapi.co). The client calls this once per visit.
+  locate: {
+    windowMs: 15 * MINUTE,
+    max: 20,
+    message: 'too many location lookups. please try again later.',
+  },
   publicPins: {
     windowMs: MINUTE,
     max: 200,
