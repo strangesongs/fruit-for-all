@@ -17,6 +17,7 @@ describe('detectZoneFallback', () => {
   test('returns zone 10 for coastal Southern California', () => {
     // San Diego (lat 32.7, lng -117.1) — lat < 33 && lng < -117 → Zone 10
     assert.equal(detectZoneFallback(32.7, -117.1), 10);
+    assert.equal(detectZoneFallback(34.06, -118.29), 10); // Los Angeles
   });
 
   test('returns zone 9 for Bay Area', () => {

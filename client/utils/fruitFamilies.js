@@ -1,6 +1,6 @@
 // Kinds of find and their hand-cut marks. One mark per kind (not per fruit), so the
 // ~190 entries in FRUIT_LIST need only 9 drawings + a fallback. The shape says what a
-// find is; the pin's ring says whether it's ripe (see map.jsx).
+// find is; the pin's ring says whether it's in season (see map.jsx).
 //
 // Dependency-free so it can be unit-tested and shared like fruitList.js.
 
@@ -116,7 +116,6 @@ const MEMBERS = {
     'skullcap',
     "st. john's wort",
     'valerian',
-    'white sage',
     'yarrow',
     'yerba santa',
   ],

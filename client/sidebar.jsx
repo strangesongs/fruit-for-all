@@ -6,7 +6,7 @@ import { FRUIT_LIST } from './utils/fruitList.js';
 import { API_BASE } from './utils/config.js';
 import { containsProfanity } from './utils/profanity.js';
 import { getTinyScreenGuestAuthState } from './utils/sidebarState.js';
-import { familyLabel, markSvg } from './utils/fruitFamilies.js';
+import { familyLabel, markSvg, familyOf } from './utils/fruitFamilies.js';
 import { formatMiles, MONTH_NAMES } from './utils/pinSummary.js';
 import { fetchWithRetry } from './utils/network.js';
 
@@ -738,7 +738,7 @@ export default class Sidebar extends React.Component {
         this.setState(prev => ({ guestBarOpen: !prev.guestBarOpen }));
     };
 
-    // ── Standard-mobile bar: month header + "ripe now / almanac / nearest" tabs ──
+    // ── Standard-mobile bar: month header + "in season / almanac / nearest" tabs ──
 
     renderMark(family, size = 22) {
         return (
@@ -755,7 +755,7 @@ export default class Sidebar extends React.Component {
         const month = MONTH_NAMES[new Date().getMonth()];
         const ripe = summary ? summary.ripeCount : 0;
         const sub = pinCount > 0
-            ? `${ripe} ripe of ${pinCount} ${pinCount === 1 ? 'find' : 'finds'} in view`
+            ? `${ripe} in season · ${pinCount} ${pinCount === 1 ? 'find' : 'finds'} in view`
             : 'nothing logged in view yet';
         return (
             <div className="guest-bar-body">
@@ -798,11 +798,11 @@ export default class Sidebar extends React.Component {
                         ))}
                     </ul>
                 ) : (
-                    <p className="bar-empty">nothing ripe in this view right now. try the almanac tab for what's coming.</p>
+                    <p className="bar-empty">nothing in season in this view right now. try the almanac tab for what's coming.</p>
                 )}
                 {pinCount > 0 && (
                     <p className="bar-note">
-                        {pinCount} {pinCount === 1 ? 'find' : 'finds'} in this view, {summary ? summary.ripeCount : 0} ripe.{' '}
+                        {pinCount} {pinCount === 1 ? 'find' : 'finds'} in this view, {summary ? summary.ripeCount : 0} in season.{' '}
                         <button type="button" className="secondary-link bar-note__link" onClick={this.handleNearestGoodBet}>
                             nearest good bet →
                         </button>
@@ -875,7 +875,7 @@ export default class Sidebar extends React.Component {
                         </button>
                     </div>
                 ) : (
-                    <p className="bar-empty">nothing ripe in this view yet. zoom out, or add the first find.</p>
+                    <p className="bar-empty">nothing in season in this view yet. zoom out, or add the first find.</p>
                 )}
             </div>
         );
@@ -883,7 +883,7 @@ export default class Sidebar extends React.Component {
 
     renderBarPanel() {
         const { barTab } = this.state;
-        const tabs = [['ripe', 'ripe now'], ['almanac', 'almanac'], ['nearest', 'nearest']];
+        const tabs = [['ripe', 'in season'], ['almanac', 'almanac'], ['nearest', 'nearest']];
         return (
             <div className="bar-panel">
                 <div className="bar-tabs" role="tablist" aria-label="nearby finds">
@@ -1195,6 +1195,12 @@ export default class Sidebar extends React.Component {
                                 <p className="fruit-not-found">no match &mdash; keep typing or select from the list</p>
                             )}
                         </div>
+                        {familyOf((this.state.fruitType || '').trim()) === 'medicinal' && (
+                            <p className="add-find-caution">
+                                know the plant for certain before you pick it, take only a little from each plant,
+                                and check with a clinician before using it as medicine.
+                            </p>
+                        )}
                         <div className="popup-section">
                             <label htmlFor="popup-notes">notes (optional):</label>
                             <textarea

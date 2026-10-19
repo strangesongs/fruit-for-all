@@ -47,6 +47,10 @@ describe('fruit families', () => {
     for (const f of FAMILIES) assert.match(markSvg(f.id), /^<svg[^>]*viewBox="0 0 24 24".*<\/svg>$/);
   });
 
+  test('white sage is not listed (over-harvested, culturally sensitive)', () => {
+    assert.ok(!FRUIT_LIST.includes('white sage'));
+  });
+
   test('every medicinal plant has harvest-season data', () => {
     for (const n of _members.medicinal) assert.ok(FRUIT_SEASONS[n], `${n} has no season data`);
   });

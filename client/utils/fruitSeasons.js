@@ -1372,6 +1372,11 @@ export const FRUIT_SEASONS = {
   },
 
   // ── Medicinal plants: months are when the usual part (flower or leaf) is picked ──
+  // Bloom months checked Oct 2026 against NC State Extension Plant Toolbox (zone 7–8),
+  // NC Parks flora, RHS, UW–Madison Extension and Friends of Edgewood, then shifted
+  // ~1 month per zone. Leaf-harvest plants (lemon balm, comfrey, mugwort, ginkgo,
+  // gotu kola, aloe, horsetail, cleavers, marshmallow, chamomile, hibiscus, plantain,
+  // yarrow) follow the growing season and are unverified.
   "aloe vera": {
     zones: {
       10: [1,  2,  3,  4,  5,  6,  7,  8,  9,  10,  11,  12],
@@ -1406,8 +1411,8 @@ export const FRUIT_SEASONS = {
     zones: {
       10: [4,  5,  6,  7,  8,  9],
       9: [5,  6,  7,  8,  9],
-      8: [6,  7,  8,  9],
-      7: [6,  7,  8],
+      8: [5,  6,  7,  8,  9],
+      7: [5,  6,  7,  8,  9],
       6: [6,  7,  8],
       5: [6,  7,  8],
       4: [7,  8],
@@ -1454,10 +1459,10 @@ export const FRUIT_SEASONS = {
 
   echinacea: {
     zones: {
-      9: [6,  7,  8],
-      8: [6,  7,  8,  9],
-      7: [7,  8,  9],
-      6: [7,  8,  9],
+      9: [5,  6,  7],
+      8: [6,  7,  8],
+      7: [6,  7,  8],
+      6: [7,  8],
       5: [7,  8],
       4: [7,  8],
     },
@@ -1469,7 +1474,7 @@ export const FRUIT_SEASONS = {
       10: [3,  4,  5],
       9: [4,  5,  6],
       8: [5,  6],
-      7: [6,  7],
+      7: [5,  6,  7],
       6: [6,  7],
       5: [6,  7],
       4: [7],
@@ -1480,9 +1485,9 @@ export const FRUIT_SEASONS = {
   feverfew: {
     zones: {
       10: [4,  5,  6,  7,  8],
-      9: [5,  6,  7,  8],
-      8: [6,  7,  8],
-      7: [6,  7,  8],
+      9: [5,  6,  7,  8,  9],
+      8: [6,  7,  8,  9],
+      7: [6,  7,  8,  9],
       6: [7,  8],
       5: [7,  8],
     },
@@ -1520,10 +1525,10 @@ export const FRUIT_SEASONS = {
 
   horehound: {
     zones: {
-      10: [3,  4,  5,  6,  7],
-      9: [4,  5,  6,  7],
-      8: [5,  6,  7,  8],
-      7: [6,  7,  8],
+      10: [3,  4,  5,  6,  7,  8,  9],
+      9: [4,  5,  6,  7,  8,  9,  10],
+      8: [5,  6,  7,  8,  9,  10],
+      7: [6,  7,  8,  9],
       6: [6,  7,  8],
       5: [7,  8],
     },
@@ -1558,11 +1563,11 @@ export const FRUIT_SEASONS = {
 
   linden: {
     zones: {
-      9: [5,  6],
-      8: [6,  7],
-      7: [6,  7],
+      9: [5],
+      8: [5,  6],
+      7: [5,  6,  7],
       6: [6,  7],
-      5: [7],
+      5: [6,  7],
       4: [7],
     },
     display: "Early Summer (flowers)"
@@ -1584,7 +1589,7 @@ export const FRUIT_SEASONS = {
   motherwort: {
     zones: {
       9: [5,  6,  7],
-      8: [6,  7,  8],
+      8: [5,  6,  7],
       7: [6,  7,  8],
       6: [6,  7,  8],
       5: [7,  8],
@@ -1609,9 +1614,9 @@ export const FRUIT_SEASONS = {
   mullein: {
     zones: {
       10: [4,  5,  6,  7,  8],
-      9: [5,  6,  7,  8],
-      8: [6,  7,  8],
-      7: [6,  7,  8],
+      9: [5,  6,  7,  8,  9],
+      8: [6,  7,  8,  9],
+      7: [6,  7,  8,  9],
       6: [6,  7,  8],
       5: [7,  8],
       4: [7,  8],
@@ -1621,10 +1626,10 @@ export const FRUIT_SEASONS = {
 
   passionflower: {
     zones: {
-      10: [5,  6,  7,  8,  9],
-      9: [6,  7,  8,  9],
-      8: [6,  7,  8],
-      7: [7,  8],
+      10: [4,  5,  6,  7,  8,  9],
+      9: [5,  6,  7,  8,  9],
+      8: [5,  6,  7],
+      7: [6,  7,  8],
     },
     display: "Summer (leaf, flowers)"
   },
@@ -1646,8 +1651,8 @@ export const FRUIT_SEASONS = {
     zones: {
       10: [4,  5,  6,  7],
       9: [5,  6,  7,  8],
-      8: [6,  7,  8],
-      7: [6,  7,  8],
+      8: [6,  7,  8,  9],
+      7: [6,  7,  8,  9],
       6: [6,  7,  8],
       5: [7,  8],
       4: [7,  8],
@@ -1657,10 +1662,10 @@ export const FRUIT_SEASONS = {
 
   skullcap: {
     zones: {
-      9: [6,  7,  8],
-      8: [6,  7,  8,  9],
+      9: [7,  8,  9,  10],
+      8: [7,  8,  9,  10],
       7: [7,  8,  9],
-      6: [7,  8],
+      6: [7,  8,  9],
       5: [7,  8],
       4: [7,  8],
     },
@@ -1683,25 +1688,17 @@ export const FRUIT_SEASONS = {
   valerian: {
     zones: {
       8: [6,  7],
-      7: [6,  7],
-      6: [6,  7],
-      5: [6,  7],
+      7: [6,  7,  8],
+      6: [6,  7,  8],
+      5: [6,  7,  8],
       4: [7],
     },
     display: "Early Summer (flowers)"
   },
 
-  "white sage": {
-    zones: {
-      10: [3,  4,  5,  6,  7,  8],
-      9: [4,  5,  6,  7,  8],
-    },
-    display: "Spring - Summer (leaf, take sparingly)"
-  },
-
   "yerba santa": {
     zones: {
-      10: [3,  4,  5,  6,  7],
+      10: [4,  5,  6,  7],
       9: [4,  5,  6,  7],
     },
     display: "Spring - Summer (leaf)"

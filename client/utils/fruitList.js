@@ -212,7 +212,6 @@ export const FRUIT_LIST = [
   'skullcap',
   "st. john's wort",
   'valerian',
-  'white sage',
   'yarrow',
   'yerba santa',
 ];

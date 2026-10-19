@@ -10,6 +10,7 @@ Read `CLAUDE.md` first. This is the to-do list for whoever picks up next.
   - almanac overflow
   - no sideways page scroll (`html, body { overflow: hidden }`; `100%` instead of `100vw`)
 - [ ] **`feat/medicinal-plants`**, stacked on the redesign: 25 new medicinal plants plus 6 moved over from herbs/greens (chamomile, yarrow, plantain, cleavers, catnip, lemon balm). It adds a 9th "medicinal" family with a five-petal mark, harvest-season data, and a dotted-box caution on medicinal popups.
+- [ ] **`feat/in-season`**, stacked on medicinal: "in season" wording everywhere, seasons by the find's location, verified bloom months, white sage removed, caution in add-a-find.
 
 ## 2. Check before merging
 
@@ -17,10 +18,14 @@ Read `CLAUDE.md` first. This is the to-do list for whoever picks up next.
 - [ ] Real iPhone in Safari: bar, tabs, popups, add a find, sign in.
 - [ ] Real Jelly Star: FAB panel, popups. Known older issue: the popup overlaps the zoom controls.
 - [ ] Desktop ≥1024 wide.
-- [ ] Medicinal plants: the season months in `client/utils/fruitSeasons.js` are approximate (when the flower or leaf is usually picked). Someone who knows the plants should review them. Also decide:
-  - Should "ripe now" read "in season" for flowers and leaves?
-  - Should the caution also appear in the add-a-find modal?
-  - Is white sage OK to list? It's over-harvested and culturally sensitive.
+- [x] Medicinal plants follow-ups (done on `feat/in-season`):
+  - white sage removed
+  - caution added to the add-a-find form
+  - "in season" replaces "ripe" in all copy
+  - seasons follow the find's location
+  - 17 of 30 medicinal plants' bloom months checked against sources and corrected
+- [ ] Still unverified: harvest months for the rest of the medicinal set (lemon balm, comfrey, mugwort, ginkgo, gotu kola, aloe, horsetail, cleavers, marshmallow, chamomile, hibiscus, plantain, yarrow) and **all ~125 fruit/herb/green entries**. `fruitSeasons.js` was hand-written in an earlier UI commit with no source. A real verification pass needs a source per plant (extension services, USDA PLANTS, Calscape for CA natives).
+- [ ] `detectZoneFallback` is a rough continental-US heuristic (LA basin corrected to 10). Pins saved with a phzmapi zone don't need it, but older pins and empty views do. Consider calling phzmapi by ZIP/coords and caching per area, or shipping a coarse zone grid.
 
 ## 3. Postgres migration (decided; not started)
 

@@ -1,7 +1,8 @@
-// Pure helpers behind the bar's "ripe now / almanac / nearest" tabs, the pin rings
+// Pure helpers behind the bar's "in season / almanac / nearest" tabs, the pin rings
 // and the catalog-entry popup. No DOM, no React — unit-tested in tests/client.
 import { FRUIT_SEASONS, getSeasonForZone } from './fruitSeasons.js';
 import { familyOf } from './fruitFamilies.js';
+import { detectZoneFallback } from './zoneFallback.js';
 
 const MONTH_ABBR = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 export const MONTH_NAMES = [
@@ -18,15 +19,27 @@ export function seasonMonthsFor(fruitType, zone) {
 }
 
 /**
- * 'ripe' | 'quiet' | 'unknown' for a pin this month.
- * Uses the pin's zone; without one, "ripe in any zone" counts. Fruit with no season
- * data (many herbs and greens) is 'unknown' and drawn like ripe — we don't know it isn't.
+ * USDA zone for a pin: the one saved when it was added (phzmapi.com), else an
+ * estimate from where it is. Seasons follow the plant's location, not the viewer's.
+ */
+export function zoneOf(pin) {
+  if (pin && pin.zone) return pin.zone;
+  const c = pin && pin.coordinates;
+  if (c && Number.isFinite(c.lat) && Number.isFinite(c.lng)) return detectZoneFallback(c.lat, c.lng);
+  return null;
+}
+
+/**
+ * 'ripe' (in season) | 'quiet' | 'unknown' for a pin this month, using zoneOf(pin).
+ * Kinds with no season data (many herbs and greens) are 'unknown' and drawn like
+ * in season — we don't know they aren't.
  */
 export function ripenessOf(pin, month) {
   const key = String(pin?.fruitType || '').toLowerCase();
   const data = FRUIT_SEASONS[key];
   if (!data) return 'unknown';
-  const months = pin.zone ? getSeasonForZone(key, pin.zone) : null;
+  const zone = zoneOf(pin);
+  const months = zone ? getSeasonForZone(key, zone) : null;
   if (months) return months.includes(month) ? 'ripe' : 'quiet';
   const anyZone = Object.values(data.zones || {}).some((m) => m.includes(month));
   return anyZone ? 'ripe' : 'quiet';
@@ -90,7 +103,9 @@ function mostCommon(values) {
  */
 export function buildViewSummary(pins, center, month) {
   const list = (pins || []).filter((p) => p && p.coordinates && p.fruitType);
-  const zone = mostCommon(list.map((p) => p.zone));
+  // The view's zone: what most finds here were saved with, else an estimate for the map centre.
+  const zone = mostCommon(list.map((p) => p.zone))
+    || (center && Number.isFinite(center.lat) ? detectZoneFallback(center.lat, center.lng) : null);
 
   const byFruit = new Map();
   for (const pin of list) {
@@ -118,9 +133,9 @@ export function buildViewSummary(pins, center, month) {
   const ripe = groups.filter((g) => g.ripe);
   const ripeCount = list.filter((p) => ripenessOf(p, month) === 'ripe').length;
 
-  // Almanac rows: ripe kinds first, then others; only kinds with season data.
+  // Almanac rows: in-season kinds first, then others; only kinds with season data.
   const almanac = [...ripe, ...groups.filter((g) => !g.ripe)]
-    .map((g) => ({ fruitType: g.fruitType, family: g.family, months: seasonMonthsFor(g.fruitType, zone || 10) }))
+    .map((g) => ({ fruitType: g.fruitType, family: g.family, months: seasonMonthsFor(g.fruitType, zone) }))
     .filter((r) => r.months && r.months.length)
     .slice(0, 5);
 

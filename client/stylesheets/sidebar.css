@@ -2139,3 +2139,14 @@ button.secondary-link.bar-note__link {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+/* Add-a-find: caution aside for medicinal plants (catalog dotted box) */
+.add-find-caution {
+    margin: 10px 0 12px;
+    padding: 7px 10px;
+    border: 2px dotted var(--text);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--text);
+}

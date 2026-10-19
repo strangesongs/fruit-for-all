@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from 'react';
 
-import { isInSeason, getSeasonDisplay } from '../utils/fruitSeasons.js';
+import { getSeasonDisplay } from '../utils/fruitSeasons.js';
 import { familyOf, familyLabel, markSvg } from '../utils/fruitFamilies.js';
-import { seasonMonthsFor, seasonRangeText } from '../utils/pinSummary.js';
+import { seasonMonthsFor, seasonRangeText, zoneOf } from '../utils/pinSummary.js';
 import { API_BASE } from '../utils/config.js';
 
 function relativeTime(isoString) {
@@ -111,12 +111,13 @@ export default function PinPopup({
   const currentMonth = new Date().getMonth() + 1;
   const fruit = pin.fruitTypeDisplay?.toLowerCase?.() || pin.fruitType?.toLowerCase?.() || 'find';
   const family = familyOf(pin.fruitType);
-  const seasonMonths = seasonMonthsFor(pin.fruitType, pin.zone);
-  const inSeason = seasonMonths ? isInSeason(pin.fruitType, pin.zone, currentMonth) : null;
+  const zone = zoneOf(pin);
+  const seasonMonths = seasonMonthsFor(pin.fruitType, zone);
+  const inSeason = seasonMonths ? seasonMonths.includes(currentMonth) : null;
   const display = pin.fruitType ? getSeasonDisplay(pin.fruitType) : null;
   const generalSeason = display && display !== 'Unknown season' ? display.toLowerCase() : null;
   const seasonText = seasonMonths
-    ? `${seasonRangeText(seasonMonths)} here${pin.zone ? ` (zone ${pin.zone})` : ''}`
+    ? `${seasonRangeText(seasonMonths)} here${zone ? ` (zone ${zone})` : ''}`
     : generalSeason || 'season varies';
   const seasonSet = new Set(seasonMonths || []);
 
@@ -192,7 +193,7 @@ export default function PinPopup({
         <dd>
           <span>
             {seasonText}
-            {inSeason === true && <> · <strong className="entry-ripe">ripe now</strong></>}
+            {inSeason === true && <> · <strong className="entry-ripe">in season</strong></>}
           </span>
           {seasonMonths && (
             <span className="entry-band" aria-hidden="true">
@@ -214,7 +215,7 @@ export default function PinPopup({
 
       {family === 'medicinal' && (
         <p className="entry-caution">
-          know the plant for certain before you pick it, and check with a clinician before using it as medicine.
+          know the plant for certain before you pick it, take only a little from each plant, and check with a clinician before using it as medicine.
         </p>
       )}
 

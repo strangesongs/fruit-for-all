@@ -3,7 +3,6 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, ZoomContr
 import { getAuthHeader, isAuthenticated, getUser, isAdmin } from './utils/auth.js';
 import { getCache, setCache, clearCache, clearCachesByPrefix, buildPinsCacheKey } from './utils/cache.js';
 import { clusterPins } from './utils/clustering.js';
-import { FRUIT_SEASONS, getSeasonForZone, isInSeason, getSeasonDisplay } from './utils/fruitSeasons.js';
 import { API_BASE } from './utils/config.js';
 import { containsProfanity } from './utils/profanity.js';
 import { fetchWithRetry } from './utils/network.js';
@@ -18,7 +17,7 @@ import './stylesheets/map.css';
 import 'leaflet/dist/leaflet.css';
 
 // Marker icons — one hand-cut mark per kind of find (utils/fruitFamilies.js) in a
-// parchment disk. The ring carries state: olive = ripe now, terracotta = your find,
+// parchment disk. The ring carries state: olive = in season, terracotta = your find,
 // quiet/smaller = not in season. Icons are cached so Leaflet doesn't rebuild DOM
 // on every render.
 const _pinIconCache = new globalThis.Map();
@@ -290,7 +289,7 @@ class Map extends Component {
         window.removeEventListener('ffa:fly-to', this.handleFlyTo);
     }
 
-    // Bar entries ("ripe now", "nearest") pan to a find and open its popup.
+    // Bar entries ("in season", "nearest") pan to a find and open its popup.
     handleFlyTo = (event) => {
         const c = event?.detail;
         if (!c || !Number.isFinite(c.lat) || !Number.isFinite(c.lng)) return;
@@ -325,9 +324,8 @@ class Map extends Component {
             if (pin.cluster || !pin.fruitType) return false;
             const lowerType = pin.fruitType.toLowerCase();
             if (exclude.some(w => lowerType.includes(w))) return false;
-            const data = FRUIT_SEASONS[lowerType];
-            if (!data) return false;
-            return Object.values(data.zones || {}).some(months => months.includes(month));
+            // In season where the find is (its saved zone, else estimated from its location).
+            return ripenessOf(pin, month) === 'ripe';
         });
 
         const pool = candidates.length > 0 ? candidates : pins.filter(pin =>
@@ -866,7 +864,7 @@ class Map extends Component {
                                 <p className="map-empty-card__title">nothing logged here yet.</p>
                                 {emptyHints.length > 0 && (
                                     <p className="map-empty-card__hint">
-                                        in {MONTH_NAMES[month - 1]}, look up at parkway trees and alley fences: {emptyHints.join(' and ')} {emptyHints.length > 1 ? 'are' : 'is'} coming ripe around here.
+                                        in {MONTH_NAMES[month - 1]}, look up at parkway trees and alley fences: {emptyHints.join(' and ')} {emptyHints.length > 1 ? 'are' : 'is'} in season around here.
                                     </p>
                                 )}
                                 <button type="button" className="map-empty-card__primary"

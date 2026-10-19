@@ -8,6 +8,7 @@ import {
   noteSnippet,
   buildViewSummary,
   lookForHints,
+  zoneOf,
 } from '../../client/utils/pinSummary.js';
 
 const pin = (fruitType, lat, lng, extra = {}) => ({
@@ -90,5 +91,24 @@ describe('lookForHints', () => {
   test('suggests in-season street fruit for a zone', () => {
     const hints = lookForHints(10, 10);
     assert.ok(hints.length > 0 && hints.length <= 2);
+  });
+});
+
+describe('zones follow the find, not the viewer', () => {
+  test('zoneOf prefers the saved zone, else estimates from coordinates', () => {
+    assert.equal(zoneOf({ zone: 7, coordinates: { lat: 34.06, lng: -118.29 } }), 7);
+    assert.equal(zoneOf({ coordinates: { lat: 34.06, lng: -118.29 } }), 10); // Los Angeles
+    assert.equal(zoneOf({ coordinates: { lat: 44.98, lng: -93.27 } }), 5); // Minneapolis
+    assert.equal(zoneOf({}), null);
+  });
+  test('a pin with no saved zone uses its own location, not "any zone"', () => {
+    // Cherries are in season in May in zone 10, but not until June in zone 5.
+    const la = { fruitType: 'cherry', coordinates: { lat: 34.06, lng: -118.29 } };
+    const mpls = { fruitType: 'cherry', coordinates: { lat: 44.98, lng: -93.27 } };
+    assert.equal(ripenessOf(la, 5), 'ripe');
+    assert.equal(ripenessOf(mpls, 5), 'quiet');
+  });
+  test('an empty view takes its zone from the map centre', () => {
+    assert.equal(buildViewSummary([], { lat: 44.98, lng: -93.27 }, 10).zone, 5);
   });
 });

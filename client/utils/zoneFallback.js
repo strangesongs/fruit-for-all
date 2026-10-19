@@ -13,6 +13,7 @@ export function detectZoneFallback(lat, lng) {
   if (lat < 25.5) return 11;
   if (lat < 28 && lng > -82) return 10;
   if (lat < 33 && lng < -117) return 10;
+  if (lat < 34.3 && lng >= -119 && lng < -117.6) return 10; // Los Angeles basin (10a/10b)
   if (lat < 33 && lng >= -115 && lng < -109) return 10;
   if (lat < 37 && lng >= -117 && lng < -109) return 9;
   if (lng < -122) {
