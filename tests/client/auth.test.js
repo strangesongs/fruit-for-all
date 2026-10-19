@@ -114,3 +114,41 @@ describe('auth utilities', () => {
     });
   });
 });
+
+const { handleUnauthorized, SESSION_EXPIRED_EVENT } = await import('../../client/utils/auth.js');
+
+describe('handleUnauthorized (expired session)', () => {
+  let fired;
+
+  beforeEach(() => {
+    global.localStorage.clear();
+    fired = 0;
+    global.window = new EventTarget();
+    global.window.addEventListener(SESSION_EXPIRED_EVENT, () => { fired += 1; });
+  });
+
+  test('a 401 with a stored token signs out and fires the event once', () => {
+    saveAuth(makeJwt(Math.floor(Date.now() / 1000) + 3600), { userName: 'a' });
+    assert.equal(handleUnauthorized({ status: 401 }), true);
+    assert.equal(getToken(), null);
+    assert.equal(getUser(), null);
+    assert.equal(fired, 1);
+    // a second 401 from a request already in flight does nothing more
+    assert.equal(handleUnauthorized({ status: 401 }), false);
+    assert.equal(fired, 1);
+  });
+
+  test('403 means "not yours" and keeps the session', () => {
+    saveAuth(makeJwt(Math.floor(Date.now() / 1000) + 3600), { userName: 'a' });
+    assert.equal(handleUnauthorized({ status: 403 }), false);
+    assert.notEqual(getToken(), null);
+    assert.equal(fired, 0);
+  });
+
+  test('ok responses and guests are left alone', () => {
+    assert.equal(handleUnauthorized({ status: 401 }), false);
+    assert.equal(handleUnauthorized({ status: 200 }), false);
+    assert.equal(handleUnauthorized(undefined), false);
+    assert.equal(fired, 0);
+  });
+});

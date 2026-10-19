@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import loquatIcon from '../loquat-48.png';
-import { getAuthHeader, getUser, clearAuth, saveAuth, isAuthenticated } from './utils/auth.js';
+import { getAuthHeader, getUser, clearAuth, saveAuth, isAuthenticated, handleUnauthorized, SESSION_EXPIRED_EVENT } from './utils/auth.js';
 import { FRUIT_SEASONS, getSeasonStatus } from './utils/fruitSeasons.js';
 import { FRUIT_LIST } from './utils/fruitList.js';
 import { API_BASE } from './utils/config.js';
@@ -147,6 +147,7 @@ export default class Sidebar extends React.Component {
         window.addEventListener('ffa:pins-summary', this.handlePinSummaryEvent);
         try { localStorage.setItem(GUEST_BAR_SEEN_KEY, '1'); } catch { /* private mode */ }
         window.addEventListener('ffa:add-find', this.handleAddFindRequest);
+        window.addEventListener(SESSION_EXPIRED_EVENT, this.handleSessionExpired);
         if (this.state.showAddFruitPopup) {
             this.enableAddFruitPopupA11ySideEffects();
         }
@@ -154,6 +155,7 @@ export default class Sidebar extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener('ffa:add-find', this.handleAddFindRequest);
+        window.removeEventListener(SESSION_EXPIRED_EVENT, this.handleSessionExpired);
         this.setBottomBarRef(null);
         window.removeEventListener('ffa:pins-summary', this.handlePinSummaryEvent);
         this.abortAllRequests();
@@ -394,6 +396,7 @@ export default class Sidebar extends React.Component {
                 timeoutMs: 12000,
                 retries: 0, // POSTs are not idempotent: never auto-retry
             });
+            if (handleUnauthorized(response)) return;
 
             const result = await response.json();
 
@@ -421,6 +424,23 @@ export default class Sidebar extends React.Component {
             this.finishRequest(controller);
             this.setState({ submitting: false });
         }
+    };
+
+    // The server rejected the stored token (handleUnauthorized already cleared it).
+    // Sign out the same way the button does, then say why.
+    handleSessionExpired = () => {
+        if (!this.state.authenticated) return;
+        this.handleLogout();
+        // Open the sign-in form (in every layout) so the reason is visible
+        this.setState({
+            guestAddAttempted: true,
+            isLoginMode: true,
+            isForgotMode: false,
+            showAbout: false,
+            isCollapsed: false,
+            isMobileBarOpen: true,
+            authError: 'your session expired. please sign in again.',
+        });
     };
 
     handleLogout = () => {
