@@ -46,6 +46,11 @@ html, body {
     min-width: 240px;
     min-height: 320px;
     background: var(--surface);
+    /* Firefox (with meta viewport) zooms out to fit any scrollable overflow and
+       widens the layout viewport, which pushes fixed bars past the right edge.
+       Clipping here keeps stray overflow out of that calculation. */
+    overflow: hidden;
+    overflow: clip;
 }
 
 .sidebar {
