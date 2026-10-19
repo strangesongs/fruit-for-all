@@ -1,40 +1,64 @@
-# Handoff checklist (updated Oct 19, 2026)
+# Handoff checklist (updated Oct 19, 2026, ~3:30pm)
 
 Read `CLAUDE.md` first. This is the to-do list for whoever picks up next.
 
 ## Start here
 
 - Repo: `strangesongs/fruit-for-all`. `main` is live at fruitforall.app (Railway deploys on push to `main`).
-- Newest work is on **`feat/in-season`**. It includes everything from the two branches below it, so checking out `feat/in-season` gives the full stack.
-- Nothing on these branches is merged or live yet. The owner is testing them on Firefox, iPhone Safari and the Jelly Star before merging.
-- Tests: `npm test` (131 passing as of Oct 19).
-- Don't start the Postgres migration code before the owner approves a written plan (section 3).
-- The owner prefers small PR-sized branches. Stack new work on `feat/in-season` until it's merged, or branch from `main` after.
+- **Oct 19, ~3pm: all ten fix PRs (#13–#22) were merged into `main`** and deployed (Railway reported success for fruitforall.app on `0c4bbcb`). `main` CI passed and has 158 tests. The owner chose to merge as admin, bypassing main's 1-review rule; the protection settings are unchanged.
+- `feat/wec-redesign`, `feat/medicinal-plants` and `feat/in-season` were already in `main` before that.
+- Don't start the Postgres migration code before the owner approves a written plan (section 3). Planned for the evening of Oct 19.
+- The owner prefers small PR-sized branches. Branch from `main`. `main` requires a passing `tests` check and 1 code-owner review (strict: up to date with main).
 
-## 1. Branches waiting on review (merge in this order)
+## 1. Merged Oct 19 (now live)
 
-- [ ] **`feat/wec-redesign`**: the Whole Earth Catalog redesign. It includes kind-of-find pin marks, catalog-entry popups, the bar tabs (now "in season" / almanac / nearest), Vollkorn + Hanken Grotesk, and these later fixes:
-  - cluster taps zoom in
-  - "take me there" follows the fruit filter
-  - almanac overflow
-  - no sideways page scroll (`html, body { overflow: hidden }`; `100%` instead of `100vw`)
-- [ ] **`feat/medicinal-plants`**, stacked on the redesign: 25 new medicinal plants plus 6 moved over from herbs/greens (chamomile, yarrow, plantain, cleavers, catnip, lemon balm). It adds a 9th "medicinal" family with a five-petal mark, harvest-season data, and a dotted-box caution on medicinal popups.
-- [ ] **`feat/in-season`**, stacked on medicinal: "in season" wording everywhere, seasons by the find's location, verified bloom months, white sage removed, caution in add-a-find.
+| PR | Branch | Verified how |
+|---|---|---|
+| #13 | `fix/popup-edit-closes` | Chromium: popup stays open in edit mode (it used to close; notes couldn't be edited) |
+| #14 | `fix/auth-limiters` | running server: JSON 429 on the 11th bad login and the 6th reset request. Successful-login exemption untested |
+| #15 | `fix/locate-cache` | running server: 429 on the 21st call. Cache unit-tested only |
+| #16 | `fix/expired-session` | Chromium at 1280/375/240: signed out, public pins reloaded, form opened with the message |
+| #17 | `fix/reset-token-url` | Chromium at 375/1280 |
+| #18 | `chore/pin-node` | not checked: confirm Railway's build log shows Node 22 |
+| #19 | `fix/pin-fallback` | Chromium: first load bounded |
+| #20 | `fix/pin-cache` | Chromium: edit clears cached views, then `no-cache`; ≤30 entries |
+| #21 | `fix/firefox-overflow` | Chromium only. **Unverified in Firefox** |
+| #22 | `data/season-sources-1` | sources in `docs/season-sources.md` |
 
-## 2. Check before merging
+### Branch cleanup (owner, from a local clone)
 
-- [ ] Firefox responsive mode at **402×874** and **240×427**: is the bottom bar or Jelly panel still cut off on the right? Is zoom still off-centre? Chromium couldn't reproduce this, so the overflow fix is unconfirmed. If it persists, get the computed widths of `html`, `.main-layout` and `.guest-bar`.
-- [ ] Real iPhone in Safari: bar, tabs, popups, add a find, sign in.
+- [ ] Delete the 15 remote branches that are fully merged into `main`. The cloud session can't delete branches (its GitHub access refuses ref deletes), so run this locally:
+
+  ```sh
+  git push origin --delete \
+    chore/pin-node data/season-sources-1 \
+    feat/in-season feat/medicinal-plants feat/standard-phone-layout feat/wec-redesign \
+    feature/guest-access-reform \
+    fix/auth-limiters fix/expired-session fix/firefox-overflow fix/locate-cache \
+    fix/pin-cache fix/pin-fallback fix/popup-edit-closes fix/reset-token-url
+  git fetch --prune
+  ```
+
+- [ ] Optional: turn on "Automatically delete head branches" (repo Settings → General).
+- [ ] Review the 10 open Dependabot branches from Apr 28 (not merged): `@aws-sdk/client-dynamodb`, `concurrently`, `esbuild`, `jsonwebtoken`, `nodemon`, `prettier`, `redis`, `resend`, `@types/leaflet`, `uuid`. Major jumps worth a careful look: `redis` 4 → 5 and `uuid` 13 → 14.
+- [ ] The owner's local folder (`~/Desktop/programming/loquat`) is still on `feat/wec-redesign`: `git checkout main && git pull`.
+
+## 2. Check on the live site / real devices
+
+- [ ] Firefox responsive mode at **402×874** and **240×427** with **touch simulation on**: is the bottom bar or Jelly panel cut off on the right? Is zoom off-centre? If it's still wrong, run the snippet from `docs/overflow-probe.md`.
+- [ ] Real iPhone in Safari: bar, tabs, popups, add a find, sign in, editing notes, and the reset-password page.
 - [ ] Real Jelly Star: FAB panel, popups. Known older issue: the popup overlaps the zoom controls.
-- [ ] Desktop ≥1024 wide.
-- [x] Medicinal plants follow-ups (done on `feat/in-season`):
-  - white sage removed
-  - caution added to the add-a-find form
-  - "in season" replaces "ripe" in all copy
-  - seasons follow the find's location
-  - 17 of 30 medicinal plants' bloom months checked against sources and corrected
-- [ ] Still unverified: harvest months for the rest of the medicinal set (lemon balm, comfrey, mugwort, ginkgo, gotu kola, aloe, horsetail, cleavers, marshmallow, chamomile, hibiscus, plantain, yarrow) and **all ~125 fruit/herb/green entries**. `fruitSeasons.js` was hand-written in an earlier UI commit with no source. A real verification pass needs a source per plant (extension services, USDA PLANTS, Calscape for CA natives).
-- [ ] `detectZoneFallback` is a rough continental-US heuristic (LA basin corrected to 10). Pins saved with a phzmapi zone don't need it, but older pins and empty views do. Consider calling phzmapi by ZIP/coords and caching per area, or shipping a coarse zone grid.
+- [ ] Railway build log shows Node 22.
+- [ ] Season data: **108 of 157 entries still unverified** (status in `docs/season-sources.md`). Next batches:
+  - stone fruit, apples, pears, cherries and grapes (Dave Wilson charts are images, so each needs a text source)
+  - berries, nuts, mushrooms, wild greens, and the 13 leaf-harvest medicinal plants
+  - zones 3–9 for everything
+- [ ] `detectZoneFallback` is a rough continental-US heuristic (LA basin corrected to 10). Consider calling phzmapi by ZIP/coords and caching per area, or shipping a coarse zone grid.
+
+### Found during the browser run, not fixed yet (both live on `main`)
+
+- [ ] The pin popup's notes button (`.pin-notes-btn`) gets the global red button style, so an italic note renders as a solid red button. It needs adding to every copy of the `button:not(...)` rule, or the `.btn` refactor.
+- [ ] `POST /api/auth/reset-password` returns the raw server error to the browser (it showed "connect ECONNREFUSED 127.0.0.1:9" when the database was down). It should return a generic message.
 
 ## 3. Postgres migration (decided; not started)
 
@@ -51,27 +75,29 @@ Read `CLAUDE.md` first. This is the to-do list for whoever picks up next.
 ## 4. Backlog (rough priority)
 
 Security / reliability
-- [ ] Split the auth rate limiter (login vs register vs reset).
-- [ ] Rate-limit and cache `/api/locate` (ipapi.co).
-- [ ] Fix the "oldest 200 globally" fallback in pin loading.
-- [ ] Review `npm audit` highs.
-- [ ] Handle a 401 (expired JWT) by signing out cleanly instead of failing silently.
-- [ ] Remove the reset token from the URL after reading it; restyle `ResetPassword.jsx` with tokens.
-- [ ] Resend: verify the sending domain/account (reset emails weren't arriving).
-- [ ] Pin the Node version (engines + Railway).
+- [x] Split the auth rate limiter (login vs register vs reset). #14
+- [x] Rate-limit and cache `/api/locate` (ipapi.co). #15
+- [x] Fix the "oldest 200 globally" fallback in pin loading. #19
+- [ ] Review `npm audit` highs. CI runs `npm audit` (warn only); check its output on the latest `main` run.
+- [x] Handle a 401 (expired JWT) by signing out cleanly instead of failing silently. #16
+- [x] Remove the reset token from the URL after reading it; restyle `ResetPassword.jsx` with tokens. #17
+- [ ] Resend: verify the sending domain/account (reset emails weren't arriving). Needs the owner's Resend account.
+- [x] Pin the Node version (engines + Railway). #18
 
 Client
-- [ ] localStorage cache eviction; bust the HTTP cache after creating a pin; fix stale notes after an edit.
+- [x] localStorage cache eviction; bust the HTTP cache after creating a pin; fix stale notes after an edit. #20
 - [ ] Replace `alert()`/`confirm()` with in-app dialogs.
 - [ ] Extract a shared `AuthForm` (three copies in sidebar.jsx).
 - [ ] Replace the global `button:not(...)` rule (5 copies) with a `.btn` class.
 - [ ] Jelly: popup overlaps the zoom controls.
 
 Testing / CI
-- [ ] Playwright width matrix in CI: 240×427, 375×667, 393×852, 1280×800.
+- [ ] Playwright width matrix in CI: 240×427, 375×667, 393×852, 1280×800. The Oct 19 review script is a starting point; it isn't in the repo yet.
 
 ## Working notes
 
-- The container/CI npm registry was unreachable in the last session. Builds used bun and a copy of `node_modules`. Locally just use `npm run build` / `npm test`.
+- The cloud container can't reach registry.npmjs.org and has no Firefox. What worked on Oct 19: tar the owner's local `node_modules` (in `~/Desktop/programming/loquat`), stage it into the container, and build with the container's `esbuild` binary at `/opt/npm-tools/node_modules/@esbuild/linux-x64/bin/esbuild` (put it first on `PATH`). bcrypt ships linux-x64 prebuilds, so the server boots. Run the server with `AWS_ENDPOINT_URL_DYNAMODB=http://127.0.0.1:9` and dummy AWS keys so it can't reach production. Headless Chromium is at `/opt/pw-browsers` (Python Playwright).
+- GitHub from the container: `gh api` (REST) can open and merge PRs; GraphQL commands like `gh pr list` are blocked, and deleting branches is refused.
+- The tarball is still at `loquat/node_modules/.cache/ffa-review-nm.tgz` on the owner's Mac (16 MB, safe to delete).
 - Git author from repo history: `j cretella <jcrtll@protonmail.com>`.
 - Never print `.env` values. Ask before any irreversible data action.
