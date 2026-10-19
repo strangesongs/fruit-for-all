@@ -796,3 +796,44 @@
         overflow-y: auto;
     }
 }
+/* ── Standard phones (361–768px): fixed bottom bar covers the map's bottom edge ── */
+@media (min-width: 361px) and (max-width: 768px) {
+    /* Full-bleed map, as on the Jelly layout */
+    .leaflet-container {
+        border-radius: 0 !important;
+    }
+
+    /* Locate-me stacks under the zoom buttons (top-right), clear of the bar */
+    .locate-me-btn {
+        top: 116px;   /* 12px margin + 93px zoom control + gap */
+        bottom: auto;
+        right: 12px;
+    }
+
+    /* The bar already shows the count */
+    .pin-count-badge {
+        display: none;
+    }
+
+    /* Keep the (required) tile attribution and any bottom controls above the bar */
+    .leaflet-container .leaflet-bottom {
+        bottom: var(--bottom-chrome, 0px); /* must beat leaflet.css, which loads after this file */
+    }
+
+    .loading-overlay, .error-overlay {
+        bottom: calc(var(--bottom-chrome, 0px) + 12px);
+    }
+
+    /* Popups never taller than the space above the bar */
+    .pin-popup {
+        max-height: calc(var(--app-viewport-height, 100vh) - var(--bottom-chrome, 0px) - 72px);
+        overflow-y: auto;
+    }
+}
+
+/* Jelly Star: keep the attribution clear of the bottom-left FAB */
+@media (max-width: 360px) {
+    .leaflet-bottom.leaflet-right .leaflet-control-attribution {
+        max-width: calc(100vw - 72px);
+    }
+}

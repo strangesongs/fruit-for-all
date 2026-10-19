@@ -8,6 +8,7 @@ import { API_BASE } from './utils/config.js';
 import { containsProfanity } from './utils/profanity.js';
 import { fetchWithRetry } from './utils/network.js';
 import { isOlderThanMonths } from './utils/timeAgo.js';
+import { TINY_MAX, getBottomChromePx } from './utils/breakpoints.js';
 import L from 'leaflet';
 
 import './stylesheets/map.css';
@@ -140,10 +141,22 @@ function PanToPin({ target, seq }) {
         // On narrow phones (≤360px) the map is 100vh but browser chrome eats
         // ~55px off the top, so we need a larger offset to keep the popup clear.
         const mapSize = map.getSize();
-        const offsetRatio = mapSize.x <= 360 ? 0.40 : 0.25;
         const zoom = map.getZoom();
         const pinPoint = map.project([target.lat, target.lng], zoom);
-        const offsetPx = mapSize.y * offsetRatio;
+        let offsetPx;
+        const bottomChrome = mapSize.x <= TINY_MAX ? 0 : getBottomChromePx();
+        if (bottomChrome > 0) {
+            // Standard phones: a fixed bar covers the bottom of the map. Place the pin
+            // 80% of the way down the *visible* area so the popup above it clears the bar.
+            // On short screens (landscape) push the pin lower so a tall popup still fits.
+            const visibleH = Math.max(mapSize.y - bottomChrome, mapSize.y * 0.4);
+            const popupEl = map.getContainer().querySelector('.leaflet-popup-content-wrapper');
+            const popupH = popupEl ? popupEl.offsetHeight : 0;
+            const pinY = Math.min(visibleH - 8, Math.max(visibleH * 0.8, popupH + 48));
+            offsetPx = pinY - mapSize.y / 2;
+        } else {
+            offsetPx = mapSize.y * (mapSize.x <= TINY_MAX ? 0.40 : 0.25);
+        }
         const centreLatLng = map.unproject(pinPoint.subtract([0, offsetPx]), zoom);
         map.panTo(centreLatLng, { animate: true, duration: 0.5 });
     }, [seq]); // primitive comparison — fires reliably on every new pin click
@@ -231,6 +244,7 @@ class Map extends Component {
             viewportPins: null,
         };
         this._etagByCacheKey = new globalThis.Map();
+        this._viewBounds = null; // last viewport bounds, for the "in this view" summary
     }
 
     closePopups = () => {
@@ -326,10 +340,19 @@ class Map extends Component {
         return controller;
     };
 
+    // Publishes what is *in the current viewport* (not every pin loaded this session)
+    // for the "in this view" ticker and the fruit filter.
     publishPinSummary = (pins) => {
         if (typeof window === 'undefined') return;
         const excludeWords = ['test', 'tests', 'demo', 'testing', 'user'];
-        const fruitTypes = [...new Set((pins || [])
+        const b = this._viewBounds;
+        const visible = b
+            ? (pins || []).filter(p => p.coordinates
+                && p.coordinates.lat >= b.minLat && p.coordinates.lat <= b.maxLat
+                && p.coordinates.lng >= b.minLng && p.coordinates.lng <= b.maxLng
+                && !(p.fruitType && excludeWords.some(w => p.fruitType.toLowerCase().includes(w))))
+            : (pins || []);
+        const fruitTypes = [...new Set(visible
             .map(pin => pin.fruitType)
             .filter(Boolean)
             .filter(type => {
@@ -340,7 +363,7 @@ class Map extends Component {
 
         window.dispatchEvent(new CustomEvent('ffa:pins-summary', {
             detail: {
-                pinCount: (pins || []).length,
+                pinCount: visible.length,
                 fruitTypes,
                 authenticated: isAuthenticated(),
             },
@@ -558,6 +581,12 @@ class Map extends Component {
         }
     };
 
+    // After sign-out: clear user-specific state and reload public pins (no usernames)
+    resetAfterLogout = () => {
+        this.setState({ showMyPinsOnly: false, editingPinId: null, editingNotes: '' });
+        this.refreshPins();
+    };
+
     // Toggle filtering to show only the current user's pins
     toggleMyPins = () => {
         this.setState(prevState => ({
@@ -567,6 +596,8 @@ class Map extends Component {
 
     // Handle viewport changes with debouncing — merges new pins into existing set
     handleViewportChange = (bounds) => {
+        this._viewBounds = bounds;
+        this.publishPinSummary(this.state.pins);
         if (this.debounceTimer) clearTimeout(this.debounceTimer);
         this.debounceTimer = setTimeout(async () => {
             if (Date.now() < this._blockViewportFetchUntil) return;

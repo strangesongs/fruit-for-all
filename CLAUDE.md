@@ -16,7 +16,7 @@ npm test         # node --test tests/server/*.test.js tests/client/*.test.js
 - The pre-commit hook (husky) runs `npm test`. CI runs tests, a build, and `npm audit` (warn only).
 - Node ≥ 20. ESM throughout (`"type": "module"`).
 - **Do not "simplify" the `NODE_ENV` quoting in package.json** (`\\\"production\\\"`). esbuild needs a JS string literal; without it React crashes with `development is not defined`.
-- `dist/` is gitignored and is not cleaned between builds, so stale `map-*.js` chunks pile up locally. That's harmless.
+- `dist/` is gitignored. `npm run build` wipes and rebuilds it. In dev, esbuild serves on :3000 with `--serve-fallback`, so app routes like `/reset-password` work locally too.
 
 ## Stack
 
@@ -59,10 +59,11 @@ The JS decides which tree renders (`Sidebar.render()`), and CSS styles each tree
 | **Desktop** | > 768px | default branch: floating `.sidebar` card | `sidebar.css` top section | laptop/desktop |
 
 Rules:
-- Breakpoints are duplicated in JS (`TINY_SCREEN_QUERY`, `MOBILE_QUERY` in sidebar.jsx; a separate 600px query in index.js; a `mapSize.x <= 360` check in `PanToPin`) and in CSS. **Change them together.**
+- JS breakpoints live in `client/utils/breakpoints.js` (used by sidebar.jsx, index.js and `PanToPin`). CSS repeats them as `@media` blocks: **change both together.**
 - Never let a fix for one mode leak into another. Tiny-mode CSS lives under `@media (max-width: 360px)`; standard-mobile selectors are `.guest-bar*` / `.auth-bar*`.
 - The `@media (max-width: 768px)` and `480px` blocks in sidebar.css mostly target `.sidebar`, which phones never render, but the global `button:not(...)` rule inside them **does** shrink popup and pin buttons on phones.
-- The bottom guest bar is `position: fixed` with z-index 1000 in the root stacking context. `.map-area` is z-index 1, so map controls positioned near the bottom (locate-me, pin-count badge, Leaflet attribution) end up **under** the bar on standard mobile. Account for the bar's height when you place anything at the bottom.
+- The standard-mobile bar is `position: fixed` and sits above the map. Sidebar publishes its live height as the CSS variable `--bottom-chrome` (ResizeObserver via `setBottomBarRef`). Anything near the bottom of the map must use it: `.leaflet-bottom`, popup max-height and `PanToPin` already do. Locate-me stacks under zoom (top-right) at 361–768, as on Jelly.
+- The bar has two states, toggled by the grab handle (`renderBarHandle`): guests get the "right now nearby" card, filter and links when open (open by default on a first visit only, key `ffa_guest_bar_seen`); signed-in users get my pins, filter and sign out. `Sidebar.collapse()` (called when a pin opens) folds both.
 - iOS Safari zooms the page when a focused input's font-size is < 16px. Keep form inputs at ≥ 16px on phones.
 - Test at **240×427, 375×667, 393×852 and ≥1024 wide** (the CONTRIBUTING doc's 360/480 widths do not hit the 361–768 tree well).
 
@@ -84,7 +85,9 @@ Rules:
 - Dynamo pin-list failures throw `PinsQueryError` → handlers return 503 via `sendPinsError` (never an empty map).
 - Public responses must never include `submittedBy` (stripped in `getPublicPins`).
 - New third-party hosts the browser talks to must be added to the helmet CSP in server.js (`connectSrc`/`imgSrc`).
-- When you change the app shell or `sw.js` precache list, bump `CACHE_VERSION` in `client/sw.js`. Note that `index.js` and `index.css` are **not** content-hashed, and the SW serves them cache-first.
+- Production builds content-hash every file, including the entry (`--entry-names`); `scripts/build-html.mjs` rewrites `dist/index.html` to point at them. The SW serves `.js`/`.css` cache-first, which is only safe because names change. Bump `CACHE_VERSION` in `client/sw.js` when the caching strategy or precache list changes.
+- The Resend SDK returns `{ data, error }` instead of throwing. Wrap every send with `logEmailResult()` (server/utils/email.js).
+- On boot the server logs `[config] … usersTable=… pinsTable=…`. Check that line first when production and local disagree.
 - Add tests under `tests/server` or `tests/client` for any new util; `node:test`, no extra deps.
 
 ## Environment
@@ -95,9 +98,8 @@ Never print or paste `.env` values. AWS creds come from env or `~/.aws`.
 ## Known issues / open review items
 
 See the improvement review (Oct 2026). Still open:
-- Standard-mobile signed-in bar has no way to open its expanded panel (`isMobileBarOpen` is never set to true), so there is no sign out, my pins or filter there. Map controls at the bottom sit under the guest bar.
 - Email lookups and password reset use an unpaginated `Scan`, which breaks past ~1 MB of users. Bounded pin queries read the whole `status-index` and filter in memory.
-- `index.js`/`index.css` aren't content-hashed but the SW serves them cache-first.
+- `sidebar.jsx` still hand-maintains three copies of the auth forms (desktop, guest bar, Jelly panel); extracting a shared `AuthForm` is the next refactor.
 
 Fixed on `fix/hotfixes` (keep these true):
 - Admin is never derived from the username; reserved names are blocked case-insensitively (`validateUserName`). Edit/delete re-check `isAdmin` in DynamoDB, not just the JWT.

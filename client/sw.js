@@ -1,6 +1,7 @@
-// Bumped when precache list changes. Hashed entry chunks (index-*.js) are *not* listed here —
-// they are cached on first fetch via cache-first for same-origin .js
-const CACHE_VERSION = 'ffa-static-v2';
+// Bump when the precache list or caching strategy changes. Since v3 every .js/.css
+// file is content-hashed (see scripts/build-html.mjs), so cache-first is safe: a new
+// deploy ships new file names, and index.html is fetched network-first.
+const CACHE_VERSION = 'ffa-static-v3';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const APP_SHELL = ['/', '/index.html', '/manifest.json', '/loquat-48.png', '/loquat-192.png', '/loquat-512.png'];
 

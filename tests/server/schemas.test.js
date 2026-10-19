@@ -1,13 +1,15 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
+// Import the pure modules directly (not the schemas.js barrel, which pulls in
+// bcrypt + the AWS SDK) so these tests run without any installed packages.
+import { detectZoneFallback } from '../../server/schemas/zone.js';
+import { escapeHtml } from '../../server/utils/html.js';
 import {
-  detectZoneFallback,
-  escapeHtml,
   sanitizeString,
   validateCoordinates,
   validatePassword,
   validateEmail,
-} from '../../server/schemas/schemas.js';
+} from '../../server/schemas/validation.js';
 
 // ── detectZoneFallback ─────────────────────────────────────────────────────────
 

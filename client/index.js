@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client';
 import Sidebar from './sidebar.jsx';
 import ResetPassword from './ResetPassword.jsx';
 import { registerServiceWorker } from './registerServiceWorker.js';
+import { MOBILE_QUERY } from './utils/breakpoints.js';
 
 const Map = React.lazy(() => import('./map.jsx'));
 
@@ -17,14 +18,14 @@ class App extends Component {
     this.sidebarRef = React.createRef();
     this.state = {
       isPopupCollapseScreen: typeof window !== 'undefined'
-        ? window.matchMedia('(max-width: 600px)').matches
+        ? window.matchMedia(MOBILE_QUERY).matches
         : false
     };
   }
 
   componentDidMount() {
     if (typeof window === 'undefined') return;
-    this.popupCollapseMql = window.matchMedia('(max-width: 600px)');
+    this.popupCollapseMql = window.matchMedia(MOBILE_QUERY);
     this.syncPopupCollapseScreen();
     if (typeof this.popupCollapseMql.addEventListener === 'function') {
       this.popupCollapseMql.addEventListener('change', this.syncPopupCollapseScreen);
@@ -70,6 +71,13 @@ class App extends Component {
     }
   };
 
+  // Called after sign-out: drop usernames/"my pins" state and reload public pins
+  handleLogout = () => {
+    if (this.mapRef.current) {
+      this.mapRef.current.resetAfterLogout();
+    }
+  };
+
   // Called when user clicks "my pins" button
   handleToggleMyPins = () => {
     if (this.mapRef.current) {
@@ -105,6 +113,7 @@ class App extends Component {
           ref={this.sidebarRef}
           onPinSubmitted={this.handlePinSubmitted}
           onAuthSuccess={this.handleAuthSuccess}
+          onLogout={this.handleLogout}
           onToggleMyPins={this.handleToggleMyPins}
           onFilterChange={this.handleFilterChange}
           onSidebarOpen={this.handleSidebarOpen}

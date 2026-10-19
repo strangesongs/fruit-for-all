@@ -11,8 +11,13 @@ import { fetchWithRetry } from './utils/network.js';
 
 import './stylesheets/sidebar.css';
 
-const TINY_SCREEN_QUERY = '(max-width: 360px)';
-const MOBILE_QUERY = '(max-width: 768px)';
+import { TINY_SCREEN_QUERY, MOBILE_QUERY } from './utils/breakpoints.js';
+
+const GUEST_BAR_SEEN_KEY = 'ffa_guest_bar_seen';
+
+function readFirstVisit() {
+    try { return !localStorage.getItem(GUEST_BAR_SEEN_KEY); } catch { return false; }
+}
 
 export default class Sidebar extends React.Component {
     constructor(props) {
@@ -72,6 +77,10 @@ export default class Sidebar extends React.Component {
             // Standard mobile authenticated bar open/closed
             isMobileBarOpen: false,
 
+            // Standard mobile guest bar: expanded "right now nearby" card. Open on a
+            // first visit, collapsed to one row after that (and whenever a pin opens).
+            guestBarOpen: readFirstVisit(),
+
             // Guest bar live subtext
             pinCount: 0,
             subtextIndex: 0,
@@ -81,6 +90,7 @@ export default class Sidebar extends React.Component {
         this.lastFocusedElement = null;
         this.previousBodyOverflow = '';
         this._requestControllers = new Set();
+        this._bottomBarObserver = null;
         this.handlePinSummaryEvent = this.handlePinSummaryEvent.bind(this);
     }
 
@@ -131,8 +141,11 @@ export default class Sidebar extends React.Component {
             sessionStorage.removeItem('ffa_guest_add_attempted');
         }
         window.addEventListener('ffa:pins-summary', this.handlePinSummaryEvent);
+        try { localStorage.setItem(GUEST_BAR_SEEN_KEY, '1'); } catch { /* private mode */ }
         this._subtextInterval = setInterval(() => {
             this.setState(s => {
+                // The rotating line only shows in the standard-mobile guest bar.
+                if (!s.isStandardMobile || s.authenticated || s.guestAddAttempted) return null;
                 // 7 phrases: season, pin count, 5 static
                 const max = 7;
                 return { subtextIndex: (s.subtextIndex + 1) % max };
@@ -145,6 +158,7 @@ export default class Sidebar extends React.Component {
 
     componentWillUnmount() {
         clearInterval(this._subtextInterval);
+        this.setBottomBarRef(null);
         window.removeEventListener('ffa:pins-summary', this.handlePinSummaryEvent);
         this.abortAllRequests();
         if (typeof window !== 'undefined') {
@@ -161,6 +175,29 @@ export default class Sidebar extends React.Component {
         }
         this.disableAddFruitPopupA11ySideEffects();
     }
+
+    // Publishes the fixed bottom bar's height as --bottom-chrome so map controls,
+    // attribution and popup panning can stay clear of it (standard phones only).
+    setBottomBarRef = (el) => {
+        if (this._bottomBarObserver) {
+            this._bottomBarObserver.disconnect();
+            this._bottomBarObserver = null;
+        }
+        const root = typeof document !== 'undefined' ? document.documentElement : null;
+        if (!root) return;
+        if (!el) {
+            root.style.setProperty('--bottom-chrome', '0px');
+            return;
+        }
+        const publish = () => {
+            root.style.setProperty('--bottom-chrome', `${Math.round(el.getBoundingClientRect().height)}px`);
+        };
+        publish();
+        if (typeof ResizeObserver === 'function') {
+            this._bottomBarObserver = new ResizeObserver(publish);
+            this._bottomBarObserver.observe(el);
+        }
+    };
 
     startRequest = () => {
         const controller = new AbortController();
@@ -380,8 +417,13 @@ export default class Sidebar extends React.Component {
 
     handleLogout = () => {
         clearAuth();
+        if (this.props.onFilterChange) this.props.onFilterChange('all');
+        if (this.props.onLogout) this.props.onLogout();
         this.setState({ 
             authenticated: false,
+            isMobileBarOpen: false,
+            myPinsActive: false,
+            selectedFruitFilter: 'all',
             guestAddAttempted: false,
             authUserName: '',
             authPassword: '',
@@ -611,7 +653,7 @@ export default class Sidebar extends React.Component {
     };
 
     collapse = () => {
-        this.setState({ isCollapsed: true });
+        this.setState({ isCollapsed: true, guestBarOpen: false, isMobileBarOpen: false });
     };
 
     getSeasonLabel = () => {
@@ -646,77 +688,100 @@ export default class Sidebar extends React.Component {
         window.dispatchEvent(new CustomEvent('ffa:nearest-good-bet'));
     };
 
+    renderBarHandle(isOpen, onToggle, label) {
+        return (
+            <button
+                type="button"
+                className="bar-handle"
+                onClick={onToggle}
+                aria-expanded={isOpen}
+                aria-label={isOpen ? `hide ${label}` : `show ${label}`}
+            >
+                <span className="bar-handle-grip" aria-hidden="true" />
+                <svg className={`bar-handle-chevron${isOpen ? ' bar-handle-chevron--open' : ''}`} width="14" height="8" viewBox="0 0 14 8" aria-hidden="true">
+                    <path d="M1 7 L7 1 L13 7" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            </button>
+        );
+    }
+
+    renderFruitFilter(id) {
+        return (
+            <select
+                id={id}
+                value={this.state.selectedFruitFilter}
+                onChange={this.handleFilterChange}
+                className="fruit-filter-select"
+                aria-label="filter by fruit"
+            >
+                <option value="all">all fruits</option>
+                {this.state.availableFruitTypes.map(fruit => (
+                    <option key={fruit} value={fruit}>{fruit}</option>
+                ))}
+            </select>
+        );
+    }
+
+    toggleMobileBar = () => {
+        this.setState(prev => ({ isMobileBarOpen: !prev.isMobileBarOpen }));
+    };
+
+    toggleGuestBar = () => {
+        this.setState(prev => ({ guestBarOpen: !prev.guestBarOpen }));
+    };
+
     renderAuthenticatedBar() {
-        const { isMobileBarOpen, myPinsActive, selectedFruitFilter, availableFruitTypes } = this.state;
+        const { isMobileBarOpen, myPinsActive } = this.state;
         const currentUser = getUser();
 
         return (
             <>
-            <div className={`guest-bar auth-bar${isMobileBarOpen ? ' guest-bar--expanded' : ''}`}>
+            <div
+                ref={this.setBottomBarRef}
+                className={`guest-bar auth-bar${isMobileBarOpen ? ' guest-bar--expanded' : ''}`}
+            >
+                {this.renderBarHandle(isMobileBarOpen, this.toggleMobileBar, 'menu')}
 
-                {!isMobileBarOpen ? (
-                    /* Collapsed: icon + welcome + add-a-find */
-                    <div className="guest-bar-body">
-                        <img src={loquatIcon} className="guest-bar-icon" alt="" />
-                        <div className="guest-bar-text">
-                            <p className="guest-bar-title">fruit for all</p>
-                            {currentUser && (
-                                <p className="guest-bar-sub">welcome, {currentUser.userName}</p>
-                            )}
-                        </div>
-                        <button
-                            className="auth-submit-btn guest-bar-btn"
-                            onClick={this.toggleAddFruitPopup}
-                        >add a find</button>
+                {/* Always visible: icon + welcome + add-a-find */}
+                <div className="guest-bar-body">
+                    <img src={loquatIcon} className="guest-bar-icon" alt="" />
+                    <div className="guest-bar-text">
+                        <p className="guest-bar-title">fruit for all</p>
+                        {currentUser && (
+                            <p className="guest-bar-sub">welcome, {currentUser.userName}</p>
+                        )}
                     </div>
-                ) : (
-                    /* Expanded: actions panel */
-                    <div className="auth-bar-expanded-content">
-                        <div className="guest-bar-expanded-header">
-                            <img src={loquatIcon} className="guest-bar-icon" alt="" />
-                            {currentUser && (
-                                <p className="guest-bar-title">welcome, {currentUser.userName}</p>
-                            )}
-                        </div>
+                    <button
+                        className="auth-submit-btn guest-bar-btn"
+                        onClick={() => {
+                            this.setState({ isMobileBarOpen: false });
+                            this.toggleAddFruitPopup();
+                        }}
+                    >add a find</button>
+                </div>
 
+                {isMobileBarOpen && (
+                    <div className="auth-bar-expanded-content">
                         <div className="auth-bar-actions">
                             <button
                                 type="button"
-                                className="auth-bar-action-btn"
-                                onClick={() => {
-                                    this.setState({ isMobileBarOpen: false });
-                                    this.toggleAddFruitPopup();
-                                }}
-                            >add a find</button>
-
-                            <button
-                                type="button"
                                 className={`auth-bar-action-btn${myPinsActive ? ' btn-active' : ''}`}
+                                aria-pressed={myPinsActive}
                                 onClick={() => {
                                     const next = !myPinsActive;
                                     this.setState({ myPinsActive: next, isMobileBarOpen: false });
                                     if (this.props.onToggleMyPins) this.props.onToggleMyPins();
                                 }}
-                            >my pins</button>
+                            >{myPinsActive ? 'showing my pins' : 'my pins'}</button>
                         </div>
 
                         <div className="auth-bar-filter">
-                            <select
-                                value={selectedFruitFilter}
-                                onChange={(e) => {
-                                    this.setState({ selectedFruitFilter: e.target.value });
-                                    if (this.props.onFilterChange) this.props.onFilterChange(e.target.value);
-                                }}
-                                className="fruit-filter-select"
-                            >
-                                <option value="all">all fruits</option>
-                                {availableFruitTypes.map(fruit => (
-                                    <option key={fruit} value={fruit}>{fruit}</option>
-                                ))}
-                            </select>
+                            {this.renderFruitFilter('fruit-filter-mobile')}
                         </div>
 
-                        <button type="button" className="auth-submit-btn" onClick={this.handleLogout}>sign out</button>
+                        <p className="guest-bar-links-row">
+                            <button type="button" className="secondary-link" onClick={this.handleLogout}>sign out</button>
+                        </p>
                     </div>
                 )}
             </div>
@@ -729,13 +794,13 @@ export default class Sidebar extends React.Component {
 
         const { guestAddAttempted, isLoginMode, authUserName, authPassword, authEmail,
             authLoading, authError, isForgotMode, forgotEmail, forgotLoading, forgotError, forgotSuccess,
-            pinCount, subtextIndex, showAbout, availableFruitTypes } = this.state;
+            pinCount, subtextIndex, showAbout, availableFruitTypes, guestBarOpen } = this.state;
         const inSeasonFruits = this.getInSeasonFruits();
         const seasonLabel = this.getSeasonLabel();
         // Build the rotation array
         const subtextPhrases = [
             seasonLabel,
-            pinCount > 0 ? `${pinCount} free finds on the map` : '',
+            pinCount > 0 ? `${pinCount} free finds in view` : '',
             'the neighborhood’s edible map',
             'spot something? add a pin',
             'the map gets richer every pin',
@@ -746,10 +811,14 @@ export default class Sidebar extends React.Component {
 
         return (
             <>
-            <div className={`guest-bar${guestAddAttempted ? ' guest-bar--expanded' : ''}`}>
+            <div
+                ref={this.setBottomBarRef}
+                className={`guest-bar${guestAddAttempted || guestBarOpen ? ' guest-bar--expanded' : ''}`}
+            >
 
                 {!guestAddAttempted ? (
                     <>
+                    {this.renderBarHandle(guestBarOpen, this.toggleGuestBar, 'nearby finds')}
                     <div className="guest-bar-body">
                         <img src={loquatIcon} className="guest-bar-icon" alt="" />
                         <div className="guest-bar-text">
@@ -761,46 +830,53 @@ export default class Sidebar extends React.Component {
                             onClick={() => this.setState({ guestAddAttempted: true, isLoginMode: true, showAbout: false, authError: '' })}
                         >add a find</button>
                     </div>
-                    <div className="guest-bar-landing">
-                        <span className="guest-bar-landing-kicker">right now nearby</span>
-                        {pinCount > 0 && (
-                            <p
-                                className="guest-bar-view-ticker"
-                                key={`${pinCount}|${availableFruitTypes.join(',')}`}
-                            >
-                                <span className="guest-bar-view-label">in this view</span>
-                                {' '}
-                                {buildViewTickerText(pinCount, availableFruitTypes)}
-                            </p>
-                        )}
-                        {inSeasonFruits.length > 0 && (
-                            <div className="guest-bar-chips">
-                                {inSeasonFruits.map(fruit => (
-                                    <span key={fruit.name} className="guest-bar-chip">
-                                        <i className={`guest-bar-chip-dot guest-bar-chip-dot--${fruit.status === 'peak' || fruit.status === 'steady' ? 'green' : 'amber'}`} aria-hidden="true" />
-                                        {fruit.name} {fruit.status}
-                                    </span>
-                                ))}
+                    {guestBarOpen && (
+                        <>
+                        <div className="guest-bar-landing">
+                            <span className="guest-bar-landing-kicker">right now nearby</span>
+                            {pinCount > 0 && (
+                                <p
+                                    className="guest-bar-view-ticker"
+                                    key={`${pinCount}|${availableFruitTypes.join(',')}`}
+                                >
+                                    <span className="guest-bar-view-label">in this view</span>
+                                    {' '}
+                                    {buildViewTickerText(pinCount, availableFruitTypes)}
+                                </p>
+                            )}
+                            {inSeasonFruits.length > 0 && (
+                                <div className="guest-bar-chips">
+                                    {inSeasonFruits.map(fruit => (
+                                        <span key={fruit.name} className="guest-bar-chip">
+                                            <i className={`guest-bar-chip-dot guest-bar-chip-dot--${fruit.status === 'peak' || fruit.status === 'steady' ? 'green' : 'amber'}`} aria-hidden="true" />
+                                            {fruit.name} {fruit.status}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                            <div className="guest-bar-actions-row">
+                                <button type="button" className="guest-bar-bet-btn" onClick={this.handleNearestGoodBet}>
+                                    nearest good bet →
+                                </button>
+                                {this.renderFruitFilter('fruit-filter-guest')}
                             </div>
-                        )}
-                        <button type="button" className="guest-bar-bet-btn" onClick={this.handleNearestGoodBet}>
-                            nearest good bet →
-                        </button>
-                        <p className="guest-bar-orchard">open source orchard, neighbor-submitted finds</p>
-                    </div>
-                    <p className="guest-bar-about-link guest-bar-links-row">
-                        <button
-                            type="button"
-                            onClick={() => this.setState({ guestAddAttempted: true, isLoginMode: true, showAbout: false, authError: '' })}
-                            className="secondary-link"
-                        >sign in</button>
-                        <span aria-hidden="true"> · </span>
-                        <button
-                            type="button"
-                            onClick={() => this.setState({ guestAddAttempted: true, showAbout: true })}
-                            className="secondary-link"
-                        >what is fruit for all?</button>
-                    </p>
+                            <p className="guest-bar-orchard">open source orchard, neighbor-submitted finds</p>
+                        </div>
+                        <p className="guest-bar-about-link guest-bar-links-row">
+                            <button
+                                type="button"
+                                onClick={() => this.setState({ guestAddAttempted: true, isLoginMode: true, showAbout: false, authError: '' })}
+                                className="secondary-link"
+                            >sign in</button>
+                            <span aria-hidden="true"> · </span>
+                            <button
+                                type="button"
+                                onClick={() => this.setState({ guestAddAttempted: true, showAbout: true })}
+                                className="secondary-link"
+                            >what is fruit for all?</button>
+                        </p>
+                        </>
+                    )}
                     </>
                 ) : (
                     <div className="guest-bar-expanded-content">
@@ -842,6 +918,7 @@ export default class Sidebar extends React.Component {
                                             value={forgotEmail}
                                             onChange={(e) => this.setState({ forgotEmail: e.target.value })}
                                             placeholder="your email address"
+                                        autoComplete="email"
                                             disabled={forgotLoading}
                                         />
                                     </div>
@@ -864,6 +941,7 @@ export default class Sidebar extends React.Component {
                                         value={authUserName}
                                         onChange={(e) => this.handleInputChange('authUserName', e.target.value)}
                                         placeholder="username"
+                                        autoComplete="username"
                                         autoCapitalize="none"
                                         autoCorrect="off"
                                         spellCheck={false}
@@ -877,6 +955,7 @@ export default class Sidebar extends React.Component {
                                             value={authEmail}
                                             onChange={(e) => this.handleInputChange('authEmail', e.target.value)}
                                             placeholder="email"
+                                        autoComplete="email"
                                             disabled={authLoading}
                                         />
                                     </div>
@@ -887,6 +966,7 @@ export default class Sidebar extends React.Component {
                                         value={authPassword}
                                         onChange={(e) => this.handleInputChange('authPassword', e.target.value)}
                                         placeholder="password"
+                                        autoComplete={isLoginMode ? 'current-password' : 'new-password'}
                                         disabled={authLoading}
                                     />
                                     {!isLoginMode && <p className="password-hint">min 10 chars, 1 number, 1 symbol</p>}
@@ -1120,6 +1200,7 @@ export default class Sidebar extends React.Component {
                                                     value={forgotEmail}
                                                     onChange={(e) => this.setState({ forgotEmail: e.target.value })}
                                                     placeholder="your email address"
+                                        autoComplete="email"
                                                     disabled={forgotLoading}
                                                 />
                                             </div>
@@ -1145,6 +1226,7 @@ export default class Sidebar extends React.Component {
                                                 value={authUserName}
                                                 onChange={(e) => this.handleInputChange('authUserName', e.target.value)}
                                                 placeholder="username"
+                                        autoComplete="username"
                                         autoCapitalize="none"
                                         autoCorrect="off"
                                         spellCheck={false}
@@ -1158,6 +1240,7 @@ export default class Sidebar extends React.Component {
                                                     value={authEmail}
                                                     onChange={(e) => this.handleInputChange('authEmail', e.target.value)}
                                                     placeholder="email"
+                                        autoComplete="email"
                                                     disabled={authLoading}
                                                 />
                                             </div>
@@ -1168,6 +1251,7 @@ export default class Sidebar extends React.Component {
                                                 value={authPassword}
                                                 onChange={(e) => this.handleInputChange('authPassword', e.target.value)}
                                                 placeholder="password"
+                                        autoComplete={isLoginMode ? 'current-password' : 'new-password'}
                                                 disabled={authLoading}
                                             />
                                             {!isLoginMode && (
@@ -1441,6 +1525,7 @@ export default class Sidebar extends React.Component {
                                             value={this.state.forgotEmail}
                                             onChange={(e) => this.setState({ forgotEmail: e.target.value })}
                                             placeholder="your email address"
+                                        autoComplete="email"
                                             disabled={this.state.forgotLoading}
                                         />
                                     </div>
@@ -1462,6 +1547,7 @@ export default class Sidebar extends React.Component {
                                     value={authUserName}
                                     onChange={(e) => this.handleInputChange('authUserName', e.target.value)}
                                     placeholder="username"
+                                        autoComplete="username"
                                         autoCapitalize="none"
                                         autoCorrect="off"
                                         spellCheck={false}
@@ -1476,6 +1562,7 @@ export default class Sidebar extends React.Component {
                                         value={authEmail}
                                         onChange={(e) => this.handleInputChange('authEmail', e.target.value)}
                                         placeholder="email"
+                                        autoComplete="email"
                                         disabled={authLoading}
                                     />
                                 </div>
@@ -1487,6 +1574,7 @@ export default class Sidebar extends React.Component {
                                     value={authPassword}
                                     onChange={(e) => this.handleInputChange('authPassword', e.target.value)}
                                     placeholder="password"
+                                        autoComplete={isLoginMode ? 'current-password' : 'new-password'}
                                     disabled={authLoading}
                                 />
                                 {!isLoginMode && (
