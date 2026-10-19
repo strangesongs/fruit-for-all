@@ -28,7 +28,7 @@
   "author": "j cretella",
   "license": "GPL-3.0",
   "engines": {
-    "node": ">=20.0.0"
+    "node": "22.x"
   },
   "bugs": {
     "url": "https://github.com/strangesongs/fruit-for-all/issues"

@@ -14,7 +14,7 @@ npm test         # node --test tests/server/*.test.js tests/client/*.test.js
 ```
 
 - The pre-commit hook (husky) runs `npm test`. CI runs tests, a build, and `npm audit` (warn only).
-- Node ≥ 20. ESM throughout (`"type": "module"`).
+- Node 22 (pinned: `.nvmrc`, `engines`, CI). ESM throughout (`"type": "module"`).
 - **Do not "simplify" the `NODE_ENV` quoting in package.json** (`\\\"production\\\"`). esbuild needs a JS string literal; without it React crashes with `development is not defined`.
 - `dist/` is gitignored. `npm run build` wipes and rebuilds it. In dev, esbuild serves on :3000 with `--serve-fallback`, so app routes like `/reset-password` work locally too.
 
