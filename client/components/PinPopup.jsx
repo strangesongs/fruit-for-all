@@ -1,6 +1,8 @@
 import React, { useState, useCallback } from 'react';
 
 import SeasonStrip from './SeasonStrip.jsx';
+import { getSeasonForZone, isInSeason, getSeasonDisplay } from '../utils/fruitSeasons.js';
+import { API_BASE } from '../utils/config.js';
 
 function relativeTime(isoString) {
   const diff = Date.now() - new Date(isoString).getTime();
@@ -47,21 +49,16 @@ export default function PinPopup({
   deletePin,
   setEditingNotes,
 }) {
-  if (!pin) return null;
-
-  const currentMonth = new Date().getMonth() + 1;
-  const inSeason = pin.zone ? window.isInSeason?.(pin.fruitType, pin.zone, currentMonth) : null;
-  const seasonMonths = pin.zone ? window.getSeasonForZone?.(pin.fruitType, pin.zone) : null;
-  const generalSeason = window.getSeasonDisplay?.(pin.fruitType);
-
-  const [confirmations, setConfirmations] = useState(pin.confirmations || []);
-  const [confirmed, setConfirmed] = useState(
-    () => !!localStorage.getItem(storageKey(pin.pinId)),
-  );
+  // Hooks must run before any early return (rules of hooks).
+  const [confirmations, setConfirmations] = useState(pin?.confirmations || []);
+  const [confirmed, setConfirmed] = useState(() => {
+    if (!pin) return false;
+    try { return !!localStorage.getItem(storageKey(pin.pinId)); } catch { return false; }
+  });
   const [confirmError, setConfirmError] = useState(null);
 
   const handleConfirm = useCallback(async () => {
-    if (confirmed) return;
+    if (!pin || confirmed) return;
 
     // optimistic update — show feedback immediately
     const optimistic = [...confirmations, { timestamp: new Date().toISOString(), anonymous: true }];
@@ -71,7 +68,7 @@ export default function PinPopup({
     localStorage.setItem(storageKey(pin.pinId), new Date().toISOString());
 
     try {
-      const res = await fetch(`/api/pins/${pin.pinId}/confirm`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/api/pins/${encodeURIComponent(pin.pinId)}/confirm`, { method: 'POST' });
       if (res.status === 429) {
         // revert
         setConfirmations(pin.confirmations || []);
@@ -104,7 +101,19 @@ export default function PinPopup({
       localStorage.removeItem(storageKey(pin.pinId));
       setConfirmError('something went wrong');
     }
-  }, [confirmed, confirmations, pin.pinId, pin.confirmations]);
+  }, [confirmed, confirmations, pin]);
+
+  if (!pin) return null;
+
+  // Season data: these helpers used to be called as window.* globals that were never
+  // defined, so every pin with a zone rendered as "out of season".
+  const currentMonth = new Date().getMonth() + 1;
+  const seasonMonths = pin.zone && pin.fruitType ? getSeasonForZone(pin.fruitType, pin.zone) : null;
+  // No zone data for this fruit → null, so SeasonStrip shows the general season instead.
+  const inSeason = seasonMonths ? isInSeason(pin.fruitType, pin.zone, currentMonth) : null;
+  // getSeasonDisplay returns "Unknown season" for fruit without data; let SeasonStrip say "season varies".
+  const display = pin.fruitType ? getSeasonDisplay(pin.fruitType) : null;
+  const generalSeason = display && display !== 'Unknown season' ? display : null;
 
   const freshness = freshnessText(confirmations);
   const showConfirmSection = !confirmed || freshness || confirmed;

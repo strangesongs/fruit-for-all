@@ -1,5 +1,44 @@
 const DEDUP_TTL_SECONDS = 86400; // 24 hours
 
+/**
+ * In-process stand-in for the two Redis calls we use (get / set with EX), so
+ * "still good?" dedup works on a single instance without REDIS_URL.
+ * Entries expire lazily on read and are swept when the map grows past `maxEntries`.
+ */
+export function createMemoryDedupStore({ maxEntries = 50000, now = () => Date.now() } = {}) {
+  const store = new Map();
+  const sweep = () => {
+    const t = now();
+    for (const [key, expiresAt] of store) {
+      if (expiresAt <= t) store.delete(key);
+    }
+    // Still too big: drop the oldest insertions (Map keeps insertion order).
+    while (store.size > maxEntries) {
+      store.delete(store.keys().next().value);
+    }
+  };
+  return {
+    async get(key) {
+      const expiresAt = store.get(key);
+      if (expiresAt === undefined) return null;
+      if (expiresAt <= now()) {
+        store.delete(key);
+        return null;
+      }
+      return '1';
+    },
+    async set(key, _value, opts = {}) {
+      const ttlMs = (opts.EX ?? DEDUP_TTL_SECONDS) * 1000;
+      store.delete(key);
+      store.set(key, now() + ttlMs);
+      if (store.size > maxEntries) sweep();
+    },
+    get size() {
+      return store.size;
+    },
+  };
+}
+
 export function confirmDedupKey(pinId, ip) {
   return `confirm:${pinId}:${ip}`;
 }

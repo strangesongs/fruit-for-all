@@ -1,0 +1,110 @@
+# CLAUDE.md — fruit for all
+
+A mobile-first community map of free street fruit ("open source orchard"). Live at https://fruitforall.app. GPL-3.0.
+
+Guests can browse the map. Signed-in users can add a pin at their current GPS location, edit or delete their own pins, and filter to "my pins". Anyone can tap "still good?" to confirm a pin.
+
+## Commands
+
+```sh
+npm run dev      # esbuild dev server :3000 + nodemon Express :8080 (needs .env)
+npm run build    # production bundle → dist/ (Railway runs this on deploy)
+npm start        # node server.js — serves dist/ + /api
+npm test         # node --test tests/server/*.test.js tests/client/*.test.js
+```
+
+- The pre-commit hook (husky) runs `npm test`. CI runs tests, a build, and `npm audit` (warn only).
+- Node ≥ 20. ESM throughout (`"type": "module"`).
+- **Do not "simplify" the `NODE_ENV` quoting in package.json** (`\\\"production\\\"`). esbuild needs a JS string literal; without it React crashes with `development is not defined`.
+- `dist/` is gitignored and is not cleaned between builds, so stale `map-*.js` chunks pile up locally. That's harmless.
+
+## Stack
+
+| Layer | Tech |
+|---|---|
+| Client | React 18 **class components**, react-leaflet 4 / Leaflet 1.9, bundled by esbuild (no framework, no router) |
+| Server | Express 4, helmet, compression, express-rate-limit (in-memory, or Redis via `REDIS_URL`) |
+| Data | AWS DynamoDB raw SDK (no ORM): `LoquatUsers` (PK `userName`), `LoquatPins` (PK `pinId`, SK `createdAt`; GSIs `status-index`, `submittedBy-index`, both sorted by `createdAt`) |
+| Auth | bcrypt (12 rounds) + stateless 7-day JWT stored in `localStorage` (`ffa_auth_token`, `ffa_user`) |
+| Email | Resend (optional; it's skipped if `RESEND_API_KEY` is unset) |
+| External | Stadia `stamen_terrain` tiles, ipapi.co (IP → approximate location, `/api/locate`), phzmapi.com (USDA zone on pin create) |
+| Hosting | Railway (Nixpacks); `GET /health` for checks |
+
+## Layout of the code
+
+```
+server.js                     Helmet/CSP, CORS, rate limiters, static + SPA catch-all, ALL route wiring
+server/controllers/           auth.js (register/login/reset, verifyToken), pinsController.js, index.js (barrel)
+server/schemas/               users.js, pins.js (Dynamo access), validation.js, zone.js, errors.js, schemas.js (barrel)
+server/utils/                 html.js (escapeHtml), profanity.js, confirmDedup.js (Redis 24h per-IP dedup)
+client/index.js               entry: App wires Sidebar ↔ Map via refs; /reset-password renders ResetPassword
+client/sidebar.jsx            ALL non-map UI (~1.6k lines): auth forms, add-a-find modal, filters, three layouts
+client/map.jsx                Leaflet map, pin loading/merging, clustering, popups, locate-me, "nearest good bet"
+client/components/            PinPopup.jsx, SeasonStrip.jsx (real); AddFruitPopup/AuthForm/GuestBar/MapControls are EMPTY placeholders
+client/utils/                 auth, cache (localStorage TTL), network (fetchWithRetry), clustering, fruitList, fruitSeasons, …
+client/stylesheets/           sidebar.css (tokens + every non-map layout), map.css (Leaflet overrides, controls, popups)
+client/sw.js                  service worker (production only): network-first navigations, cache-first static assets
+```
+
+`client/utils/fruitList.js` is imported by the **server** too (it's the allow-list for `fruitType`). Keep it dependency-free.
+
+## The three responsive layouts (read this before touching UI)
+
+The JS decides which tree renders (`Sidebar.render()`), and CSS styles each tree. These are three separate DOM trees, not one tree restyled by CSS.
+
+| Mode | Width | JS flag / render fn | Main CSS | Target device |
+|---|---|---|---|---|
+| **Tiny** | ≤ 360px | `isTinyScreen` → `renderMobileLayout()` (FAB + floating panel) | `sidebar.css` "Mobile compact layout", `map.css` `@media (max-width: 360px)` | Unihertz Jelly Star (≈240×427 CSS px) |
+| **Standard mobile** | 361–768px | `isStandardMobile` → `renderGuestBar()` (guest) / `renderAuthenticatedBar()` (signed in) | `sidebar.css` "Standard mobile (361–768px)" `.guest-bar*`, `.auth-bar*` (**not** inside a media query; they apply because the JS renders them) | iPhone SE 2022 (375×667), modern phones (390–430 wide) |
+| **Desktop** | > 768px | default branch: floating `.sidebar` card | `sidebar.css` top section | laptop/desktop |
+
+Rules:
+- Breakpoints are duplicated in JS (`TINY_SCREEN_QUERY`, `MOBILE_QUERY` in sidebar.jsx; a separate 600px query in index.js; a `mapSize.x <= 360` check in `PanToPin`) and in CSS. **Change them together.**
+- Never let a fix for one mode leak into another. Tiny-mode CSS lives under `@media (max-width: 360px)`; standard-mobile selectors are `.guest-bar*` / `.auth-bar*`.
+- The `@media (max-width: 768px)` and `480px` blocks in sidebar.css mostly target `.sidebar`, which phones never render, but the global `button:not(...)` rule inside them **does** shrink popup and pin buttons on phones.
+- The bottom guest bar is `position: fixed` with z-index 1000 in the root stacking context. `.map-area` is z-index 1, so map controls positioned near the bottom (locate-me, pin-count badge, Leaflet attribution) end up **under** the bar on standard mobile. Account for the bar's height when you place anything at the bottom.
+- iOS Safari zooms the page when a focused input's font-size is < 16px. Keep form inputs at ≥ 16px on phones.
+- Test at **240×427, 375×667, 393×852 and ≥1024 wide** (the CONTRIBUTING doc's 360/480 widths do not hit the 361–768 tree well).
+
+## Design system (non-negotiable aesthetic)
+
+"Earthy, crunchy, Whole Earth Catalog."
+- Tokens live in `:root` in sidebar.css: `--red #7a3c20`, `--red-dark`, `--red-deep`, `--surface #f7f2e4`, `--card #f2ece0`, `--border #c8b888`, `--text #2b1a0e`, `--text-muted #8a7050`, `--olive #5c6b2e`, `--del`. Use the tokens, not new hex values (map.css and ResetPassword.jsx still hardcode some; that's legacy).
+- Vollkorn serif everywhere, loaded **only** via `<link>` in `client/map-index.html` (never CSS `@import`).
+- Lowercase copy and labels. Restrained shadows (≤ `5px 6px 10px rgba(0,0,0,.22)`), tactile outset/inset borders, no slick gradients.
+- Map controls must match the card style (same border, background and radius as the sidebar/bar).
+- A huge global `button:not(.a):not(.b)…` rule in sidebar.css gives every button the red style. A new button class that should look different must be added to **every** copy of that selector (base, :hover, :active, and the 768/360 media blocks). They have already drifted, so check all of them.
+
+## Conventions
+
+- React **class components** (repo convention; PinPopup/SeasonStrip are function components and that's fine). Lowercase identifiers. Prettier is installed.
+- Client fetches go through `fetchWithRetry` with an `AbortController` registered on the component; always prefix with `API_BASE` (empty in prod, `http://localhost:8080` in dev).
+- Sidebar ↔ Map communicate via refs from `App` **and** window CustomEvents (`ffa:pins-summary`, `ffa:nearest-good-bet`).
+- Server handlers: validate input types **before** using string methods, and wrap the whole body in try/catch. An exception thrown in an async Express 4 handler is an unhandled rejection that kills the Node process.
+- Dynamo pin-list failures throw `PinsQueryError` → handlers return 503 via `sendPinsError` (never an empty map).
+- Public responses must never include `submittedBy` (stripped in `getPublicPins`).
+- New third-party hosts the browser talks to must be added to the helmet CSP in server.js (`connectSrc`/`imgSrc`).
+- When you change the app shell or `sw.js` precache list, bump `CACHE_VERSION` in `client/sw.js`. Note that `index.js` and `index.css` are **not** content-hashed, and the SW serves them cache-first.
+- Add tests under `tests/server` or `tests/client` for any new util; `node:test`, no extra deps.
+
+## Environment
+
+`.env` (never commit): `NODE_ENV`, `JWT_SECRET` (required when NODE_ENV=production), `AWS_REGION`, `DYNAMODB_USERS_TABLE`, `PINS_TABLE`, `ALLOWED_ORIGINS`, `PORT`, `STADIA_API_KEY`. Optional: `REDIS_URL`, `RESEND_API_KEY`, `APP_URL`, `ADMIN_EMAIL`, `PIN_NOTIFICATIONS=true`.
+Never print or paste `.env` values. AWS creds come from env or `~/.aws`.
+
+## Known issues / open review items
+
+See the improvement review (Oct 2026). Still open:
+- Standard-mobile signed-in bar has no way to open its expanded panel (`isMobileBarOpen` is never set to true), so there is no sign out, my pins or filter there. Map controls at the bottom sit under the guest bar.
+- Email lookups and password reset use an unpaginated `Scan`, which breaks past ~1 MB of users. Bounded pin queries read the whole `status-index` and filter in memory.
+- `index.js`/`index.css` aren't content-hashed but the SW serves them cache-first.
+
+Fixed on `fix/hotfixes` (keep these true):
+- Admin is never derived from the username; reserved names are blocked case-insensitively (`validateUserName`). Edit/delete re-check `isAdmin` in DynamoDB, not just the JWT.
+- Every route handler is wrapped with `wrap()` (server/utils/wrap.js); new routes must be too. Request bodies are type-checked (`validatePinInput`, `validateNotes`) before string methods run.
+- "still good?" dedup uses an in-memory store when `REDIS_URL` is unset.
+- Season helpers are imported in PinPopup (no `window.*` globals). Passwords are never trimmed. POSTs are never auto-retried.
+
+## Docs
+
+`README.md` (setup), `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, `CONTRIBUTING.md`, `DYNAMODB_GSI_SETUP.md`, `non-jelly-home-implementation-map.md` (standard-mobile UI history). `.github/copilot-instructions.md` is gitignored (local only). This file is the committed equivalent.

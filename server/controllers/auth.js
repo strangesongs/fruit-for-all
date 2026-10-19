@@ -27,7 +27,7 @@ function generateToken(user) {
       iat: Math.floor(Date.now() / 1000),
     },
     JWT_SECRET_FINAL,
-    { expiresIn: JWT_EXPIRES_IN },
+    { expiresIn: JWT_EXPIRES_IN, algorithm: 'HS256' },
   );
 }
 
@@ -38,7 +38,7 @@ export function verifyToken(req, res, next) {
     return res.status(401).json({ success: false, message: 'Access denied. No token provided.' });
   }
   try {
-    const decoded = jwt.verify(token, JWT_SECRET_FINAL);
+    const decoded = jwt.verify(token, JWT_SECRET_FINAL, { algorithms: ['HS256'] });
     req.user = decoded;
     next();
   } catch {
@@ -147,17 +147,6 @@ export const getCurrentUser = async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error fetching user data' });
   }
-};
-
-export const saveButton = async (req, res) => {
-  const { userName, pins } = req.body;
-  let user = await db.getUser(userName);
-  if (!user) {
-    user = { userName, savedPins: [] };
-  }
-  user.savedPins = pins;
-  await db.saveUser(user);
-  res.json({ success: true });
 };
 
 export const forgotPassword = async (req, res) => {

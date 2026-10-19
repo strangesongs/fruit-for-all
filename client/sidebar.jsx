@@ -347,7 +347,7 @@ export default class Sidebar extends React.Component {
                 })
             }, {
                 timeoutMs: 12000,
-                retries: 1,
+                retries: 0, // POSTs are not idempotent: never auto-retry
             });
 
             const result = await response.json();
@@ -431,7 +431,7 @@ export default class Sidebar extends React.Component {
                 body: JSON.stringify({ email: forgotEmail })
             }, {
                 timeoutMs: 12000,
-                retries: 1,
+                retries: 0, // POSTs are not idempotent: never auto-retry
             });
             await res.json();
             // Always show success (don't reveal if email exists)
@@ -448,7 +448,7 @@ export default class Sidebar extends React.Component {
         e.preventDefault();
         const { authUserName, authPassword } = this.state;
 
-        if (!authUserName.trim() || !authPassword.trim()) {
+        if (!authUserName.trim() || !authPassword) {
             this.setState({ authError: 'please enter username and password' });
             return;
         }
@@ -463,11 +463,11 @@ export default class Sidebar extends React.Component {
                 signal: controller.signal,
                 body: JSON.stringify({ 
                     userName: authUserName.trim(), 
-                    password: authPassword.trim() 
+                    password: authPassword
                 })
             }, {
                 timeoutMs: 12000,
-                retries: 1,
+                retries: 0, // POSTs are not idempotent: never auto-retry
             });
 
             const result = await response.json();
@@ -506,14 +506,14 @@ export default class Sidebar extends React.Component {
         e.preventDefault();
         const { authUserName, authPassword, authEmail } = this.state;
 
-        if (!authUserName.trim() || !authPassword.trim() || !authEmail.trim()) {
+        if (!authUserName.trim() || !authPassword || !authEmail.trim()) {
             this.setState({ authError: 'all fields are required' });
             return;
         }
 
         // Username validation
-        if (authUserName.trim().length < 3) {
-            this.setState({ authError: 'username must be at least 3 characters' });
+        if (!/^[A-Za-z0-9_.-]{3,24}$/.test(authUserName.trim())) {
+            this.setState({ authError: 'username: 3–24 letters, numbers, dot, dash or underscore' });
             return;
         }
 
@@ -550,12 +550,12 @@ export default class Sidebar extends React.Component {
                 signal: controller.signal,
                 body: JSON.stringify({ 
                     userName: authUserName.trim(), 
-                    password: authPassword.trim(),
+                    password: authPassword,
                     email: authEmail.trim()
                 })
             }, {
                 timeoutMs: 12000,
-                retries: 1,
+                retries: 0, // POSTs are not idempotent: never auto-retry
             });
 
             const result = await response.json();
@@ -864,6 +864,9 @@ export default class Sidebar extends React.Component {
                                         value={authUserName}
                                         onChange={(e) => this.handleInputChange('authUserName', e.target.value)}
                                         placeholder="username"
+                                        autoCapitalize="none"
+                                        autoCorrect="off"
+                                        spellCheck={false}
                                         disabled={authLoading}
                                     />
                                 </div>
@@ -1142,6 +1145,9 @@ export default class Sidebar extends React.Component {
                                                 value={authUserName}
                                                 onChange={(e) => this.handleInputChange('authUserName', e.target.value)}
                                                 placeholder="username"
+                                        autoCapitalize="none"
+                                        autoCorrect="off"
+                                        spellCheck={false}
                                                 disabled={authLoading}
                                             />
                                         </div>
@@ -1456,6 +1462,9 @@ export default class Sidebar extends React.Component {
                                     value={authUserName}
                                     onChange={(e) => this.handleInputChange('authUserName', e.target.value)}
                                     placeholder="username"
+                                        autoCapitalize="none"
+                                        autoCorrect="off"
+                                        spellCheck={false}
                                     disabled={authLoading}
                                 />
                             </div>

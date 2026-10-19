@@ -20,31 +20,29 @@ function sendPinsError(res, err, logLabel) {
   return null;
 }
 
+/**
+ * Admin rights come from the users table, not from the 7-day token, so a token
+ * issued before an admin flag was removed can't keep using it.
+ */
+async function isCurrentAdmin(req) {
+  if (!req.user?.isAdmin) return false;
+  const user = await db.getUser(req.user.userName);
+  return !!user?.isAdmin;
+}
+
 export const createPin = async (req, res) => {
-  const { coordinates, fruitType, notes } = req.body;
-  const submittedBy = req.user.userName;
-  if (!coordinates || !coordinates.lat || !coordinates.lng || !fruitType) {
-    return res.status(400).json({
-      success: false,
-      message: 'Missing required fields: coordinates and fruitType are required',
-    });
-  }
-  if (typeof coordinates.lat !== 'number' || typeof coordinates.lng !== 'number') {
-    return res.status(400).json({ success: false, message: 'Coordinates must be numbers' });
-  }
-  if (!FRUIT_SET.has(fruitType.trim().toLowerCase())) {
-    return res.status(400).json({
-      success: false,
-      message: 'Invalid fruit type. Please select from the approved list.',
-    });
-  }
-  if (notes && notes.split(' ').length > 500) {
-    return res.status(400).json({ success: false, message: 'Notes cannot exceed 500 words' });
-  }
-  if (containsProfanity(notes)) {
-    return res.status(400).json({ success: false, message: 'Please keep notes family-friendly.' });
-  }
   try {
+    // Validate types before calling any string methods: a non-string field used to
+    // throw outside the try block and crash the process.
+    const check = db.validatePinInput(req.body, FRUIT_SET);
+    if (!check.valid) {
+      return res.status(400).json({ success: false, message: check.message });
+    }
+    const { coordinates, fruitType, notes } = req.body;
+    const submittedBy = req.user.userName;
+    if (containsProfanity(notes)) {
+      return res.status(400).json({ success: false, message: 'Please keep notes family-friendly.' });
+    }
     const pin = await db.createPin({
       coordinates,
       fruitType: fruitType.trim().toLowerCase(),
@@ -205,18 +203,21 @@ export const updatePin = async (req, res) => {
     if (!pin) {
       return res.status(404).json({ success: false, message: 'Pin not found' });
     }
-    const isAdmin = req.user.isAdmin || false;
     const isOwner = pin.submittedBy === req.user.userName;
-    if (!isAdmin && !isOwner) {
+    if (!isOwner && !(await isCurrentAdmin(req))) {
       return res.status(403).json({
         success: false,
         message: 'Only admin or pin owner can edit this pin',
       });
     }
+    const notesCheck = db.validateNotes(notes);
+    if (!notesCheck.valid) {
+      return res.status(400).json({ success: false, message: notesCheck.message });
+    }
     if (containsProfanity(notes)) {
       return res.status(400).json({ success: false, message: 'Please keep notes family-friendly.' });
     }
-    const updatedPin = await db.updatePin(pinId, { notes: notes || '' });
+    const updatedPin = await db.updatePin(pinId, { notes: db.sanitizeString(notes || '') });
     res.json({ success: true, message: 'Pin updated successfully', pin: updatedPin });
   } catch (error) {
     console.error('Error in updatePin controller:', error);
@@ -259,9 +260,8 @@ export const deletePin = async (req, res) => {
     if (!pin) {
       return res.status(404).json({ success: false, message: 'Pin not found' });
     }
-    const isAdmin = req.user.isAdmin || false;
     const isOwner = pin.submittedBy === req.user.userName;
-    if (!isAdmin && !isOwner) {
+    if (!isOwner && !(await isCurrentAdmin(req))) {
       return res.status(403).json({
         success: false,
         message: 'Only admin or pin owner can delete this pin',
