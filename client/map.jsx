@@ -261,6 +261,26 @@ class Map extends Component {
         window.addEventListener('ffa:fly-to', this.handleFlyTo);
     }
 
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.fruitFilter !== this.state.fruitFilter || prevState.showMyPinsOnly !== this.state.showMyPinsOnly) {
+            this.publishPinSummary(this.state.pins);
+        }
+    }
+
+    // Tapping a cluster zooms in to its finds (keeping them clear of the phone bar).
+    zoomToCluster = (cluster) => {
+        const map = this._leafletMap;
+        if (!map || !cluster.pins || cluster.pins.length === 0) return;
+        const bounds = L.latLngBounds(cluster.pins.map(p => [p.coordinates.lat, p.coordinates.lng]));
+        const bottom = map.getSize().x <= TINY_MAX ? 70 : getBottomChromePx() + 40;
+        map.flyToBounds(bounds, {
+            paddingTopLeft: [40, 70],
+            paddingBottomRight: [70, bottom],
+            maxZoom: 17,
+            duration: 0.6,
+        });
+    };
+
     componentWillUnmount() {
         if (this.debounceTimer) clearTimeout(this.debounceTimer);
         this.cancelRequest('ipLocate');
@@ -385,10 +405,16 @@ class Map extends Component {
         const lc = this._leafletMap ? this._leafletMap.getCenter() : null;
         const center = lc ? { lat: lc.lat, lng: lc.lng }
             : b ? { lat: (b.minLat + b.maxLat) / 2, lng: (b.minLng + b.maxLng) / 2 } : this.state.userLocation;
-        const summary = buildViewSummary(visible, center, new Date().getMonth() + 1);
+        // Count only what the map actually draws: the fruit filter and "my pins" hide
+        // markers, so the bar must not offer finds the user can't see.
+        const { fruitFilter, showMyPinsOnly } = this.state;
+        const me = showMyPinsOnly ? (getUser() || {}).userName : null;
+        const drawn = visible.filter(p => (fruitFilter === 'all' || p.fruitType === fruitFilter)
+            && (!me || p.submittedBy === me));
+        const summary = buildViewSummary(drawn, center, new Date().getMonth() + 1);
         window.dispatchEvent(new CustomEvent('ffa:pins-summary', {
             detail: {
-                pinCount: visible.length,
+                pinCount: drawn.length,
                 fruitTypes,
                 authenticated: isAuthenticated(),
                 summary,
@@ -864,35 +890,14 @@ class Map extends Component {
                                 // Handle cluster markers
                                 if (pin.cluster) {
                                     return (
-                                        <Marker 
-                                            position={[pin.coordinates.lat, pin.coordinates.lng]} 
+                                        <Marker
+                                            position={[pin.coordinates.lat, pin.coordinates.lng]}
                                             key={pin.pinId}
                                             icon={clusterIcon(pin.count)}
-                                        >
-                                            <Popup autoPan={false} eventHandlers={{ add: () => this.props.onPinOpen && this.props.onPinOpen() }}>
-                                                <div className="pin-popup">
-                                                    <div className="popup-header">
-                                                        <h3 className="fruit-title">{pin.count} fruit pins</h3>
-                                                    </div>
-                                                    <div className="popup-content">
-                                                        <p style={{fontSize: '0.9rem', color: '#666'}}>Zoom in to see individual pins</p>
-                                                        <div className="metadata-grid">
-                                                            {pin.pins.slice(0, 3).map((p, i) => (
-                                                                <div key={i} className="metadata-item">
-                                                                    <strong>{p.fruitTypeDisplay.toLowerCase()}</strong>
-                                                                    <span>{p.submittedBy}</span>
-                                                                </div>
-                                                            ))}
-                                                            {pin.pins.length > 3 && (
-                                                                <div className="metadata-item">
-                                                                    <span style={{fontStyle: 'italic'}}>...and {pin.pins.length - 3} more</span>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </Popup>
-                                        </Marker>
+                                            title={`${pin.count} finds here: tap to zoom in`}
+                                            keyboard={true}
+                                            eventHandlers={{ click: () => this.zoomToCluster(pin) }}
+                                        />
                                     );
                                 }
                                 

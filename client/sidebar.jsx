@@ -833,8 +833,8 @@ export default class Sidebar extends React.Component {
                             const on = new Set(r.months);
                             return (
                                 <div className="almanac__row" role="row" key={r.fruitType}>
-                                    <span role="rowheader" className="almanac__label">
-                                        {this.renderMark(r.family, 18)}{r.fruitType}
+                                    <span role="rowheader" className="almanac__label" title={r.fruitType}>
+                                        {this.renderMark(r.family, 18)}<span className="almanac__name">{r.fruitType}</span>
                                     </span>
                                     {letters.map((_, i) => (
                                         <span key={i} role="cell" className={`almanac__cell${on.has(i + 1) ? ' is-on' : ''}${i === monthIdx ? ' is-now' : ''}`} />
