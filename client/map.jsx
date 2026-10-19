@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, ZoomControl } from 'react-leaflet';
-import { getAuthHeader, isAuthenticated, getUser, isAdmin } from './utils/auth.js';
+import { getAuthHeader, isAuthenticated, getUser, isAdmin, handleUnauthorized } from './utils/auth.js';
 import { getCache, setCache, clearCache, clearCachesByPrefix, buildPinsCacheKey } from './utils/cache.js';
 import { clusterPins } from './utils/clustering.js';
 import { API_BASE } from './utils/config.js';
@@ -565,6 +565,12 @@ class Map extends Component {
                 }
             }
 
+            // Expired or invalid token: sign out (the sidebar reloads public pins)
+            if (handleUnauthorized(response)) {
+                this.setState({ loading: false });
+                return;
+            }
+
             // Handle auth errors
             if (response.status === 401 || response.status === 403) {
                 console.error('[PINS] Auth error', response.status, '- re-login required');
@@ -679,7 +685,10 @@ class Map extends Component {
                     timeoutMs: 10000,
                     retries: 2,
                 });
-                if (!response.ok) return;
+                if (!response.ok) {
+                    handleUnauthorized(response);
+                    return;
+                }
                 const result = await response.json();
                 if (result.success) {
                     setCache(cacheKey, result.pins);
@@ -711,6 +720,7 @@ class Map extends Component {
                 method: 'DELETE',
                 headers: getAuthHeader()
             });
+            if (handleUnauthorized(response)) return;
 
             const result = await response.json();
 
@@ -762,6 +772,7 @@ class Map extends Component {
                 },
                 body: JSON.stringify({ notes: this.state.editingNotes })
             });
+            if (handleUnauthorized(response)) return;
 
             const result = await response.json();
 

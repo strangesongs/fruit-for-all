@@ -61,3 +61,19 @@ export function isAdmin() {
   const user = getUser();
   return user && user.isAdmin === true;
 }
+
+// Fired on window when the server rejects the stored token (expired or invalid).
+export const SESSION_EXPIRED_EVENT = 'ffa:session-expired';
+
+// Call with any response from an authenticated request. On a 401 while a token is
+// stored, clears it and tells the app to switch back to guest mode. Returns true
+// when it did, so the caller can stop handling the response.
+// 403 is left alone: it means "not yours", not "signed out".
+export function handleUnauthorized(response) {
+  if (!response || response.status !== 401 || !getToken()) return false;
+  clearAuth();
+  if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+    window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
+  }
+  return true;
+}
