@@ -431,7 +431,16 @@ export default class Sidebar extends React.Component {
     handleSessionExpired = () => {
         if (!this.state.authenticated) return;
         this.handleLogout();
-        this.setState({ authError: 'your session expired. please sign in again.' });
+        // Open the sign-in form (in every layout) so the reason is visible
+        this.setState({
+            guestAddAttempted: true,
+            isLoginMode: true,
+            isForgotMode: false,
+            showAbout: false,
+            isCollapsed: false,
+            isMobileBarOpen: true,
+            authError: 'your session expired. please sign in again.',
+        });
     };
 
     handleLogout = () => {
