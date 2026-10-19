@@ -10,6 +10,7 @@ import controllers from './server/controllers/index.js';
 import { REGION, USERS_TABLE, PINS_TABLE } from './server/db/dynamo.js';
 import { createMemoryDedupStore } from './server/utils/confirmDedup.js';
 import { wrap } from './server/utils/wrap.js';
+import { RATE_LIMITS } from './server/utils/rateLimits.js';
 
 const app = express();
 const PORT = Number.parseInt(process.env.PORT || '8080', 10);
@@ -107,37 +108,21 @@ async function createAppWithRateLimiters() {
   const keyGen = (req) => ipKeyGenerator(req.ip ?? '127.0.0.1');
   const limiterDefaults = { standardHeaders: true, legacyHeaders: false, keyGenerator: keyGen };
 
-  const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5,
-    message: 'Too many authentication attempts, please try again later.',
-    store: createRedisRateLimitStore(redisClient, 'auth'),
-    ...limiterDefaults,
-  });
+  // The client parses every /api response as JSON, so limits answer in JSON too.
+  const limiter = (name) =>
+    rateLimit({
+      ...limiterDefaults,
+      ...RATE_LIMITS[name],
+      message: { success: false, message: RATE_LIMITS[name].message },
+      store: createRedisRateLimitStore(redisClient, name),
+    });
 
-  const pinLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 10,
-    message: 'Too many pins created, please slow down.',
-    store: createRedisRateLimitStore(redisClient, 'pin'),
-    ...limiterDefaults,
-  });
-
-  const confirmLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10,
-    message: 'Too many confirmations, please slow down.',
-    store: createRedisRateLimitStore(redisClient, 'confirm'),
-    ...limiterDefaults,
-  });
-
-  const publicPinsLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 200,
-    message: 'Too many public map requests, please slow down.',
-    store: createRedisRateLimitStore(redisClient, 'public'),
-    ...limiterDefaults,
-  });
+  const loginLimiter = limiter('login');
+  const registerLimiter = limiter('register');
+  const resetLimiter = limiter('reset');
+  const pinLimiter = limiter('pin');
+  const confirmLimiter = limiter('confirm');
+  const publicPinsLimiter = limiter('publicPins');
 
   // Serve static files from dist/ at the root FIRST
   app.use(
@@ -188,10 +173,10 @@ async function createAppWithRateLimiters() {
   app.get('/api/pins/public', publicPinsLimiter, wrap(controllers.getPublicPins));
 
   // Authentication endpoints
-  app.post('/api/auth/register', authLimiter, wrap(controllers.registerUser));
-  app.post('/api/auth/login', authLimiter, wrap(controllers.loginUser));
-  app.post('/api/auth/forgot-password', authLimiter, wrap(controllers.forgotPassword));
-  app.post('/api/auth/reset-password', authLimiter, wrap(controllers.resetPassword));
+  app.post('/api/auth/register', registerLimiter, wrap(controllers.registerUser));
+  app.post('/api/auth/login', loginLimiter, wrap(controllers.loginUser));
+  app.post('/api/auth/forgot-password', resetLimiter, wrap(controllers.forgotPassword));
+  app.post('/api/auth/reset-password', resetLimiter, wrap(controllers.resetPassword));
 
   // Protected API endpoints
   app.get('/api/auth/me', controllers.verifyToken, wrap(controllers.getCurrentUser));

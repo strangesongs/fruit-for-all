@@ -483,7 +483,11 @@ export default class Sidebar extends React.Component {
                 timeoutMs: 12000,
                 retries: 0, // POSTs are not idempotent: never auto-retry
             });
-            await res.json();
+            const result = await res.json();
+            if (res.status === 429) {
+                this.setState({ forgotError: result.message || 'too many requests. please try again later.', forgotLoading: false });
+                return;
+            }
             // Always show success (don't reveal if email exists)
             this.setState({ forgotSuccess: true, forgotLoading: false });
         } catch (err) {
