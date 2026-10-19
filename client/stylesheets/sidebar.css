@@ -27,16 +27,22 @@
 
 html, body {
     height: 100%;
+    width: 100%;
     margin: 0;
     padding: 0;
     font-family: var(--font);
     background: var(--surface);
+    /* A full-screen map app: the page itself never scrolls. If anything overflowed,
+       mobile browsers would widen the layout viewport and stretch every fixed
+       element (the bottom bar) past the screen edge, and the map would sit off-centre. */
+    overflow: hidden;
+    overscroll-behavior: none;
 }
 
 .main-layout {
     position: relative;
     height: var(--app-viewport-height);
-    width: 100vw;
+    width: 100%; /* not 100vw: that includes a desktop scrollbar's width */
     min-width: 240px;
     min-height: 320px;
     background: var(--surface);
@@ -1168,8 +1174,8 @@ button.close-btn:hover {
     /* Popups fit full width and full available height */
     .add-fruit-popup,
     .notes-popup {
-        width: calc(100vw - 16px);
-        max-width: calc(100vw - 16px);
+        width: calc(100% - 16px);
+        max-width: calc(100% - 16px);
         max-height: min(92dvh, calc(var(--app-viewport-height) - 16px));
         border-radius: 8px;
     }
