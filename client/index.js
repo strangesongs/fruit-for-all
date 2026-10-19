@@ -5,6 +5,7 @@ import React, { Component, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import Sidebar from './sidebar.jsx';
 import ResetPassword from './ResetPassword.jsx';
+import { RESET_PATH, takeResetToken } from './utils/resetToken.js';
 import { registerServiceWorker } from './registerServiceWorker.js';
 import { MOBILE_QUERY } from './utils/breakpoints.js';
 
@@ -128,10 +129,13 @@ class App extends Component {
 
 const root = createRoot(document.getElementById('root'));
 
-const params = new URLSearchParams(window.location.search);
-const resetToken = params.get('token');
-
-if (window.location.pathname === '/reset-password' && resetToken) {
+if (window.location.pathname === RESET_PATH) {
+  // Reads the token and strips it from the address bar before anything renders.
+  const resetToken = takeResetToken({
+    location: window.location,
+    history: window.history,
+    storage: window.sessionStorage,
+  });
   root.render(<ResetPassword token={resetToken} />);
 } else {
   root.render(<App />);

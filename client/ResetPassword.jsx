@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
 import { API_BASE } from './utils/config.js';
+import { forgetResetToken } from './utils/resetToken.js';
+
+const sessionStore = () => (typeof window !== 'undefined' ? window.sessionStorage : undefined);
 
 export default class ResetPassword extends Component {
   constructor(props) {
@@ -19,11 +22,11 @@ export default class ResetPassword extends Component {
     const { token } = this.props;
 
     if (!password || !confirmPassword) {
-      this.setState({ error: 'Please fill in both fields' });
+      this.setState({ error: 'please fill in both fields' });
       return;
     }
     if (password !== confirmPassword) {
-      this.setState({ error: 'Passwords do not match' });
+      this.setState({ error: 'passwords do not match' });
       return;
     }
 
@@ -38,98 +41,81 @@ export default class ResetPassword extends Component {
       const result = await res.json();
 
       if (result.success) {
+        forgetResetToken(sessionStore());
         this.setState({ success: true, loading: false });
       } else {
-        this.setState({ error: result.message || 'Reset failed', loading: false });
+        this.setState({ error: result.message || 'reset failed', loading: false });
       }
     } catch (err) {
-      this.setState({ error: 'Connection error. Please try again.', loading: false });
+      this.setState({ error: 'connection error. please try again.', loading: false });
     }
   };
 
-  render() {
+  renderBody() {
     const { password, confirmPassword, loading, error, success } = this.state;
 
-    return (
-      <div style={{
-        minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: '#f7f2e4', fontFamily: "'Vollkorn', serif"
-      }}>
-        <div style={{
-          background: '#d3d3d3', border: '2px solid #e0e0e0', borderRadius: '8px',
-          padding: '24px', width: '300px', boxShadow: '4px 4px 12px rgba(0,0,0,0.2)',
-          textAlign: 'center'
-        }}>
-<p style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#C23939', margin: '0 0 8px 0' }}>fruit for all</p>
-          <p style={{ fontSize: '0.9rem', margin: '0 0 20px 0' }}>set a new password</p>
+    if (!this.props.token) {
+      return (
+        <>
+          <p className="reset-message">
+            this reset link is missing its code, or it has already been used.
+            ask for a new one from “forgot password?” on the sign-in form.
+          </p>
+          <a className="auth-submit-btn reset-link-btn" href="/">return to map</a>
+        </>
+      );
+    }
 
-          {success ? (
-            <div>
-              <p style={{ color: '#2e7d32', marginBottom: '16px' }}>Password updated successfully!</p>
-              <button onClick={() => window.location.href = '/'} style={{
-                background: '#D84747', color: 'white', border: '2px outset #D84747',
-                padding: '8px 16px', fontFamily: "'Vollkorn', serif", cursor: 'pointer',
-                borderRadius: '4px', width: '90%'
-              }}>
-                return to map
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={this.handleSubmit}>
-              <div style={{ marginBottom: '8px' }}>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => this.setState({ password: e.target.value })}
-                  placeholder="new password"
-                  disabled={loading}
-                  style={{
-                    width: '100%', padding: '8px 10px', boxSizing: 'border-box',
-                    background: '#fafafa', border: '2px solid #e0e0e0', borderRadius: '4px',
-                    fontFamily: "'Vollkorn', serif", fontSize: '0.9rem', textAlign: 'center'
-                  }}
-                />
-                <p style={{ fontSize: '0.7rem', color: '#666', margin: '4px 0 0 0', fontStyle: 'italic' }}>
-                  min 10 chars, 1 number, 1 symbol
-                </p>
-              </div>
-              <div style={{ marginBottom: '12px' }}>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => this.setState({ confirmPassword: e.target.value })}
-                  placeholder="confirm new password"
-                  disabled={loading}
-                  style={{
-                    width: '100%', padding: '8px 10px', boxSizing: 'border-box',
-                    background: '#fafafa', border: '2px solid #e0e0e0', borderRadius: '4px',
-                    fontFamily: "'Vollkorn', serif", fontSize: '0.9rem', textAlign: 'center'
-                  }}
-                />
-              </div>
-              {error && <p style={{ color: '#d32f2f', fontSize: '0.8rem', margin: '0 0 8px 0' }}>{error}</p>}
-              <button
-                type="submit"
-                disabled={loading}
-                style={{
-                  background: '#D84747', color: 'white', border: '2px outset #D84747',
-                  padding: '8px 16px', fontFamily: "'Vollkorn', serif", cursor: 'pointer',
-                  borderRadius: '4px', width: '90%', opacity: loading ? 0.6 : 1,
-                  fontSize: '0.9rem', fontWeight: 'bold'
-                }}
-              >
-                {loading ? 'please wait...' : 'set password'}
-              </button>
-              <p style={{ marginTop: '12px', fontSize: '0.85rem' }}>
-                <span
-                  onClick={() => window.location.href = '/'}
-                  style={{ color: '#D84747', textDecoration: 'underline', cursor: 'pointer' }}
-                >
-                  back to map
-                </span>
-              </p>
-            </form>
-          )}
+    if (success) {
+      return (
+        <>
+          <p className="auth-success-msg reset-message">password updated. you can sign in with it now.</p>
+          <a className="auth-submit-btn reset-link-btn" href="/">return to map</a>
+        </>
+      );
+    }
+
+    return (
+      <form onSubmit={this.handleSubmit} className="reset-form">
+        <div className="form-group">
+          <input
+            type="password"
+            autoComplete="new-password"
+            value={password}
+            onChange={(e) => this.setState({ password: e.target.value })}
+            placeholder="new password"
+            aria-label="new password"
+            disabled={loading}
+          />
+          <p className="password-hint">min 10 chars, 1 number, 1 symbol</p>
+        </div>
+        <div className="form-group">
+          <input
+            type="password"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(e) => this.setState({ confirmPassword: e.target.value })}
+            placeholder="confirm new password"
+            aria-label="confirm new password"
+            disabled={loading}
+          />
+        </div>
+        {error && <p className="error-message" role="alert">{error}</p>}
+        <button type="submit" className="auth-submit-btn" disabled={loading}>
+          {loading ? 'please wait…' : 'set password'}
+        </button>
+        <a className="reset-back" href="/">back to map</a>
+      </form>
+    );
+  }
+
+  render() {
+    return (
+      <div className="reset-page">
+        <div className="reset-card auth-section">
+          <p className="reset-title">fruit for all</p>
+          <p className="reset-subtitle">set a new password</p>
+          {this.renderBody()}
         </div>
       </div>
     );
