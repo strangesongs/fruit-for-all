@@ -6,6 +6,7 @@ import { isDuplicateConfirm, markConfirmed } from '../utils/confirmDedup.js';
 import crypto from 'crypto';
 import { Resend } from 'resend';
 import { logEmailResult } from '../utils/email.js';
+import { createIpLocator, EMPTY_LOCATION } from '../utils/ipLocate.js';
 import { FRUIT_LIST } from '../../client/utils/fruitList.js';
 
 const FRUIT_SET = new Set(FRUIT_LIST);
@@ -83,23 +84,15 @@ export const createPin = async (req, res) => {
   }
 };
 
+const locateIp = createIpLocator();
+
 export const getIpLocation = async (req, res) => {
   try {
-    let ip = req.ip || '';
-    if (ip.startsWith('::ffff:')) ip = ip.slice(7);
-    if (!ip || ip === '127.0.0.1' || ip === '::1') {
-      return res.json({ lat: null, lng: null, city: null });
-    }
-    const response = await fetch(`https://ipapi.co/${encodeURIComponent(ip)}/json/`);
-    if (!response.ok) return res.json({ lat: null, lng: null, city: null });
-    const data = await response.json();
-    if (data.error || !data.latitude || !data.longitude) {
-      return res.json({ lat: null, lng: null, city: null });
-    }
-    res.setHeader('Cache-Control', 'private, max-age=3600');
-    return res.json({ lat: data.latitude, lng: data.longitude, city: data.city || null });
+    const location = await locateIp(req.ip);
+    if (location.lat !== null) res.setHeader('Cache-Control', 'private, max-age=3600');
+    return res.json(location);
   } catch (e) {
-    return res.json({ lat: null, lng: null, city: null });
+    return res.json(EMPTY_LOCATION);
   }
 };
 
