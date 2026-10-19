@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react';
 
-import SeasonStrip from './SeasonStrip.jsx';
-import { getSeasonForZone, isInSeason, getSeasonDisplay } from '../utils/fruitSeasons.js';
+import { isInSeason, getSeasonDisplay } from '../utils/fruitSeasons.js';
+import { familyOf, familyLabel, markSvg } from '../utils/fruitFamilies.js';
+import { seasonMonthsFor, seasonRangeText } from '../utils/pinSummary.js';
 import { API_BASE } from '../utils/config.js';
 
 function relativeTime(isoString) {
@@ -30,8 +31,10 @@ function freshnessText(confirmations) {
     new Date(a.timestamp) > new Date(b.timestamp) ? a : b,
   );
   const n = confirmations.length;
-  return `confirmed ${relativeTime(latest.timestamp)} by ${n} ${n === 1 ? 'neighbor' : 'neighbors'}`;
+  return `still good, says ${n} ${n === 1 ? 'neighbor' : 'neighbors'} · last ${relativeTime(latest.timestamp)}`;
 }
+
+const MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
 function storageKey(pinId) {
   return `loquat_confirmed_${pinId}`;
@@ -105,130 +108,125 @@ export default function PinPopup({
 
   if (!pin) return null;
 
-  // Season data: these helpers used to be called as window.* globals that were never
-  // defined, so every pin with a zone rendered as "out of season".
   const currentMonth = new Date().getMonth() + 1;
-  const seasonMonths = pin.zone && pin.fruitType ? getSeasonForZone(pin.fruitType, pin.zone) : null;
-  // No zone data for this fruit → null, so SeasonStrip shows the general season instead.
+  const fruit = pin.fruitTypeDisplay?.toLowerCase?.() || pin.fruitType?.toLowerCase?.() || 'find';
+  const family = familyOf(pin.fruitType);
+  const seasonMonths = seasonMonthsFor(pin.fruitType, pin.zone);
   const inSeason = seasonMonths ? isInSeason(pin.fruitType, pin.zone, currentMonth) : null;
-  // getSeasonDisplay returns "Unknown season" for fruit without data; let SeasonStrip say "season varies".
   const display = pin.fruitType ? getSeasonDisplay(pin.fruitType) : null;
-  const generalSeason = display && display !== 'Unknown season' ? display : null;
+  const generalSeason = display && display !== 'Unknown season' ? display.toLowerCase() : null;
+  const seasonText = seasonMonths
+    ? `${seasonRangeText(seasonMonths)} here${pin.zone ? ` (zone ${pin.zone})` : ''}`
+    : generalSeason || 'season varies';
+  const seasonSet = new Set(seasonMonths || []);
 
   const freshness = freshnessText(confirmations);
-  const showConfirmSection = !confirmed || freshness || confirmed;
+  const added = pin.createdAt
+    ? new Date(pin.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toLowerCase()
+    : null;
+  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${pin.coordinates.lat},${pin.coordinates.lng}`;
+  const canEdit = isMyPin || isAdmin;
 
   return (
-    <div className="pin-popup">
-      <div className="popup-header">
-        <h3 className="fruit-title">
-          {pin.fruitTypeDisplay?.toLowerCase?.() || pin.fruitType?.toLowerCase?.()}
-        </h3>
-        <SeasonStrip
-          inSeason={inSeason}
-          seasonMonths={seasonMonths}
-          generalSeason={generalSeason}
-          currentMonth={currentMonth}
-        />
+    <div className="pin-popup pin-entry">
+      <div className="entry-head">
+        <span className="entry-kind">{familyLabel(family)}</span>
+        <div className="entry-title">
+          <span className="entry-mark" aria-hidden="true"
+            dangerouslySetInnerHTML={{ __html: markSvg(family, { size: 30, strokeWidth: 1.5 }) }} />
+          <h3 className="fruit-title">{fruit}</h3>
+        </div>
       </div>
-      <div className="popup-content">
-        {(pin.notes || editingPinId === pin.pinId || isMyPin || isAdmin) && (
-          <div className="notes-section">
-            <strong>notes:</strong>
-            {editingPinId === pin.pinId ? (
-              <div className="edit-notes-box">
-                <textarea
-                  value={editingNotes}
-                  onChange={(e) => setEditingNotes(e.target.value)}
-                  className="notes-textarea"
-                />
-                <div className="edit-notes-actions">
-                  <button onClick={() => saveEditedNotes(pin.pinId)} className="save-notes-btn">
-                    save
-                  </button>
-                  <button onClick={cancelEditingNotes} className="cancel-notes-btn">
-                    cancel
-                  </button>
-                </div>
-              </div>
-            ) : pin.notes ? (
-              isMyPin || isAdmin ? (
-                <button
-                  type="button"
-                  className="pin-notes clickable-notes pin-notes-btn"
-                  onClick={() => startEditingNotes(pin.pinId, pin.notes)}
-                  title="Click to edit"
-                >
-                  {pin.notes}
-                </button>
-              ) : (
-                <p className="pin-notes">{pin.notes}</p>
-              )
-            ) : isMyPin || isAdmin ? (
+      <div className="entry-rules" aria-hidden="true"><span /><span /></div>
+
+      <div className="entry-notes">
+        {editingPinId === pin.pinId ? (
+          <div className="edit-notes-box">
+            <textarea
+              value={editingNotes}
+              onChange={(e) => setEditingNotes(e.target.value)}
+              className="notes-textarea"
+              aria-label="notes"
+              maxLength={1000}
+            />
+            <div className="edit-notes-actions">
+              <button onClick={() => saveEditedNotes(pin.pinId)} className="save-notes-btn">save</button>
+              <button onClick={cancelEditingNotes} className="cancel-notes-btn">cancel</button>
+            </div>
+          </div>
+        ) : pin.notes ? (
+          <>
+            {canEdit ? (
               <button
                 type="button"
-                className="pin-notes add-notes-prompt pin-notes-btn"
-                onClick={() => startEditingNotes(pin.pinId, '')}
+                className="pin-notes clickable-notes pin-notes-btn"
+                onClick={() => startEditingNotes(pin.pinId, pin.notes)}
+                title="edit notes"
               >
-                + add notes
+                {pin.notes}
               </button>
-            ) : null}
-          </div>
-        )}
-
-        {showConfirmSection && (
-          <div className="confirm-section">
-            {!confirmed && (
-              <button
-                type="button"
-                className="still-good-btn"
-                onClick={handleConfirm}
-              >
-                still good? →
-              </button>
+            ) : (
+              <p className="pin-notes">{pin.notes}</p>
             )}
-            {freshness && <p className="freshness-line">{freshness}</p>}
-            {confirmed && !freshness && (
-              <p className="freshness-line">you said still good</p>
-            )}
-            {confirmError && <p className="freshness-line confirm-error">{confirmError}</p>}
-          </div>
-        )}
-
-        <details className="metadata-details">
-          <summary className="metadata-summary">details</summary>
-          <div className="metadata-grid">
-            <div className="metadata-item">
-              <strong>location:</strong>
-              <span>
-                {pin.coordinates.lat.toFixed(4)}, {pin.coordinates.lng.toFixed(4)}
-              </span>
-            </div>
-            <div className="metadata-item">
-              <strong>added by:</strong>
-              <span>{pin.submittedBy || 'anonymous'}</span>
-            </div>
-            <div className="metadata-item">
-              <strong>date:</strong>
-              <span>
-                {new Date(pin.createdAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                })}
-              </span>
-            </div>
-          </div>
-        </details>
-
-        {(isMyPin || isAdmin) && (
-          <div className="pin-actions">
-            <button className="delete-pin-btn" onClick={() => deletePin(pin.pinId)}>
-              delete pin
-            </button>
-          </div>
+            {pin.submittedBy && <span className="entry-signature">—{pin.submittedBy}{added ? `, ${added.replace(/, \d{4}$/, '')}` : ''}</span>}
+          </>
+        ) : canEdit ? (
+          <button
+            type="button"
+            className="pin-notes add-notes-prompt pin-notes-btn"
+            onClick={() => startEditingNotes(pin.pinId, '')}
+          >
+            + add a note: what's there, how to reach it
+          </button>
+        ) : (
+          <p className="pin-notes pin-notes--empty">no notes yet.</p>
         )}
       </div>
+
+      <svg className="entry-meander" viewBox="0 0 300 6" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 3 C36 1 62 5 100 3 C142 1 178 5 220 3 C258 1 282 4 300 3" />
+      </svg>
+
+      <dl className="entry-facts">
+        <dt>season</dt>
+        <dd>
+          <span>
+            {seasonText}
+            {inSeason === true && <> · <strong className="entry-ripe">ripe now</strong></>}
+          </span>
+          {seasonMonths && (
+            <span className="entry-band" aria-hidden="true">
+              {MONTHS.map((m) => (
+                <i key={m} className={`${seasonSet.has(m) ? 'on' : ''}${m === currentMonth ? ' now' : ''}`} />
+              ))}
+            </span>
+          )}
+        </dd>
+        <dt>vouched</dt>
+        <dd>{freshness || (confirmed ? 'you said still good' : 'nobody has checked in yet')}</dd>
+        {added && (
+          <>
+            <dt>added</dt>
+            <dd>{added}</dd>
+          </>
+        )}
+      </dl>
+
+      <div className="entry-actions">
+        {!confirmed ? (
+          <button type="button" className="still-good-btn" onClick={handleConfirm}>still good →</button>
+        ) : (
+          <span className="entry-thanks">thanks for checking</span>
+        )}
+        <a className="entry-directions" href={directionsUrl} target="_blank" rel="noopener noreferrer">directions</a>
+      </div>
+      {confirmError && <p className="freshness-line confirm-error">{confirmError}</p>}
+
+      {canEdit && (
+        <div className="pin-actions">
+          <button className="delete-pin-btn" onClick={() => deletePin(pin.pinId)}>delete this find</button>
+        </div>
+      )}
     </div>
   );
 }

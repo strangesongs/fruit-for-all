@@ -40,8 +40,8 @@ server/utils/                 html.js (escapeHtml), profanity.js, confirmDedup.j
 client/index.js               entry: App wires Sidebar ↔ Map via refs; /reset-password renders ResetPassword
 client/sidebar.jsx            ALL non-map UI (~1.6k lines): auth forms, add-a-find modal, filters, three layouts
 client/map.jsx                Leaflet map, pin loading/merging, clustering, popups, locate-me, "nearest good bet"
-client/components/            PinPopup.jsx, SeasonStrip.jsx (real); AddFruitPopup/AuthForm/GuestBar/MapControls are EMPTY placeholders
-client/utils/                 auth, cache (localStorage TTL), network (fetchWithRetry), clustering, fruitList, fruitSeasons, …
+client/components/            PinPopup.jsx (catalog-entry popup), SeasonStrip.jsx (now unused); AddFruitPopup/AuthForm/GuestBar/MapControls are EMPTY placeholders
+client/utils/                 auth, cache, network (fetchWithRetry), clustering, fruitList, fruitSeasons, fruitFamilies (marks), pinSummary (ripeness, view summary), zoneFallback (shared with server), breakpoints, …
 client/stylesheets/           sidebar.css (tokens + every non-map layout), map.css (Leaflet overrides, controls, popups)
 client/sw.js                  service worker (production only): network-first navigations, cache-first static assets
 ```
@@ -63,15 +63,18 @@ Rules:
 - Never let a fix for one mode leak into another. Tiny-mode CSS lives under `@media (max-width: 360px)`; standard-mobile selectors are `.guest-bar*` / `.auth-bar*`.
 - The `@media (max-width: 768px)` and `480px` blocks in sidebar.css mostly target `.sidebar`, which phones never render, but the global `button:not(...)` rule inside them **does** shrink popup and pin buttons on phones.
 - The standard-mobile bar is `position: fixed` and sits above the map. Sidebar publishes its live height as the CSS variable `--bottom-chrome` (ResizeObserver via `setBottomBarRef`). Anything near the bottom of the map must use it: `.leaflet-bottom`, popup max-height and `PanToPin` already do. Locate-me stacks under zoom (top-right) at 361–768, as on Jelly.
-- The bar has two states, toggled by the grab handle (`renderBarHandle`): guests get the "right now nearby" card, filter and links when open (open by default on a first visit only, key `ffa_guest_bar_seen`); signed-in users get my pins, filter and sign out. `Sidebar.collapse()` (called when a pin opens) folds both.
+- The bar has two states, toggled by the grab handle (`renderBarHandle`). Collapsed: month + "N ripe of M finds in view" + add a find (`renderBarHeader`). Open: tabs **ripe now / almanac / nearest** (`renderBarPanel`), then filter + links (guest) or my pins + filter + sign out (signed in). Open by default on a first visit only (key `ffa_guest_bar_seen`). `Sidebar.collapse()` (called when a pin opens) folds both.
+- The bar's data comes from the map: `publishPinSummary` sends `detail.summary` = `buildViewSummary()` (client/utils/pinSummary.js, pure + tested) on every viewport change. Bar entries call `ffa:fly-to` to pan to a find; the map's empty-area card fires `ffa:add-find`.
 - iOS Safari zooms the page when a focused input's font-size is < 16px. Keep form inputs at ≥ 16px on phones.
 - Test at **240×427, 375×667, 393×852 and ≥1024 wide** (the CONTRIBUTING doc's 360/480 widths do not hit the 361–768 tree well).
 
 ## Design system (non-negotiable aesthetic)
 
 "Earthy, crunchy, Whole Earth Catalog."
-- Tokens live in `:root` in sidebar.css: `--red #7a3c20`, `--red-dark`, `--red-deep`, `--surface #f7f2e4`, `--card #f2ece0`, `--border #c8b888`, `--text #2b1a0e`, `--text-muted #8a7050`, `--olive #5c6b2e`, `--del`. Use the tokens, not new hex values (map.css and ResetPassword.jsx still hardcode some; that's legacy).
-- Vollkorn serif everywhere, loaded **only** via `<link>` in `client/map-index.html` (never CSS `@import`).
+- Tokens live in `:root` in sidebar.css: `--red #7a3c20`, `--red-dark`, `--red-deep`, `--surface #f7f2e4`, `--card #f2ece0`, `--border #c8b888`, `--text #2b1a0e`, `--text-muted #6e5838` (darkened Oct 2026 for contrast), `--olive #5c6b2e`, `--del`. Use the tokens, not new hex values (map.css and ResetPassword.jsx still hardcode some; that's legacy).
+- Type: **Vollkorn** (`--font`) for names, headings and italic notes; **Hanken Grotesk** (`--font-sans`) for labels, counts and access/season lines — the catalog set reviews against Univers. Both load **only** via the `<link>` in `client/map-index.html` (never CSS `@import`).
+- Catalog vocabulary: thick-over-thin rules for section heads, a thin meandering rule between entries, thick dotted boxes for editorial asides, italic notes signed `—name`. Physical-object skeuomorphism (torn paper, tags, ovals around images) was explored and rejected.
+- Pins: one hand-cut mark per *kind of find* (`client/utils/fruitFamilies.js`: tree, citrus, tropical, berries, nuts, mushrooms, herbs, greens + `seed` fallback). Every FRUIT_LIST item must map to a family (a test enforces it). Ring = state: olive ripe, terracotta yours, small/faded not in season; ink-stamp clusters.
 - Lowercase copy and labels. Restrained shadows (≤ `5px 6px 10px rgba(0,0,0,.22)`), tactile outset/inset borders, no slick gradients.
 - Map controls must match the card style (same border, background and radius as the sidebar/bar).
 - A huge global `button:not(.a):not(.b)…` rule in sidebar.css gives every button the red style. A new button class that should look different must be added to **every** copy of that selector (base, :hover, :active, and the 768/360 media blocks). They have already drifted, so check all of them.
@@ -98,6 +101,7 @@ Never print or paste `.env` values. AWS creds come from env or `~/.aws`.
 ## Known issues / open review items
 
 See the improvement review (Oct 2026). Still open:
+- **Decided Oct 2026: move off DynamoDB to Postgres (+ PostGIS on Railway)** for location queries, real constraints (unique email, case-insensitive usernames) and reporting. Until then, local `npm run dev` writes to the production tables.
 - Email lookups and password reset use an unpaginated `Scan`, which breaks past ~1 MB of users. Bounded pin queries read the whole `status-index` and filter in memory.
 - `sidebar.jsx` still hand-maintains three copies of the auth forms (desktop, guest bar, Jelly panel); extracting a shared `AuthForm` is the next refactor.
 

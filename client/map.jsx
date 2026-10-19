@@ -9,48 +9,56 @@ import { containsProfanity } from './utils/profanity.js';
 import { fetchWithRetry } from './utils/network.js';
 import { isOlderThanMonths } from './utils/timeAgo.js';
 import { TINY_MAX, getBottomChromePx } from './utils/breakpoints.js';
+import { familyOf, markSvg } from './utils/fruitFamilies.js';
+import { ripenessOf, buildViewSummary, lookForHints, MONTH_NAMES } from './utils/pinSummary.js';
+import { detectZoneFallback } from './utils/zoneFallback.js';
 import L from 'leaflet';
 
 import './stylesheets/map.css';
 import 'leaflet/dist/leaflet.css';
 
-// Marker icons — SVG teardrops matching the earthy palette
-const makePinIcon = (fill, stroke, opacity = 1) => new L.DivIcon({
-    className: '',
-    html: `<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" style="filter:drop-shadow(1px 2px 3px rgba(0,0,0,0.35));opacity:${opacity}"><path fill="${fill}" stroke="${stroke}" stroke-width="0.8" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/></svg>`,
-    iconSize: [34, 34],
-    iconAnchor: [17, 34],
-    popupAnchor: [0, -36],
-});
+// Marker icons — one hand-cut mark per kind of find (utils/fruitFamilies.js) in a
+// parchment disk. The ring carries state: olive = ripe now, terracotta = your find,
+// quiet/smaller = not in season. Icons are cached so Leaflet doesn't rebuild DOM
+// on every render.
+const _pinIconCache = new globalThis.Map();
+function pinIcon(family, state, stale) {
+    const key = `${family}|${state}|${stale ? 1 : 0}`;
+    let icon = _pinIconCache.get(key);
+    if (!icon) {
+        const quiet = state === 'quiet';
+        const ink = quiet ? '#5a4630' : '#2b1a0e';
+        icon = new L.DivIcon({
+            className: '',
+            html: `<div class="ffa-pin ffa-pin--${state}${stale ? ' ffa-pin--stale' : ''}">`
+                + `<span class="ffa-pin__disk">${markSvg(family, { size: quiet ? 18 : 20, color: ink })}</span>`
+                + `<span class="ffa-pin__tail"></span></div>`,
+            iconSize: [38, 46],
+            iconAnchor: [19, 46],
+            popupAnchor: [0, -46],
+        });
+        _pinIconCache.set(key, icon);
+    }
+    return icon;
+}
 
-const defaultIcon      = makePinIcon('#7a3c20', '#3a1008');
-const dimmedDefaultIcon = makePinIcon('#7a3c20', '#3a1008', 0.55);
-const myPinIcon        = makePinIcon('#5c6b2e', '#2a3a14');
-const dimmedMyPinIcon  = makePinIcon('#5c6b2e', '#2a3a14', 0.55);
-
-const makeClusterIcon = (count) => new L.DivIcon({
-    className: '',
-    html: `<div style="
-        width: 32px;
-        height: 32px;
-        background: #7a3c20;
-        border-radius: 50%;
-        border: 2px solid rgba(0,0,0,0.25);
-        box-shadow: 1px 2px 4px rgba(0,0,0,0.3);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 11px;
-        font-family: 'Vollkorn', serif;
-        font-weight: bold;
-    ">${count}</div>`,
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-    popupAnchor: [0, -18],
-});
-
-const clusterIcon = makeClusterIcon('+');
+// Clusters are an ink stamp with the count.
+const _clusterIconCache = new globalThis.Map();
+function clusterIcon(count) {
+    const label = count > 99 ? '99+' : String(count || '+');
+    let icon = _clusterIconCache.get(label);
+    if (!icon) {
+        icon = new L.DivIcon({
+            className: '',
+            html: `<div class="ffa-cluster">${label}</div>`,
+            iconSize: [38, 38],
+            iconAnchor: [19, 19],
+            popupAnchor: [0, -20],
+        });
+        _clusterIconCache.set(label, icon);
+    }
+    return icon;
+}
 
 // Merge two pin arrays by pinId, keeping existing pins and adding new ones
 function mergePins(existing, incoming) {
@@ -172,13 +180,9 @@ function ClosePopupsOnCommand({ signal }) {
     return null;
 }
 
-const MONTH_LETTERS = ['J','F','M','A','M','J','J','A','S','O','N','D'];
-const MONTH_NAMES   = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-// ...existing code...
 
 // Import extracted components
-import SeasonStrip from './components/SeasonStrip.jsx';
 import PinPopup from './components/PinPopup.jsx';
 import MapControls from './components/MapControls.jsx';
 
@@ -254,6 +258,7 @@ class Map extends Component {
     componentDidMount() {
         this.requestIpLocation();
         window.addEventListener('ffa:nearest-good-bet', this.handleNearestGoodBet);
+        window.addEventListener('ffa:fly-to', this.handleFlyTo);
     }
 
     componentWillUnmount() {
@@ -262,7 +267,23 @@ class Map extends Component {
         this.cancelRequest('initialPins');
         this.cancelRequest('viewportPins');
         window.removeEventListener('ffa:nearest-good-bet', this.handleNearestGoodBet);
+        window.removeEventListener('ffa:fly-to', this.handleFlyTo);
     }
+
+    // Bar entries ("ripe now", "nearest") pan to a find and open its popup.
+    handleFlyTo = (event) => {
+        const c = event?.detail;
+        if (!c || !Number.isFinite(c.lat) || !Number.isFinite(c.lng)) return;
+        // Clusters break up at zoom 14; get close enough for the pin's own marker.
+        const map = this._leafletMap;
+        if (map && map.getZoom() < 15) map.setZoom(15, { animate: false });
+        this.setState(prev => ({
+            pinFlyTarget: { lat: c.lat, lng: c.lng },
+            pinFlySeq: prev.pinFlySeq + 1,
+            spotlightPin: { lat: c.lat, lng: c.lng },
+            spotlightSeq: prev.spotlightSeq + 1,
+        }));
+    };
 
     // Squared approximate distance — good enough for city-scale comparisons
     _dist2 = (a, b) => {
@@ -361,11 +382,16 @@ class Map extends Component {
             })
         )].sort();
 
+        const lc = this._leafletMap ? this._leafletMap.getCenter() : null;
+        const center = lc ? { lat: lc.lat, lng: lc.lng }
+            : b ? { lat: (b.minLat + b.maxLat) / 2, lng: (b.minLng + b.maxLng) / 2 } : this.state.userLocation;
+        const summary = buildViewSummary(visible, center, new Date().getMonth() + 1);
         window.dispatchEvent(new CustomEvent('ffa:pins-summary', {
             detail: {
                 pinCount: visible.length,
                 fruitTypes,
                 authenticated: isAuthenticated(),
+                summary,
             },
         }));
     };
@@ -762,6 +788,17 @@ class Map extends Component {
         // Apply clustering based on zoom level
         const bounds = { minLat: -90, maxLat: 90, minLng: -180, maxLng: 180 };
         const displayPins = clusterPins(filteredPins, bounds, zoom);
+        const month = new Date().getMonth() + 1;
+        const vb = this._viewBounds;
+        const inViewCount = vb ? filteredPins.filter(p => p.coordinates
+            && p.coordinates.lat >= vb.minLat && p.coordinates.lat <= vb.maxLat
+            && p.coordinates.lng >= vb.minLng && p.coordinates.lng <= vb.maxLng).length : filteredPins.length;
+        const showEmpty = !loading && !error && !showMyPinsOnly && vb && inViewCount === 0 && fruitFilter === 'all';
+        let emptyHints = [];
+        if (showEmpty) {
+            const c = this._leafletMap ? this._leafletMap.getCenter() : null;
+            if (c) emptyHints = lookForHints(detectZoneFallback(c.lat, c.lng), month);
+        }
 
         return (
             <div className='map-area'>
@@ -795,6 +832,27 @@ class Map extends Component {
                                 {error}
                             </div>
                         )}
+                        {showEmpty && (
+                            <div className="map-empty-card" role="status">
+                                {/* seed mark */}
+                                <span className="map-empty-card__mark" aria-hidden="true"
+                                    dangerouslySetInnerHTML={{ __html: markSvg('seed', { size: 28, color: '#7a3c20', strokeWidth: 1.5 }) }} />
+                                <p className="map-empty-card__title">nothing logged here yet.</p>
+                                {emptyHints.length > 0 && (
+                                    <p className="map-empty-card__hint">
+                                        in {MONTH_NAMES[month - 1]}, look up at parkway trees and alley fences: {emptyHints.join(' and ')} {emptyHints.length > 1 ? 'are' : 'is'} coming ripe around here.
+                                    </p>
+                                )}
+                                <button type="button" className="map-empty-card__primary"
+                                    onClick={() => window.dispatchEvent(new CustomEvent('ffa:add-find'))}>
+                                    add the first find
+                                </button>
+                                <button type="button" className="map-empty-card__link"
+                                    onClick={() => this._leafletMap && this._leafletMap.zoomOut(2)}>
+                                    zoom out to look nearby →
+                                </button>
+                            </div>
+                        )}
                         {showMyPinsOnly && !loading && filteredPins.length === 0 && (
                             <div className="my-pins-empty">
                                 <strong>no pins yet</strong>
@@ -809,7 +867,7 @@ class Map extends Component {
                                         <Marker 
                                             position={[pin.coordinates.lat, pin.coordinates.lng]} 
                                             key={pin.pinId}
-                                            icon={makeClusterIcon(pin.count || '+')}
+                                            icon={clusterIcon(pin.count)}
                                         >
                                             <Popup autoPan={false} eventHandlers={{ add: () => this.props.onPinOpen && this.props.onPinOpen() }}>
                                                 <div className="pin-popup">
@@ -840,10 +898,13 @@ class Map extends Component {
                                 
                                 // Regular pin markers
                                 const isMyPin = currentUsername && pin.submittedBy === currentUsername;
-                                const isOld = isOlderThanMonths(pin.createdAt, 6);
-                                const markerIcon = isMyPin
-                                    ? (isOld ? dimmedMyPinIcon : myPinIcon)
-                                    : (isOld ? dimmedDefaultIcon : defaultIcon);
+                                // Stale = no sign of life in 6 months (created or last "still good").
+                                const lastSeen = (pin.confirmations || []).reduce(
+                                    (t, c) => (c.timestamp && c.timestamp > t ? c.timestamp : t), pin.createdAt || '');
+                                const isStale = isOlderThanMonths(lastSeen, 6);
+                                const ripeness = ripenessOf(pin, month);
+                                const state = isMyPin ? 'mine' : (ripeness === 'quiet' ? 'quiet' : 'ripe');
+                                const markerIcon = pinIcon(familyOf(pin.fruitType), state, isStale);
                                 return (
                                     <Marker 
                                         position={[pin.coordinates.lat, pin.coordinates.lng]} 

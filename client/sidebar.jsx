@@ -6,7 +6,8 @@ import { FRUIT_LIST } from './utils/fruitList.js';
 import { API_BASE } from './utils/config.js';
 import { containsProfanity } from './utils/profanity.js';
 import { getTinyScreenGuestAuthState } from './utils/sidebarState.js';
-import { buildViewTickerText } from './utils/viewTicker.js';
+import { familyLabel, markSvg } from './utils/fruitFamilies.js';
+import { formatMiles, MONTH_NAMES } from './utils/pinSummary.js';
 import { fetchWithRetry } from './utils/network.js';
 
 import './stylesheets/sidebar.css';
@@ -83,7 +84,10 @@ export default class Sidebar extends React.Component {
 
             // Guest bar live subtext
             pinCount: 0,
-            subtextIndex: 0,
+            // What the map says is in view (utils/pinSummary.js buildViewSummary)
+            summary: null,
+            // Standard-mobile bar tab: 'ripe' | 'almanac' | 'nearest'
+            barTab: 'ripe',
         }
         this.addFruitPopupRef = React.createRef();
         this.addFruitPopupTitleId = 'add-fruit-popup-title';
@@ -142,22 +146,14 @@ export default class Sidebar extends React.Component {
         }
         window.addEventListener('ffa:pins-summary', this.handlePinSummaryEvent);
         try { localStorage.setItem(GUEST_BAR_SEEN_KEY, '1'); } catch { /* private mode */ }
-        this._subtextInterval = setInterval(() => {
-            this.setState(s => {
-                // The rotating line only shows in the standard-mobile guest bar.
-                if (!s.isStandardMobile || s.authenticated || s.guestAddAttempted) return null;
-                // 7 phrases: season, pin count, 5 static
-                const max = 7;
-                return { subtextIndex: (s.subtextIndex + 1) % max };
-            });
-        }, 4000);
+        window.addEventListener('ffa:add-find', this.handleAddFindRequest);
         if (this.state.showAddFruitPopup) {
             this.enableAddFruitPopupA11ySideEffects();
         }
     }
 
     componentWillUnmount() {
-        clearInterval(this._subtextInterval);
+        window.removeEventListener('ffa:add-find', this.handleAddFindRequest);
         this.setBottomBarRef(null);
         window.removeEventListener('ffa:pins-summary', this.handlePinSummaryEvent);
         this.abortAllRequests();
@@ -219,7 +215,19 @@ export default class Sidebar extends React.Component {
         this.setState({
             availableFruitTypes: Array.isArray(detail.fruitTypes) ? detail.fruitTypes : [],
             pinCount: Number.isFinite(detail.pinCount) ? detail.pinCount : 0,
+            summary: detail.summary || null,
         });
+    };
+
+    // "add the first find" on the map's empty-area card
+    handleAddFindRequest = () => {
+        if (!this.state.showAddFruitPopup) this.toggleAddFruitPopup();
+    };
+
+    flyTo = (coords) => {
+        if (!coords) return;
+        this.setState({ guestBarOpen: false, isMobileBarOpen: false });
+        window.dispatchEvent(new CustomEvent('ffa:fly-to', { detail: coords }));
     };
 
     componentDidUpdate(prevProps, prevState) {
@@ -730,6 +738,175 @@ export default class Sidebar extends React.Component {
         this.setState(prev => ({ guestBarOpen: !prev.guestBarOpen }));
     };
 
+    // ── Standard-mobile bar: month header + "ripe now / almanac / nearest" tabs ──
+
+    renderMark(family, size = 22) {
+        return (
+            <span
+                className="bar-mark"
+                aria-hidden="true"
+                dangerouslySetInnerHTML={{ __html: markSvg(family, { size, strokeWidth: 1.6 }) }}
+            />
+        );
+    }
+
+    renderBarHeader(addFind) {
+        const { summary, pinCount } = this.state;
+        const month = MONTH_NAMES[new Date().getMonth()];
+        const ripe = summary ? summary.ripeCount : 0;
+        const sub = pinCount > 0
+            ? `${ripe} ripe of ${pinCount} ${pinCount === 1 ? 'find' : 'finds'} in view`
+            : 'nothing logged in view yet';
+        return (
+            <div className="guest-bar-body">
+                <img src={loquatIcon} className="guest-bar-icon" alt="fruit for all" />
+                <div className="guest-bar-text">
+                    <p className="bar-month">{month}</p>
+                    <p className="bar-sub">{sub}</p>
+                </div>
+                <button className="auth-submit-btn guest-bar-btn" onClick={addFind}>add a find</button>
+            </div>
+        );
+    }
+
+    renderRipeTab() {
+        const { summary, pinCount, authenticated } = this.state;
+        const ripe = summary ? summary.ripe : [];
+        return (
+            <div className="bar-tabpanel" role="tabpanel" id="bar-panel-ripe" aria-labelledby="bar-tab-ripe">
+                {ripe.length > 0 ? (
+                    <ul className="ripe-list">
+                        {ripe.slice(0, 3).map(g => (
+                            <li key={g.fruitType}>
+                                <button type="button" className="ripe-entry" onClick={() => this.flyTo(g.nearest)}>
+                                    {this.renderMark(g.family, 26)}
+                                    <span className="ripe-entry__body">
+                                        <span className="ripe-entry__top">
+                                            <span className="ripe-entry__name">{g.fruitType}</span>
+                                            <span className="ripe-entry__meta">
+                                                {g.count} {g.count === 1 ? 'find' : 'finds'} · {formatMiles(g.distanceMi)}
+                                            </span>
+                                        </span>
+                                        {g.note && (
+                                            <span className="ripe-entry__note">
+                                                {g.note}{authenticated && g.noteBy ? ` —${g.noteBy}` : ''}
+                                            </span>
+                                        )}
+                                    </span>
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="bar-empty">nothing ripe in this view right now. try the almanac tab for what's coming.</p>
+                )}
+                {pinCount > 0 && (
+                    <p className="bar-note">
+                        {pinCount} {pinCount === 1 ? 'find' : 'finds'} in this view, {summary ? summary.ripeCount : 0} ripe.{' '}
+                        <button type="button" className="secondary-link bar-note__link" onClick={this.handleNearestGoodBet}>
+                            nearest good bet →
+                        </button>
+                    </p>
+                )}
+            </div>
+        );
+    }
+
+    renderAlmanacTab() {
+        const { summary } = this.state;
+        const rows = summary ? summary.almanac : [];
+        const monthIdx = new Date().getMonth();
+        const letters = ['j', 'f', 'm', 'a', 'm', 'j', 'j', 'a', 's', 'o', 'n', 'd'];
+        return (
+            <div className="bar-tabpanel" role="tabpanel" id="bar-panel-almanac" aria-labelledby="bar-tab-almanac">
+                {rows.length > 0 ? (
+                    <div className="almanac" role="table" aria-label="when finds in view are in season">
+                        <div className="almanac__row almanac__row--head" role="row">
+                            <span role="columnheader" className="almanac__label">
+                                {summary.zone ? `zone ${summary.zone}` : ''}
+                            </span>
+                            {letters.map((l, i) => (
+                                <span key={i} role="columnheader" className={`almanac__month${i === monthIdx ? ' is-now' : ''}`}>{l}</span>
+                            ))}
+                        </div>
+                        {rows.map(r => {
+                            const on = new Set(r.months);
+                            return (
+                                <div className="almanac__row" role="row" key={r.fruitType}>
+                                    <span role="rowheader" className="almanac__label">
+                                        {this.renderMark(r.family, 18)}{r.fruitType}
+                                    </span>
+                                    {letters.map((_, i) => (
+                                        <span key={i} role="cell" className={`almanac__cell${on.has(i + 1) ? ' is-on' : ''}${i === monthIdx ? ' is-now' : ''}`} />
+                                    ))}
+                                </div>
+                            );
+                        })}
+                        <p className="almanac__legend"><i aria-hidden="true" /> in season · from finds in this view</p>
+                    </div>
+                ) : (
+                    <p className="bar-empty">pan to an area with finds to see its almanac.</p>
+                )}
+            </div>
+        );
+    }
+
+    renderNearestTab() {
+        const { summary, authenticated } = this.state;
+        const n = summary ? summary.nearest : null;
+        return (
+            <div className="bar-tabpanel" role="tabpanel" id="bar-panel-nearest" aria-labelledby="bar-tab-nearest">
+                {n ? (
+                    <div className="nearest">
+                        <div className="nearest__head">
+                            {this.renderMark(n.family, 56)}
+                            <div className="nearest__text">
+                                <span className="nearest__name">{n.fruitType}</span>
+                                <span className="nearest__meta">
+                                    {familyLabel(n.family)} · {n.count} {n.count === 1 ? 'find' : 'finds'}, {formatMiles(n.distanceMi)} from the map center
+                                </span>
+                            </div>
+                        </div>
+                        {n.note && (
+                            <p className="nearest__note">{n.note}{authenticated && n.noteBy ? ` —${n.noteBy}` : ''}</p>
+                        )}
+                        <button type="button" className="guest-bar-bet-btn" onClick={() => this.flyTo(n.nearest)}>
+                            take me there →
+                        </button>
+                    </div>
+                ) : (
+                    <p className="bar-empty">nothing ripe in this view yet. zoom out, or add the first find.</p>
+                )}
+            </div>
+        );
+    }
+
+    renderBarPanel() {
+        const { barTab } = this.state;
+        const tabs = [['ripe', 'ripe now'], ['almanac', 'almanac'], ['nearest', 'nearest']];
+        return (
+            <div className="bar-panel">
+                <div className="bar-tabs" role="tablist" aria-label="nearby finds">
+                    {tabs.map(([id, label]) => (
+                        <button
+                            key={id}
+                            type="button"
+                            role="tab"
+                            id={`bar-tab-${id}`}
+                            aria-selected={barTab === id}
+                            aria-controls={`bar-panel-${id}`}
+                            className="bar-tab"
+                            onClick={() => this.setState({ barTab: id })}
+                        >{label}</button>
+                    ))}
+                </div>
+                {barTab === 'ripe' && this.renderRipeTab()}
+                {barTab === 'almanac' && this.renderAlmanacTab()}
+                {barTab === 'nearest' && this.renderNearestTab()}
+            </div>
+        );
+    }
+
     renderAuthenticatedBar() {
         const { isMobileBarOpen, myPinsActive } = this.state;
         const currentUser = getUser();
@@ -740,29 +917,16 @@ export default class Sidebar extends React.Component {
                 ref={this.setBottomBarRef}
                 className={`guest-bar auth-bar${isMobileBarOpen ? ' guest-bar--expanded' : ''}`}
             >
-                {this.renderBarHandle(isMobileBarOpen, this.toggleMobileBar, 'menu')}
-
-                {/* Always visible: icon + welcome + add-a-find */}
-                <div className="guest-bar-body">
-                    <img src={loquatIcon} className="guest-bar-icon" alt="" />
-                    <div className="guest-bar-text">
-                        <p className="guest-bar-title">fruit for all</p>
-                        {currentUser && (
-                            <p className="guest-bar-sub">welcome, {currentUser.userName}</p>
-                        )}
-                    </div>
-                    <button
-                        className="auth-submit-btn guest-bar-btn"
-                        onClick={() => {
-                            this.setState({ isMobileBarOpen: false });
-                            this.toggleAddFruitPopup();
-                        }}
-                    >add a find</button>
-                </div>
+                {this.renderBarHandle(isMobileBarOpen, this.toggleMobileBar, 'nearby finds and menu')}
+                {this.renderBarHeader(() => {
+                    this.setState({ isMobileBarOpen: false });
+                    this.toggleAddFruitPopup();
+                })}
 
                 {isMobileBarOpen && (
                     <div className="auth-bar-expanded-content">
-                        <div className="auth-bar-actions">
+                        {this.renderBarPanel()}
+                        <div className="guest-bar-actions-row">
                             <button
                                 type="button"
                                 className={`auth-bar-action-btn${myPinsActive ? ' btn-active' : ''}`}
@@ -773,13 +937,11 @@ export default class Sidebar extends React.Component {
                                     if (this.props.onToggleMyPins) this.props.onToggleMyPins();
                                 }}
                             >{myPinsActive ? 'showing my pins' : 'my pins'}</button>
-                        </div>
-
-                        <div className="auth-bar-filter">
                             {this.renderFruitFilter('fruit-filter-mobile')}
                         </div>
-
                         <p className="guest-bar-links-row">
+                            {currentUser && <span className="bar-signed-in">signed in as {currentUser.userName}</span>}
+                            <span aria-hidden="true"> · </span>
                             <button type="button" className="secondary-link" onClick={this.handleLogout}>sign out</button>
                         </p>
                     </div>
@@ -794,20 +956,8 @@ export default class Sidebar extends React.Component {
 
         const { guestAddAttempted, isLoginMode, authUserName, authPassword, authEmail,
             authLoading, authError, isForgotMode, forgotEmail, forgotLoading, forgotError, forgotSuccess,
-            pinCount, subtextIndex, showAbout, availableFruitTypes, guestBarOpen } = this.state;
-        const inSeasonFruits = this.getInSeasonFruits();
-        const seasonLabel = this.getSeasonLabel();
-        // Build the rotation array
-        const subtextPhrases = [
-            seasonLabel,
-            pinCount > 0 ? `${pinCount} free finds in view` : '',
-            'the neighborhood’s edible map',
-            'spot something? add a pin',
-            'the map gets richer every pin',
-            'nearby finds for anyone to gather',
-            'add a pin, feed your neighbors',
-        ].filter(Boolean);
-        const subtextContent = subtextPhrases[subtextIndex % subtextPhrases.length];
+            showAbout, guestBarOpen } = this.state;
+        const startSignIn = () => this.setState({ guestAddAttempted: true, isLoginMode: true, showAbout: false, authError: '' });
 
         return (
             <>
@@ -819,63 +969,23 @@ export default class Sidebar extends React.Component {
                 {!guestAddAttempted ? (
                     <>
                     {this.renderBarHandle(guestBarOpen, this.toggleGuestBar, 'nearby finds')}
-                    <div className="guest-bar-body">
-                        <img src={loquatIcon} className="guest-bar-icon" alt="" />
-                        <div className="guest-bar-text">
-                            <p className="guest-bar-title">fruit for all</p>
-                            <p className="guest-bar-sub" key={subtextIndex}>{subtextContent}</p>
-                        </div>
-                        <button
-                            className="auth-submit-btn guest-bar-btn"
-                            onClick={() => this.setState({ guestAddAttempted: true, isLoginMode: true, showAbout: false, authError: '' })}
-                        >add a find</button>
-                    </div>
+                    {this.renderBarHeader(startSignIn)}
                     {guestBarOpen && (
-                        <>
                         <div className="guest-bar-landing">
-                            <span className="guest-bar-landing-kicker">right now nearby</span>
-                            {pinCount > 0 && (
-                                <p
-                                    className="guest-bar-view-ticker"
-                                    key={`${pinCount}|${availableFruitTypes.join(',')}`}
-                                >
-                                    <span className="guest-bar-view-label">in this view</span>
-                                    {' '}
-                                    {buildViewTickerText(pinCount, availableFruitTypes)}
-                                </p>
-                            )}
-                            {inSeasonFruits.length > 0 && (
-                                <div className="guest-bar-chips">
-                                    {inSeasonFruits.map(fruit => (
-                                        <span key={fruit.name} className="guest-bar-chip">
-                                            <i className={`guest-bar-chip-dot guest-bar-chip-dot--${fruit.status === 'peak' || fruit.status === 'steady' ? 'green' : 'amber'}`} aria-hidden="true" />
-                                            {fruit.name} {fruit.status}
-                                        </span>
-                                    ))}
-                                </div>
-                            )}
-                            <div className="guest-bar-actions-row">
-                                <button type="button" className="guest-bar-bet-btn" onClick={this.handleNearestGoodBet}>
-                                    nearest good bet →
-                                </button>
+                            {this.renderBarPanel()}
+                            <div className="guest-bar-actions-row guest-bar-actions-row--filter">
                                 {this.renderFruitFilter('fruit-filter-guest')}
                             </div>
-                            <p className="guest-bar-orchard">open source orchard, neighbor-submitted finds</p>
+                            <p className="guest-bar-about-link guest-bar-links-row">
+                                <button type="button" onClick={startSignIn} className="secondary-link">sign in</button>
+                                <span aria-hidden="true"> · </span>
+                                <button
+                                    type="button"
+                                    onClick={() => this.setState({ guestAddAttempted: true, showAbout: true })}
+                                    className="secondary-link"
+                                >what is fruit for all?</button>
+                            </p>
                         </div>
-                        <p className="guest-bar-about-link guest-bar-links-row">
-                            <button
-                                type="button"
-                                onClick={() => this.setState({ guestAddAttempted: true, isLoginMode: true, showAbout: false, authError: '' })}
-                                className="secondary-link"
-                            >sign in</button>
-                            <span aria-hidden="true"> · </span>
-                            <button
-                                type="button"
-                                onClick={() => this.setState({ guestAddAttempted: true, showAbout: true })}
-                                className="secondary-link"
-                            >what is fruit for all?</button>
-                        </p>
-                        </>
                     )}
                     </>
                 ) : (
