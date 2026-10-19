@@ -2150,3 +2150,82 @@ button.secondary-link.bar-note__link {
     line-height: 1.4;
     color: var(--text);
 }
+
+/* ── Password reset page (/reset-password) ──────────────────────────────── */
+
+.reset-page {
+    height: var(--app-viewport-height);
+    overflow-y: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+    background: var(--surface);
+    font-family: var(--font);
+    color: var(--text);
+}
+
+.reset-card {
+    width: 100%;
+    max-width: 320px;
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 5px 6px 10px rgba(0, 0, 0, 0.22);
+    padding: 20px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.reset-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--red);
+    margin: 0 0 4px;
+}
+
+.reset-subtitle {
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+/* iOS Safari zooms the page when a focused input is under 16px */
+.reset-card .form-group input {
+    font-size: 16px;
+}
+
+.reset-message {
+    font-size: 0.95rem;
+    line-height: 1.4;
+    margin: 0 0 14px;
+}
+
+a.reset-link-btn {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 8px 12px;
+    background-color: var(--red);
+    color: white;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 5px;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.08);
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+
+a.reset-link-btn:hover {
+    background-color: var(--red-dark);
+}
+
+.reset-back {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 0.85rem;
+    color: var(--red);
+}
