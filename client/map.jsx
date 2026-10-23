@@ -18,21 +18,24 @@ import L from 'leaflet';
 import './stylesheets/map.css';
 import 'leaflet/dist/leaflet.css';
 
-// Marker icons — one hand-cut mark per kind of find (utils/fruitFamilies.js) in a
-// parchment disk. The ring carries state: olive = in season, terracotta = your find,
-// quiet/smaller = not in season. Icons are cached so Leaflet doesn't rebuild DOM
-// on every render.
+// Marker icons — one hand-cut mark per kind of find (utils/fruitFamilies.js), printed
+// block-print style. In season: paper disk, leaf ring, and the mark's colour block under
+// the ink. Yours: a solid fig disk with paper linework (a fill, not just a ring colour,
+// so it reads without colour vision). Not in season: small, faded, no colour block.
+// Icons are cached so Leaflet doesn't rebuild DOM on every render.
 const _pinIconCache = new globalThis.Map();
 function pinIcon(family, state, stale) {
     const key = `${family}|${state}|${stale ? 1 : 0}`;
     let icon = _pinIconCache.get(key);
     if (!icon) {
         const quiet = state === 'quiet';
-        const ink = quiet ? '#5a4630' : '#2b1a0e';
+        const mine = state === 'mine';
+        const ink = mine ? 'var(--paper)' : (quiet ? 'var(--text-muted)' : 'var(--text)');
+        const mark = markSvg(family, { size: quiet ? 18 : 22, color: ink, block: state === 'ripe' });
         icon = new L.DivIcon({
             className: '',
             html: `<div class="ffa-pin ffa-pin--${state}${stale ? ' ffa-pin--stale' : ''}">`
-                + `<span class="ffa-pin__disk">${markSvg(family, { size: quiet ? 18 : 20, color: ink })}</span>`
+                + `<span class="ffa-pin__disk">${mark}</span>`
                 + `<span class="ffa-pin__tail"></span></div>`,
             iconSize: [38, 46],
             iconAnchor: [19, 46],
@@ -985,7 +988,7 @@ class Map extends Component {
                             <div className="map-empty-card" role="status">
                                 {/* seed mark */}
                                 <span className="map-empty-card__mark" aria-hidden="true"
-                                    dangerouslySetInnerHTML={{ __html: markSvg('seed', { size: 28, color: '#7a3c20', strokeWidth: 1.5 }) }} />
+                                    dangerouslySetInnerHTML={{ __html: markSvg('seed', { size: 28, color: 'var(--red)', strokeWidth: 1.5, block: true }) }} />
                                 <p className="map-empty-card__title">nothing logged here yet.</p>
                                 {emptyHints.length > 0 && (
                                     <p className="map-empty-card__hint">

@@ -48,6 +48,43 @@ const MARKS = {
     '<path d="M12 3.6 C16.2 7.8 16.2 16.2 12 20.4 C7.8 16.2 7.8 7.8 12 3.6Z"/><path d="M12 7 V17"/>',
 };
 
+// Block-print colour blocks (Oct 2026): each mark is printed as two blocks, a flat
+// fruit-coloured shape under the ink linework, nudged slightly out of register.
+// Colours are CSS custom properties from :root in sidebar.css, so the palette stays
+// in one place (these strings only ever render inside the document, never in an <img>).
+// Keep to the four block inks: persimmon, citron, fig, sage.
+const BLOCKS = {
+  tree: { ink: '--persimmon', shape: '<circle cx="12" cy="14.5" r="6.3"/>' },
+  citrus: { ink: '--citron', shape: '<circle cx="12" cy="12" r="7.8"/>' },
+  tropical: {
+    ink: '--persimmon',
+    shape: '<path d="M12 3 C9 3 7.6 6 7.6 9 C7.6 11 6 12.6 6 15.4 C6 19 8.7 21 12 21 C15.3 21 18 19 18 15.4 C18 12.6 16.4 11 16.4 9 C16.4 6 15 3 12 3Z"/>',
+  },
+  berries: {
+    ink: '--fig',
+    shape: '<circle cx="12" cy="7.5" r="2.8"/><circle cx="8.4" cy="11.6" r="2.8"/><circle cx="15.6" cy="11.6" r="2.8"/>' +
+      '<circle cx="12" cy="15.6" r="2.8"/><circle cx="12" cy="11.6" r="2.8"/>',
+  },
+  nuts: { ink: '--citron', shape: '<path d="M7.2 10.2 C7.2 15 9.6 19.4 12 20.6 C14.4 19.4 16.8 15 16.8 10.2Z"/>' },
+  mushrooms: { ink: '--persimmon', shape: '<path d="M3.4 12.2 C3.4 7.2 7.4 4.2 12 4.2 C16.6 4.2 20.6 7.2 20.6 12.2Z"/>' },
+  herbs: {
+    ink: '--sage',
+    shape: '<path d="M12 9 C9.4 9 7.3 7.4 6.8 5.2 C9.4 5.2 11.5 6.8 12 9Z"/><path d="M12 9 C14.6 9 16.7 7.4 17.2 5.2 C14.6 5.2 12.5 6.8 12 9Z"/>' +
+      '<path d="M12 15 C9.2 15 6.9 13.3 6.3 10.9 C9.2 10.9 11.4 12.6 12 15Z"/><path d="M12 15 C14.8 15 17.1 13.3 17.7 10.9 C14.8 10.9 12.6 12.6 12 15Z"/>',
+  },
+  greens: { ink: '--sage', shape: '<path d="M12 21 C6 17 5 10 9 5 C10.5 3.4 13.5 3.4 15 5 C19 10 18 17 12 21Z"/>' },
+  medicinal: {
+    ink: '--fig',
+    shape: [0, 72, 144, 216, 288]
+      .map((a) => `<ellipse cx="12" cy="6.2" rx="2.4" ry="3.3" transform="rotate(${a} 12 12)"/>`).join('') +
+      '<circle cx="12" cy="12" r="2.4"/>',
+  },
+  seed: { ink: '--citron', shape: '<path d="M12 3.6 C16.2 7.8 16.2 16.2 12 20.4 C7.8 16.2 7.8 7.8 12 3.6Z"/>' },
+};
+
+// How far the colour block sits off the linework, in viewBox units (24 = the mark).
+const REGISTER_OFFSET = 1.4;
+
 const MEMBERS = {
   tree: [
     'apple', 'apricot', 'asian pear', 'cherry', 'crabapple', 'fig', 'loquat', 'medlar', 'nectarine',
@@ -156,14 +193,34 @@ export function markInner(familyId) {
   return MARKS[familyId] || MARKS.seed;
 }
 
-/** Complete <svg> string for a family's mark — for Leaflet DivIcons and inline use. */
-export function markSvg(familyId, { size = 20, color = '#2b1a0e', strokeWidth = 1.7 } = {}) {
+/** CSS custom property (e.g. '--persimmon') for a family's colour block. */
+export function blockInk(familyId) {
+  return (BLOCKS[familyId] || BLOCKS.seed).ink;
+}
+
+/** Colour-block markup for a family: the flat shape, offset, filled with its ink. */
+export function blockInner(familyId) {
+  const b = BLOCKS[familyId] || BLOCKS.seed;
+  return (
+    `<g transform="translate(${REGISTER_OFFSET} ${REGISTER_OFFSET})" stroke="none" ` +
+    `style="fill:var(${b.ink})">${b.shape}</g>`
+  );
+}
+
+/**
+ * Complete <svg> string for a family's mark — for Leaflet DivIcons and inline use.
+ * `block: true` prints the colour block under the linework (in-season pins, popups).
+ * `color` may be a hex or a CSS var() expression; it's only used inside the document.
+ */
+export function markSvg(familyId, { size = 20, color = 'var(--text)', strokeWidth = 1.7, block = false } = {}) {
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" ` +
     `fill="none" stroke="currentColor" stroke-width="${strokeWidth}" stroke-linecap="round" ` +
-    `stroke-linejoin="round" style="color:${color}" aria-hidden="true">${markInner(familyId)}</svg>`
+    `stroke-linejoin="round" style="color:${color}" aria-hidden="true">` +
+    `${block ? blockInner(familyId) : ''}${markInner(familyId)}</svg>`
   );
 }
 
 // Exposed for tests.
 export const _members = MEMBERS;
+export const _blocks = BLOCKS;
