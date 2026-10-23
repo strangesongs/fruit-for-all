@@ -26,8 +26,7 @@
     --card-hover: #e9e0cc;
     --card-press: #ddd2bc;
     --border:     #c4b49b;
-    --quiet-ring: #a99c88; /* not-in-season pins */
-    --quiet-disk: #efe8d6;
+    --quiet-ring: #7d705e; /* not-in-season pins: ≥3:1 on the inked map */
     --band-off:   #e3dac6; /* season band, months out of season */
 
     /* Legacy names, kept so the many existing selectors pick up the new inks */

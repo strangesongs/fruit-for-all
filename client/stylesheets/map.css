@@ -930,14 +930,15 @@
 .ffa-pin--mine .ffa-pin__disk { background: var(--fig); border-color: var(--fig); }
 .ffa-pin--mine .ffa-pin__tail { border-top-color: var(--fig); }
 
-.ffa-pin--quiet { opacity: 0.68; }
+/* Not in season reads as quieter through size and the missing colour block, not
+   by fading: on the paler inked map a faded pin all but disappeared. */
 .ffa-pin--quiet .ffa-pin__disk {
     width: 30px;
     height: 30px;
     margin-top: 4px;
-    background: var(--quiet-disk);
-    border: 1.5px solid var(--quiet-ring);
-    box-shadow: none;
+    background: var(--paper);
+    border: 2px solid var(--quiet-ring);
+    box-shadow: 1px 1px 2px rgba(42, 36, 32, 0.25);
 }
 .ffa-pin--quiet .ffa-pin__tail {
     border-left-width: 4px;
@@ -945,8 +946,9 @@
     border-top: 6px solid var(--quiet-ring);
 }
 
-/* No sign of life in 6 months */
-.ffa-pin--stale { opacity: 0.5; }
+/* No sign of life in 6 months: a dashed ring (still legible) and a light fade */
+.ffa-pin--stale { opacity: 0.85; }
+.ffa-pin--stale .ffa-pin__disk { border-style: dashed; }
 
 /* Clusters: an ink ring over a citron block, printed out of register */
 .ffa-cluster {
