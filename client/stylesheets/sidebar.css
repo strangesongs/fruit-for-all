@@ -1,19 +1,45 @@
 
 :root {
-    --red:       #7a3c20;
-    --red-dark:  #5c3018;
-    --red-deep:  #3d2010;
-    --text:      #2b1a0e;
-    --text-muted:#6e5838; /* was #8a7050: too faint for small text on parchment (≈3.9:1) */
-    --text-faint:#999;
-    --surface:   #f7f2e4;
-    --card:      #f2ece0;
-    --border:    #c8b888;
+    /* Block-print palette (Oct 2026): paper, one key ink, and four block inks.
+       Each ink has one job, so keep it that way:
+         fig        — the accent: buttons, the month, links, your own finds
+         leaf       — in season: pin rings, "in season" text, directions
+         persimmon  — colour blocks and the season band (shapes only: 3.9:1, never text)
+         citron, sage — colour blocks only (too light for text or rings) */
+    --fig:          #5b3a5e;
+    --fig-dark:     #46294a;
+    --fig-deep:     #2f1b32;
+    --leaf:         #4f6b3a;
+    --leaf-dark:    #3d5530;
+    --leaf-deep:    #2f4325;
+    --persimmon:    #c4572a;
+    --citron:       #e2b93b;
+    --sage:         #8fa35e;
+
+    --paper:      #f7f1e3; /* popups, pin disks */
+    --text:       #2a2420; /* the key block */
+    --text-muted: #66584c; /* 6.1:1 on paper */
+    --ink-soft:   #4a3f36; /* signatures and hints */
+    --text-faint: #999;
+    --surface:    #f7f1e3;
+    --card:       #f0e8d6;
+    --card-hover: #e9e0cc;
+    --card-press: #ddd2bc;
+    --border:     #c4b49b;
+    --quiet-ring: #a99c88; /* not-in-season pins */
+    --quiet-disk: #efe8d6;
+    --band-off:   #e3dac6; /* season band, months out of season */
+
+    /* Legacy names, kept so the many existing selectors pick up the new inks */
+    --red:      var(--fig);
+    --red-dark: var(--fig-dark);
+    --red-deep: var(--fig-deep);
+    --olive:    var(--leaf);
+    --del:      var(--leaf-dark);
+
     --font:      'Vollkorn', serif;
     /* Labels, counts and access lines — the catalog set its reviews against Univers */
     --font-sans: 'Hanken Grotesk', 'Helvetica Neue', Arial, sans-serif;
-    --olive:     #5c6b2e;
-    --del:       #3d5a3e;
     --app-viewport-height: 100vh;
     /* Height of the fixed bottom bar on standard phones; set by Sidebar (ResizeObserver). */
     --bottom-chrome: 0px;
@@ -79,17 +105,17 @@ html, body {
 }
 
 .sidebar::-webkit-scrollbar-track {
-    background: #ece5d4;
+    background: var(--card-hover);
     border-radius: 3px;
 }
 
 .sidebar::-webkit-scrollbar-thumb {
-    background: #c8b888;
+    background: var(--border);
     border-radius: 3px;
 }
 
 .sidebar::-webkit-scrollbar-thumb:hover {
-    background: #7a3c20;
+    background: var(--red);
 }
 
 .action-buttons {
@@ -1030,7 +1056,7 @@ button.close-btn:hover {
 .fruit-suggestion-btn:hover,
 .fruit-suggestion-btn:focus-visible,
 .fruit-suggestion-active {
-    background-color: #f7f0e8;
+    background-color: var(--card-hover);
     color: var(--red);
 }
 
@@ -1636,7 +1662,7 @@ button.auth-bar-action-btn.btn-active {
 }
 
 .guest-bar-chip-dot--green { background: var(--olive); }
-.guest-bar-chip-dot--amber { background: #b88a20; }
+.guest-bar-chip-dot--amber { background: var(--citron); }
 
 button.guest-bar-bet-btn {
     background: var(--olive);
@@ -1886,7 +1912,7 @@ button.bar-tab:focus-visible {
     font-family: var(--font);
     font-style: italic;
     font-size: 15px;
-    color: #4a3622;
+    color: var(--ink-soft);
 }
 
 /* ripe now: catalog entries */
@@ -1962,7 +1988,7 @@ button.ripe-entry:focus-visible {
     font-family: var(--font);
     font-style: italic;
     font-size: 14px;
-    color: #4a3622;
+    color: var(--ink-soft);
     white-space: normal;
     /* one line: the full note lives in the pin's popup */
     display: -webkit-box;
@@ -2036,7 +2062,7 @@ button.secondary-link.bar-note__link {
 
 .almanac__cell {
     height: 10px;
-    background: #e6dcc1;
+    background: var(--band-off);
 }
 
 .almanac__cell.is-on {
@@ -2104,7 +2130,7 @@ button.secondary-link.bar-note__link {
     font-style: italic;
     font-size: 15px;
     line-height: 1.4;
-    color: #4a3622;
+    color: var(--ink-soft);
 }
 
 .guest-bar-actions-row--filter .fruit-filter-select {

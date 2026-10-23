@@ -134,7 +134,7 @@ export default function PinPopup({
         <span className="entry-kind">{familyLabel(family)}</span>
         <div className="entry-title">
           <span className="entry-mark" aria-hidden="true"
-            dangerouslySetInnerHTML={{ __html: markSvg(family, { size: 30, strokeWidth: 1.5 }) }} />
+            dangerouslySetInnerHTML={{ __html: markSvg(family, { size: 40, strokeWidth: 1.3, block: true }) }} />
           <h3 className="fruit-title">{fruit}</h3>
         </div>
       </div>

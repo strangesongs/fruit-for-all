@@ -37,7 +37,7 @@
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
     will-change: transform;
-    border: 2px solid #c8b888 !important;
+    border: 2px solid var(--border) !important;
     border-radius: 6px !important;
     box-shadow: 3px 4px 8px rgba(0,0,0,0.18) !important;
     overflow: hidden;
@@ -53,9 +53,9 @@
     font-size: 20px !important;
     font-weight: 400 !important;
     font-family: 'Vollkorn', serif !important;
-    color: #7a3c20 !important;
-    background: #f2ece0 !important;
-    border-bottom: 1px solid #c8b888 !important;
+    color: var(--red) !important;
+    background: var(--card) !important;
+    border-bottom: 1px solid var(--border) !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -68,13 +68,13 @@
 
 .leaflet-control-zoom-in:hover,
 .leaflet-control-zoom-out:hover {
-    background: #e8dfd0 !important;
-    color: #5c3018 !important;
+    background: var(--card-hover) !important;
+    color: var(--red-dark) !important;
 }
 
 .leaflet-control-zoom-in:active,
 .leaflet-control-zoom-out:active {
-    background: #d9cfc0 !important;
+    background: var(--card-press) !important;
 }
 
 .loading-overlay, .error-overlay {
@@ -91,8 +91,8 @@
 }
 
 .loading-overlay {
-    color: #7a3c20;
-    border-left: 3px solid #7a3c20;
+    color: var(--red);
+    border-left: 3px solid var(--red);
 }
 
 .error-overlay {
@@ -215,9 +215,9 @@
 .pin-popup .popup-header {
     margin-bottom: 0;
     padding: 6px 8px;
-    background-color: #f2ece0 !important;
+    background-color: var(--card) !important;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E") !important;
-    border-bottom: 1px solid #c8b888;
+    border-bottom: 1px solid var(--border);
     border-radius: 8px 8px 0 0;
     display: block;
 }
@@ -226,7 +226,7 @@
     margin: 0;
     font-size: 1rem;
     font-weight: bold;
-    color: #7a3c20;
+    color: var(--red);
 }
 
 .pin-popup .popup-content {
@@ -241,7 +241,7 @@
 }
 
 .notes-section strong {
-    color: #9a8878;
+    color: var(--text-muted);
     font-size: 0.72rem;
     font-weight: normal;
 }
@@ -249,7 +249,7 @@
 .pin-age {
     margin: 1px 0 4px 0;
     font-size: 0.75rem;
-    color: #9a8878;
+    color: var(--text-muted);
     font-style: italic;
     letter-spacing: 0.01em;
 }
@@ -388,14 +388,14 @@
 }
 
 .metadata-item strong {
-    color: #7a3c20;
+    color: var(--red);
     font-weight: bold;
     min-width: 70px;
 }
 
 /* Style fruit title to match label colors */
 .pin-popup .fruit-title {
-    color: #7a3c20 !important;
+    color: var(--red) !important;
     font-weight: bold !important;
     margin: 0 !important;
 }
@@ -462,9 +462,9 @@
 }
 
 .strip-pill--in {
-    background: rgba(92, 107, 46, 0.12);
-    color: #3d5a3e;
-    border: 1px solid rgba(92, 107, 46, 0.3);
+    background: rgba(79, 107, 58, 0.12);
+    color: var(--del);
+    border: 1px solid rgba(79, 107, 58, 0.3);
 }
 
 .strip-pill--upcoming {
@@ -495,11 +495,11 @@
 
 .season-strip__seg {
     flex: 1;
-    background: #dfd7c4;
+    background: var(--band-off);
 }
 
 .season-strip__seg.peak {
-    background: #5c6b2e;
+    background: var(--olive);
 }
 
 .season-strip__today {
@@ -507,7 +507,7 @@
     top: -3px;
     width: 2px;
     height: 13px;
-    background: #7a3c20;
+    background: var(--red);
     border-radius: 1px;
     pointer-events: none;
 }
@@ -528,9 +528,9 @@
 }
 
 .delete-pin-btn {
-    background-color: #3d5a3e;
+    background-color: var(--del);
     color: white;
-    border: 2px outset #3d5a3e;
+    border: 2px outset var(--del);
     border-radius: 4px;
     padding: 6px 12px;
     font-family: inherit;
@@ -541,7 +541,7 @@
 }
 
 .delete-pin-btn:hover {
-    background-color: #2e4530;
+    background-color: var(--leaf-deep);
 }
 
 /* Locate-me button — matches zoom control style, sits below them */
@@ -554,25 +554,25 @@
     min-height: 44px;
     width: 44px;
     height: 44px;
-    background: #f2ece0;
-    border: 2px solid #c8b888;
+    background: var(--card);
+    border: 2px solid var(--border);
     border-radius: 6px;
     box-shadow: 3px 4px 8px rgba(0,0,0,0.18);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: #7a3c20;
+    color: var(--red);
     transition: background 0.15s, color 0.15s;
 }
 
 .locate-me-btn:hover {
-    background: #e8dfd0;
-    color: #5c3018;
+    background: var(--card-hover);
+    color: var(--red-dark);
 }
 
 .locate-me-btn:active {
-    background: #d9cfc0;
+    background: var(--card-press);
 }
 
 /* While the browser looks up the position */
@@ -593,9 +593,9 @@
     right: calc(100% + 8px);
     width: min(230px, calc(100vw - 84px));
     padding: 8px 10px;
-    background: var(--card, #f2ece0);
-    color: var(--text, #2b1a0e);
-    border: 2px solid var(--border, #c8b888);
+    background: var(--card);
+    color: var(--text);
+    border: 2px solid var(--border);
     border-radius: 6px;
     box-shadow: 3px 4px 8px rgba(0,0,0,0.18);
     font-family: var(--font-sans, sans-serif);
@@ -625,19 +625,19 @@
     right: 12px;
     z-index: 1000;
     background: rgba(242, 236, 224, 0.92);
-    color: #7a3c20;
+    color: var(--red);
     font-family: 'Vollkorn', serif;
     font-size: 0.72rem;
     padding: 3px 8px;
     border-radius: 4px;
-    border: 1px solid #c8b888;
+    border: 1px solid var(--border);
     pointer-events: none;
     white-space: nowrap;
     overflow: hidden;
 }
 
 .pin-count-badge--loading {
-    color: #8a7050;
+    color: var(--text-muted);
 }
 
 .pin-count-badge--loading::after {
@@ -679,7 +679,7 @@
 }
 
 .delete-pin-btn:active {
-    border: 2px inset #3d5a3e;
+    border: 2px inset var(--del);
 }
 
 /* Attribution — keep legally required credit but render it unobtrusively */
@@ -752,7 +752,7 @@
     gap: 4px;
     margin-top: 6px;
     padding-top: 6px;
-    border-top: 1px solid #e8dfc8;
+    border-top: 1px solid var(--band-off);
 }
 
 .still-good-btn {
@@ -773,7 +773,7 @@
 
 .still-good-btn:hover:not(:disabled) {
     background: var(--card);
-    border-color: #a89a6a;
+    border-color: var(--quiet-ring);
     color: var(--text);
 }
 
@@ -878,12 +878,15 @@
 
 /* ══ WEC redesign (Oct 2026): pins, clusters, catalog-entry popup, empty card ══ */
 
-/* Tiles sit on the parchment like a printed map */
-.leaflet-tile-pane {
-    filter: sepia(0.22) saturate(0.82) brightness(1.03) contrast(0.96);
+/* Tiles printed in one ink: #ffa-duotone (an inline SVG filter in map-index.html)
+   maps the tiles' lightness onto a ramp from the key ink to the paper, with leaf in
+   the middle tones. Applied per tile rather than to the pane so a pan doesn't
+   re-filter the whole map. */
+.leaflet-tile-container img.leaflet-tile {
+    filter: url(#ffa-duotone);
 }
 
-/* Pins: kind-of-find mark in a parchment disk; ring = state */
+/* Pins: a block-printed mark in a paper disk; ring = state (leaf = in season) */
 .ffa-pin {
     display: flex;
     flex-direction: column;
@@ -897,7 +900,7 @@
     height: 34px;
     box-sizing: border-box;
     border-radius: 50%;
-    background: #f8f3e6;
+    background: var(--paper);
     border: 2.5px solid var(--olive);
     box-shadow: 1px 2px 3px rgba(43, 26, 14, 0.3);
     display: flex;
@@ -914,37 +917,38 @@
     border-top: 7px solid var(--olive);
 }
 
-.ffa-pin--mine .ffa-pin__disk { border-color: var(--red); }
-.ffa-pin--mine .ffa-pin__tail { border-top-color: var(--red); }
+/* Yours: a solid fig disk with paper linework */
+.ffa-pin--mine .ffa-pin__disk { background: var(--fig); border-color: var(--fig); }
+.ffa-pin--mine .ffa-pin__tail { border-top-color: var(--fig); }
 
 .ffa-pin--quiet { opacity: 0.68; }
 .ffa-pin--quiet .ffa-pin__disk {
     width: 30px;
     height: 30px;
     margin-top: 4px;
-    background: #efe8d4;
-    border: 1.5px solid #a8956a;
+    background: var(--quiet-disk);
+    border: 1.5px solid var(--quiet-ring);
     box-shadow: none;
 }
 .ffa-pin--quiet .ffa-pin__tail {
     border-left-width: 4px;
     border-right-width: 4px;
-    border-top: 6px solid #a8956a;
+    border-top: 6px solid var(--quiet-ring);
 }
 
 /* No sign of life in 6 months */
 .ffa-pin--stale { opacity: 0.5; }
 
-/* Clusters: an ink stamp */
+/* Clusters: an ink ring over a citron block, printed out of register */
 .ffa-cluster {
     width: 38px;
     height: 38px;
     box-sizing: border-box;
     border-radius: 50%;
-    background: var(--text);
-    color: #f4eedd;
-    border: 2.5px solid #f4eedd;
-    box-shadow: 0 0 0 1.5px var(--text), 1px 2px 4px rgba(43, 26, 14, 0.3);
+    background: var(--paper);
+    color: var(--text);
+    border: 2px solid var(--text);
+    box-shadow: 3px 3px 0 var(--citron);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -965,10 +969,10 @@
 
 /* ── Pin popup as a catalog entry ── */
 .pin-popup.pin-entry {
-    background: #f8f3e6;
+    background: var(--paper);
     border: 1px solid var(--text);
     border-radius: 2px;
-    box-shadow: 4px 5px 0 rgba(43, 26, 14, 0.18);
+    box-shadow: 4px 5px 0 rgba(91, 58, 94, 0.22); /* fig, printed off-register */
     min-width: 260px;
     max-width: 320px;
     padding: 0 0 14px;
@@ -1044,7 +1048,7 @@
     align-self: flex-end;
     font-family: 'Vollkorn', serif;
     font-size: 14px;
-    color: #4a3622;
+    color: var(--ink-soft);
 }
 
 .entry-meander {
@@ -1077,7 +1081,7 @@
     flex-direction: column;
     gap: 4px;
 }
-.entry-ripe { color: #3f4b18; }
+.entry-ripe { color: var(--leaf); }
 
 /* Editorial aside on medicinal finds: the catalog's dotted box */
 .leaflet-popup-content .entry-caution {
@@ -1093,15 +1097,17 @@
 .entry-band {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: 2px;
+    gap: 3px;
 }
+/* A row of printed dots: persimmon where the find is in season */
 .entry-band i {
     display: block;
-    height: 6px;
-    background: #ddd3b8;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--band-off);
 }
-.entry-band i.on { background: var(--olive); }
-.entry-band i.now { outline: 1.5px solid var(--red); outline-offset: 1px; }
+.entry-band i.on { background: var(--persimmon); }
+.entry-band i.now { outline: 1.5px solid var(--fig); outline-offset: 1px; }
 
 .entry-actions {
     display: flex;
@@ -1129,18 +1135,18 @@
     background: transparent;
     padding: 0 10px;
 }
-.pin-popup.pin-entry .still-good-btn:hover { background: #efe6cf; }
+.pin-popup.pin-entry .still-good-btn:hover { background: var(--card-hover); }
 .entry-thanks {
     font-style: italic;
-    color: #3f4b18;
+    color: var(--leaf);
     border: 1.5px dashed var(--olive);
 }
 .entry-directions {
-    background: var(--olive);
-    color: #f8f3e6 !important;
+    background: var(--fig);
+    color: var(--paper) !important;
     text-decoration: none;
 }
-.entry-directions:hover { background: var(--del); }
+.entry-directions:hover { background: var(--fig-dark); }
 
 .pin-popup.pin-entry .confirm-error { padding: 6px 16px 0; margin: 0; }
 .pin-popup.pin-entry .pin-actions { margin-top: 10px; padding: 0 16px; text-align: right; }
@@ -1155,7 +1161,7 @@
     transform: translate(-50%, -50%);
     width: min(270px, calc(100vw - 96px));
     box-sizing: border-box;
-    background: #f8f3e6;
+    background: var(--paper);
     border: 2.5px dotted var(--text);
     box-shadow: 3px 4px 0 rgba(43, 26, 14, 0.14);
     padding: 16px 16px 10px;
@@ -1167,7 +1173,7 @@
 }
 .map-empty-card__mark { display: flex; }
 .map-empty-card__title { margin: 0; font-weight: 700; font-size: 21px; line-height: 1.15; }
-.map-empty-card__hint { margin: 0; font-style: italic; font-size: 15px; line-height: 1.4; color: #4a3622; }
+.map-empty-card__hint { margin: 0; font-style: italic; font-size: 15px; line-height: 1.4; color: var(--ink-soft); }
 .map-empty-card button.map-empty-card__primary {
     width: 100%;
     min-height: 44px;
@@ -1194,6 +1200,7 @@
     .entry-head { padding: 9px 36px 6px 12px; gap: 3px; }
     .entry-kind { font-size: 11px; }
     .pin-popup.pin-entry .fruit-title { font-size: 20px !important; }
+    .entry-mark svg { width: 30px; height: 30px; }
     .entry-rules, .entry-meander { margin-left: 12px; margin-right: 12px; }
     .entry-meander { width: calc(100% - 24px); }
     .entry-notes { padding: 8px 12px 6px; }

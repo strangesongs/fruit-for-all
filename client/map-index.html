@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <title>fruit for all</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#7a3c20" />
+  <meta name="theme-color" content="#5b3a5e" />
   <link rel="manifest" href="/manifest.json" />
   <link rel="icon" type="image/png" href="/loquat-48.png" />
   <link rel="apple-touch-icon" href="/loquat-192.png" />
@@ -14,6 +14,18 @@
   <link rel="stylesheet" href="index.css" />
 </head>
 <body>
+  <!-- Map ink (#ffa-duotone, used by map.css on the tiles): tile lightness is
+       re-printed as one warm ink on paper, key ink #2a2420 to paper #f7f1e3. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <filter id="ffa-duotone" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0 0 0 1 0"/>
+      <feComponentTransfer>
+        <feFuncR type="table" tableValues="0.165 0.369 0.639 0.878 0.969"/>
+        <feFuncG type="table" tableValues="0.141 0.333 0.604 0.847 0.945"/>
+        <feFuncB type="table" tableValues="0.125 0.298 0.541 0.776 0.890"/>
+      </feComponentTransfer>
+    </filter>
+  </svg>
   <div id="root"></div>
   <script type="module" src="index.js"></script>
 </body>

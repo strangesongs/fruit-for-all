@@ -764,12 +764,12 @@ export default class Sidebar extends React.Component {
 
     // ── Standard-mobile bar: month header + "in season / almanac / nearest" tabs ──
 
-    renderMark(family, size = 22) {
+    renderMark(family, size = 22, block = true) {
         return (
             <span
                 className="bar-mark"
                 aria-hidden="true"
-                dangerouslySetInnerHTML={{ __html: markSvg(family, { size, strokeWidth: 1.6 }) }}
+                dangerouslySetInnerHTML={{ __html: markSvg(family, { size, strokeWidth: 1.6, block }) }}
             />
         );
     }
@@ -858,7 +858,7 @@ export default class Sidebar extends React.Component {
                             return (
                                 <div className="almanac__row" role="row" key={r.fruitType}>
                                     <span role="rowheader" className="almanac__label" title={r.fruitType}>
-                                        {this.renderMark(r.family, 18)}<span className="almanac__name">{r.fruitType}</span>
+                                        {this.renderMark(r.family, 18, false)}<span className="almanac__name">{r.fruitType}</span>
                                     </span>
                                     {letters.map((_, i) => (
                                         <span key={i} role="cell" className={`almanac__cell${on.has(i + 1) ? ' is-on' : ''}${i === monthIdx ? ' is-now' : ''}`} />

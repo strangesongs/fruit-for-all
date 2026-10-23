@@ -2,7 +2,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { FRUIT_LIST } from '../../client/utils/fruitList.js';
 import { FRUIT_SEASONS } from '../../client/utils/fruitSeasons.js';
-import { FAMILIES, familyOf, familyLabel, markSvg, _members } from '../../client/utils/fruitFamilies.js';
+import { FAMILIES, familyOf, familyLabel, markSvg, blockInk, _members, _blocks } from '../../client/utils/fruitFamilies.js';
 
 describe('fruit families', () => {
   test('every item on the add-a-find list belongs to a real family (no fallbacks)', () => {
@@ -45,6 +45,25 @@ describe('fruit families', () => {
   test('there are 9 families, each with a mark', () => {
     assert.equal(FAMILIES.length, 9);
     for (const f of FAMILIES) assert.match(markSvg(f.id), /^<svg[^>]*viewBox="0 0 24 24".*<\/svg>$/);
+  });
+
+  test('every family (and the seed fallback) has a colour block in one of the four block inks', () => {
+    const inks = new Set(['--persimmon', '--citron', '--fig', '--sage']);
+    for (const id of [...FAMILIES.map((f) => f.id), 'seed']) {
+      assert.ok(_blocks[id], `${id} has no colour block`);
+      assert.ok(inks.has(blockInk(id)), `${id} uses ${blockInk(id)}`);
+    }
+    assert.equal(blockInk('plutonium'), '--citron');
+  });
+
+  test('block marks print the colour under the linework; plain marks have none', () => {
+    const plain = markSvg('tree');
+    const block = markSvg('tree', { block: true });
+    assert.ok(!plain.includes('var(--persimmon)'));
+    assert.ok(block.includes('style="fill:var(--persimmon)"'));
+    assert.ok(block.indexOf('var(--persimmon)') < block.indexOf('<circle cx="12" cy="14.5" r="6.5"/>'),
+      'colour block comes before (under) the ink');
+    assert.match(block, /^<svg[^>]*viewBox="0 0 24 24".*<\/svg>$/);
   });
 
   test('white sage is not listed (over-harvested, culturally sensitive)', () => {
