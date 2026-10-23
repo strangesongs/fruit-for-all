@@ -11,6 +11,7 @@ import { TINY_MAX, getBottomChromePx } from './utils/breakpoints.js';
 import { familyOf, markSvg } from './utils/fruitFamilies.js';
 import { ripenessOf, buildViewSummary, lookForHints, MONTH_NAMES } from './utils/pinSummary.js';
 import { detectZoneFallback } from './utils/zoneFallback.js';
+import { popupPanDelta } from './utils/popupFit.js';
 import { LOCATE_OPTIONS, isAppleMobile, locateErrorMessage, parseLastLocation } from './utils/geolocation.js';
 import L from 'leaflet';
 
@@ -187,6 +188,29 @@ function LocateMeButton({ onLocate, onPreciseLocation, fallbackLocation }) {
     );
 }
 
+// Pan needed to fit an open popup above the bottom bar (standard phones). Reads the
+// popup's real position; the arithmetic lives in utils/popupFit.js (tested).
+function popupFitBox(map, target, mapSize, bottomChrome) {
+    const visibleH = Math.max(mapSize.y - bottomChrome, mapSize.y * 0.4);
+    const pin = map.latLngToContainerPoint([target.lat, target.lng]);
+    const wrap = map.getContainer().querySelector('.leaflet-popup-content-wrapper');
+    const r = wrap ? wrap.getBoundingClientRect() : null;
+    if (!r || !r.height) {
+        // Popup not open yet (e.g. a bar entry flying to a find): bring the pin itself
+        // into place; the later check fits the card once it exists.
+        return { dx: Math.round(pin.x - mapSize.x / 2), dy: Math.round(pin.y - visibleH * 0.8) };
+    }
+    const cont = map.getContainer().getBoundingClientRect();
+    return popupPanDelta({
+        pinY: pin.y,
+        popupTop: r.top - cont.top,
+        popupLeft: r.left - cont.left,
+        popupRight: r.right - cont.left,
+        mapW: mapSize.x,
+        visibleH,
+    });
+}
+
 // Pans to a pin when its popup is opened
 function PanToPin({ target, seq }) {
     const map = useMap();
@@ -204,14 +228,22 @@ function PanToPin({ target, seq }) {
         let offsetPx;
         const bottomChrome = mapSize.x <= TINY_MAX ? 0 : getBottomChromePx();
         if (bottomChrome > 0) {
-            // Standard phones: a fixed bar covers the bottom of the map. Place the pin
-            // 80% of the way down the *visible* area so the popup above it clears the bar.
-            // On short screens (landscape) push the pin lower so a tall popup still fits.
-            const visibleH = Math.max(mapSize.y - bottomChrome, mapSize.y * 0.4);
-            const popupEl = map.getContainer().querySelector('.leaflet-popup-content-wrapper');
-            const popupH = popupEl ? popupEl.offsetHeight : 0;
-            const pinY = Math.min(visibleH - 8, Math.max(visibleH * 0.8, popupH + 48));
-            offsetPx = pinY - mapSize.y / 2;
+            // Standard phones: a fixed bar covers the bottom of the map. The popup's
+            // height isn't known yet when it opens (react-leaflet fills and lays out its
+            // content after this effect runs; measuring now often read 0 and left the top
+            // of a tall card off-screen). So wait for layout, measure the card where it
+            // actually is, and pan by exactly what's needed to fit it.
+            let cancelled = false;
+            const fit = () => {
+                if (cancelled) return;
+                const box = popupFitBox(map, target, mapSize, bottomChrome);
+                if (box && (box.dx || box.dy)) map.panBy([box.dx, box.dy], { animate: true, duration: 0.4 });
+            };
+            // Two frames: one for React's commit, one for Leaflet's popup layout.
+            requestAnimationFrame(() => requestAnimationFrame(fit));
+            // Fonts or the content settling can still change the height; check once more.
+            const late = setTimeout(fit, 500);
+            return () => { cancelled = true; clearTimeout(late); };
         } else {
             offsetPx = mapSize.y * (mapSize.x <= TINY_MAX ? 0.40 : 0.25);
         }
