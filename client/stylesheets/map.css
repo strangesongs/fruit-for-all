@@ -575,6 +575,44 @@
     background: #d9cfc0;
 }
 
+/* While the browser looks up the position */
+.locate-me-btn--finding svg {
+    animation: locate-pulse 1s ease-in-out infinite;
+}
+
+@keyframes locate-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+}
+
+/* Why locate-me failed — a small card to the left of the button (works for all
+   three layouts, since the button moves vertically between them) */
+.locate-me-msg {
+    position: absolute;
+    top: -2px;
+    right: calc(100% + 8px);
+    width: min(230px, calc(100vw - 84px));
+    padding: 8px 10px;
+    background: var(--card, #f2ece0);
+    color: var(--text, #2b1a0e);
+    border: 2px solid var(--border, #c8b888);
+    border-radius: 6px;
+    box-shadow: 3px 4px 8px rgba(0,0,0,0.18);
+    font-family: var(--font-sans, sans-serif);
+    font-size: 0.8rem;
+    line-height: 1.35;
+    text-align: left;
+    cursor: default;
+}
+
+/* Desktop: the button sits near the bottom, so grow the card upward */
+@media (min-width: 769px) {
+    .locate-me-msg {
+        top: auto;
+        bottom: -2px;
+    }
+}
+
 @keyframes shimmer {
     0%   { left: -100%; }
     100% { left: 200%; }

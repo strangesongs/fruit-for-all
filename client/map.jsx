@@ -11,6 +11,7 @@ import { TINY_MAX, getBottomChromePx } from './utils/breakpoints.js';
 import { familyOf, markSvg } from './utils/fruitFamilies.js';
 import { ripenessOf, buildViewSummary, lookForHints, MONTH_NAMES } from './utils/pinSummary.js';
 import { detectZoneFallback } from './utils/zoneFallback.js';
+import { LOCATE_OPTIONS, isAppleMobile, locateErrorMessage, parseLastLocation } from './utils/geolocation.js';
 import L from 'leaflet';
 
 import './stylesheets/map.css';
@@ -109,24 +110,74 @@ function MapFlyTo({ target }) {
     return null;
 }
 
-// Re-center button — flies back to the user's last known location
-function LocateMeButton({ onLocate, onPreciseLocation }) {
-    if (!navigator.geolocation) return null;
+// Re-center button — asks for the precise location and flies there. If that fails it
+// says why (it used to fail silently, which on iPhone looked like a dead button) and
+// falls back to the last known location.
+function LocateMeButton({ onLocate, onPreciseLocation, fallbackLocation }) {
+    const ref = React.useRef(null);
+    const [finding, setFinding] = React.useState(false);
+    const [message, setMessage] = React.useState('');
+    const msgTimer = React.useRef(null);
+
+    // Like Leaflet's own controls: keep taps on the button from reaching the map
+    // (drag start, popup close, tap-hold) underneath.
+    React.useEffect(() => {
+        if (ref.current) {
+            L.DomEvent.disableClickPropagation(ref.current);
+            L.DomEvent.disableScrollPropagation(ref.current);
+        }
+        return () => clearTimeout(msgTimer.current);
+    }, []);
+
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return null;
+
+    const showMessage = (text) => {
+        clearTimeout(msgTimer.current);
+        setMessage(text);
+        if (text) msgTimer.current = setTimeout(() => setMessage(''), 9000);
+    };
+
+    const locate = () => {
+        if (finding) return;
+        if (onLocate) onLocate();
+        setFinding(true);
+        showMessage('');
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                setFinding(false);
+                const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                try { sessionStorage.setItem('ffa_last_location', JSON.stringify(loc)); } catch (e) {}
+                if (onPreciseLocation) onPreciseLocation(loc);
+            },
+            (err) => {
+                setFinding(false);
+                let last = null;
+                try { last = parseLastLocation(sessionStorage.getItem('ffa_last_location')); } catch (e) {}
+                const fallback = last || fallbackLocation || null;
+                // A fresh object so MapFlyTo flies even if it's the same place.
+                if (fallback && onPreciseLocation) onPreciseLocation({ lat: fallback.lat, lng: fallback.lng });
+                showMessage(locateErrorMessage(err && err.code, {
+                    apple: isAppleMobile(navigator.userAgent, navigator.maxTouchPoints || 0),
+                    hasFallback: !!fallback,
+                }));
+            },
+            LOCATE_OPTIONS
+        );
+    };
+
     return (
-        <div className="locate-me-btn" title="Go to my location"
-            onClick={() => {
-                if (onLocate) onLocate();
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                        try { sessionStorage.setItem('ffa_last_location', JSON.stringify(loc)); } catch (e) {}
-                        if (onPreciseLocation) onPreciseLocation(loc);
-                    },
-                    () => { /* user denied or unavailable — silently ignored */ },
-                    { timeout: 8000, maximumAge: 5 * 60 * 1000, enableHighAccuracy: false }
-                );
-            }}
+        <div ref={ref} className={`locate-me-btn${finding ? ' locate-me-btn--finding' : ''}`}
+            title="go to my location" aria-label="go to my location"
+            role="button" tabIndex={0} aria-busy={finding}
+            onClick={locate}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); locate(); } }}
         >
+            {message && (
+                <div className="locate-me-msg" role="status"
+                    onClick={(e) => { e.stopPropagation(); showMessage(''); }}>
+                    {message}
+                </div>
+            )}
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="3"/>
                 <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
@@ -877,6 +928,7 @@ class Map extends Component {
                         <LocateMeButton
                             onLocate={() => { this._blockViewportFetchUntil = Date.now() + 4000; }}
                             onPreciseLocation={(loc) => { this.setState({ userLocation: loc }); }}
+                            fallbackLocation={this.state.userLocation}
                         />
                         <MapEvents 
                             onViewportChange={this.handleViewportChange} 
