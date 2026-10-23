@@ -874,6 +874,15 @@
     .leaflet-bottom.leaflet-right .leaflet-control-attribution {
         max-width: calc(100vw - 72px);
     }
+
+    /* An open entry is ~280px tall and full width, so it can't fit beside or below the
+       zoom + locate stack on a 427px screen. Hide those controls while a popup is open
+       (pinch-zoom still works); they return when it closes. Browsers without :has()
+       keep the old overlap. */
+    .leaflet-container:has(.leaflet-popup-pane .leaflet-popup) .leaflet-control-zoom,
+    .leaflet-container:has(.leaflet-popup-pane .leaflet-popup) .locate-me-btn {
+        visibility: hidden;
+    }
 }
 
 /* ══ WEC redesign (Oct 2026): pins, clusters, catalog-entry popup, empty card ══ */
