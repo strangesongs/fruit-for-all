@@ -38,9 +38,9 @@ server/controllers/           auth.js (register/login/reset, verifyToken), pinsC
 server/schemas/               users.js, pins.js (Dynamo access), validation.js, zone.js, errors.js, schemas.js (barrel)
 server/utils/                 html.js (escapeHtml), profanity.js, confirmDedup.js (Redis 24h per-IP dedup)
 client/index.js               entry: App wires Sidebar ↔ Map via refs; /reset-password renders ResetPassword
-client/sidebar.jsx            ALL non-map UI (~1.6k lines): auth forms, add-a-find modal, filters, three layouts
+client/sidebar.jsx            ALL non-map UI (~1.5k lines): auth state + handlers, add-a-find modal, filters, three layouts
 client/map.jsx                Leaflet map, pin loading/merging, clustering, popups, locate-me, "nearest good bet"
-client/components/            PinPopup.jsx (catalog-entry popup), SeasonStrip.jsx (now unused); AddFruitPopup/AuthForm/GuestBar/MapControls are EMPTY placeholders
+client/components/            PinPopup.jsx (catalog-entry popup), AuthForm.jsx (sign in / register / forgot password for all three layouts; `variant` = bar | panel | desktop, state stays in Sidebar), SeasonStrip.jsx (now unused); AddFruitPopup/GuestBar/MapControls are EMPTY placeholders
 client/utils/                 auth, cache, network (fetchWithRetry), clustering, fruitList, fruitSeasons, fruitFamilies (marks), pinSummary (ripeness, view summary), zoneFallback (shared with server), breakpoints, …
 client/stylesheets/           sidebar.css (tokens + every non-map layout), map.css (Leaflet overrides, controls, popups)
 client/sw.js                  service worker (production only): network-first navigations, cache-first static assets
@@ -109,7 +109,7 @@ The working checklist for the next session is `docs/HANDOFF.md`.
 See the improvement review (Oct 2026). Still open:
 - **Decided Oct 2026: move off DynamoDB to Postgres (+ PostGIS on Railway)** for location queries, real constraints (unique email, case-insensitive usernames) and reporting. Until then, local `npm run dev` writes to the production tables.
 - Email lookups and password reset use an unpaginated `Scan`, which breaks past ~1 MB of users. Bounded pin queries read the whole `status-index` and filter in memory.
-- `sidebar.jsx` still hand-maintains three copies of the auth forms (desktop, guest bar, Jelly panel); extracting a shared `AuthForm` is the next refactor.
+- The auth forms are one component (`client/components/AuthForm.jsx`). Each `variant` keeps the DOM its layout's CSS targets (e.g. `.auth-section form`, `.guest-bar-form`), so change a variant's structure only together with its CSS.
 
 Fixed on `fix/hotfixes` (keep these true):
 - Admin is never derived from the username; reserved names are blocked case-insensitively (`validateUserName`). Edit/delete re-check `isAdmin` in DynamoDB, not just the JWT.
