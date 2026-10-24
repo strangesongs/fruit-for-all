@@ -127,7 +127,7 @@ html, body {
     width: 100%;
 }
 
-button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):not(.toggle-link):not(.secondary-link):not(.fruit-suggestion-btn):not(.guest-bar-bet-btn):not(.still-good-btn):not(.bar-handle):not(.auth-bar-action-btn):not(.bar-tab):not(.map-empty-card__link):not(.ripe-entry), .action-btn {
+button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):not(.toggle-link):not(.secondary-link):not(.fruit-suggestion-btn):not(.guest-bar-bet-btn):not(.still-good-btn):not(.bar-handle):not(.auth-bar-action-btn):not(.bar-tab):not(.map-empty-card__link):not(.ripe-entry):not(.pin-notes-btn), .action-btn {
     background-color: var(--red);
     color: white;
     padding: 10px 14px;
@@ -149,12 +149,12 @@ button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-sub
     transition: background 0.15s, box-shadow 0.1s, transform 0.1s;
 }
 
-button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):not(.toggle-link):not(.secondary-link):not(.fruit-suggestion-btn):not(.guest-bar-bet-btn):not(.still-good-btn):not(.bar-handle):not(.auth-bar-action-btn):not(.bar-tab):not(.map-empty-card__link):not(.ripe-entry):hover, .action-btn:hover {
+button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):not(.toggle-link):not(.secondary-link):not(.fruit-suggestion-btn):not(.guest-bar-bet-btn):not(.still-good-btn):not(.bar-handle):not(.auth-bar-action-btn):not(.bar-tab):not(.map-empty-card__link):not(.ripe-entry):not(.pin-notes-btn):hover, .action-btn:hover {
     background-color: var(--red-dark);
     box-shadow: 0 3px 0 rgba(0,0,0,0.22), 0 1px 4px rgba(0,0,0,0.1);
 }
 
-button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):not(.toggle-link):not(.secondary-link):not(.fruit-suggestion-btn):not(.guest-bar-bet-btn):not(.still-good-btn):not(.bar-handle):not(.auth-bar-action-btn):not(.bar-tab):not(.map-empty-card__link):not(.ripe-entry):active, .action-btn:active {
+button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):not(.toggle-link):not(.secondary-link):not(.fruit-suggestion-btn):not(.guest-bar-bet-btn):not(.still-good-btn):not(.bar-handle):not(.auth-bar-action-btn):not(.bar-tab):not(.map-empty-card__link):not(.ripe-entry):not(.pin-notes-btn):active, .action-btn:active {
     box-shadow: none;
     transform: translateY(2px);
 }
@@ -1001,7 +1001,7 @@ button.close-btn:hover {
         font-size: 0.8rem;
     }
     
-    button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):not(.toggle-link):not(.secondary-link):not(.fruit-suggestion-btn):not(.guest-bar-bet-btn):not(.still-good-btn):not(.bar-handle):not(.auth-bar-action-btn):not(.bar-tab):not(.map-empty-card__link):not(.ripe-entry), .action-btn {
+    button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):not(.toggle-link):not(.secondary-link):not(.fruit-suggestion-btn):not(.guest-bar-bet-btn):not(.still-good-btn):not(.bar-handle):not(.auth-bar-action-btn):not(.bar-tab):not(.map-empty-card__link):not(.ripe-entry):not(.pin-notes-btn), .action-btn {
         font-size: 0.8rem;
         padding: 6px 10px;
     }
@@ -1173,7 +1173,7 @@ button.close-btn:hover {
         padding: 7px 10px;
     }
 
-    button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):not(.toggle-link):not(.secondary-link):not(.fruit-suggestion-btn):not(.guest-bar-bet-btn):not(.still-good-btn):not(.bar-handle):not(.auth-bar-action-btn):not(.bar-tab):not(.map-empty-card__link):not(.ripe-entry), .action-btn {
+    button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):not(.toggle-link):not(.secondary-link):not(.fruit-suggestion-btn):not(.guest-bar-bet-btn):not(.still-good-btn):not(.bar-handle):not(.auth-bar-action-btn):not(.bar-tab):not(.map-empty-card__link):not(.ripe-entry):not(.pin-notes-btn), .action-btn {
         font-size: 0.75rem;
         padding: 6px 8px;
     }
