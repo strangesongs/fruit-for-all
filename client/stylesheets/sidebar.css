@@ -127,7 +127,7 @@ html, body {
     width: 100%;
 }
 
-button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):not(.toggle-link):not(.secondary-link):not(.fruit-suggestion-btn):not(.guest-bar-bet-btn):not(.still-good-btn):not(.bar-handle):not(.auth-bar-action-btn):not(.bar-tab):not(.map-empty-card__link):not(.ripe-entry):not(.pin-notes-btn), .action-btn {
+.btn {
     background-color: var(--red);
     color: white;
     padding: 10px 14px;
@@ -149,12 +149,12 @@ button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-sub
     transition: background 0.15s, box-shadow 0.1s, transform 0.1s;
 }
 
-button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):not(.toggle-link):not(.secondary-link):not(.fruit-suggestion-btn):not(.guest-bar-bet-btn):not(.still-good-btn):not(.bar-handle):not(.auth-bar-action-btn):not(.bar-tab):not(.map-empty-card__link):not(.ripe-entry):not(.pin-notes-btn):hover, .action-btn:hover {
+.btn:hover {
     background-color: var(--red-dark);
     box-shadow: 0 3px 0 rgba(0,0,0,0.22), 0 1px 4px rgba(0,0,0,0.1);
 }
 
-button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):not(.toggle-link):not(.secondary-link):not(.fruit-suggestion-btn):not(.guest-bar-bet-btn):not(.still-good-btn):not(.bar-handle):not(.auth-bar-action-btn):not(.bar-tab):not(.map-empty-card__link):not(.ripe-entry):not(.pin-notes-btn):active, .action-btn:active {
+.btn:active {
     box-shadow: none;
     transform: translateY(2px);
 }
@@ -163,17 +163,6 @@ button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-sub
     background-color: var(--red-deep) !important;
     box-shadow: none !important;
     transform: translateY(1px) !important;
-}
-
-.add-fruit-btn {
-    background-color: var(--red);
-    border-color: var(--red);
-    font-size: 0.9rem;
-    padding: 10px 14px;
-}
-
-.add-fruit-btn:active {
-    border: 2px inset var(--red);
 }
 
 .saved-pins, .ready-fruit {
@@ -209,8 +198,6 @@ li {
     color: #333;
     font-size: 0.75rem;
 }
-
-
 
 .header-section {
     font-size: 0.6rem;
@@ -554,19 +541,6 @@ button.toggle-link {
     justify-content: center;
 }
 
-.logout-btn {
-    background-color: var(--red);
-    border-color: var(--red);
-}
-
-.logout-btn:hover {
-    background-color: var(--red-dark);
-}
-
-.logout-btn:active {
-    border: 2px inset var(--red);
-}
-
 .lil-fruit {
     width: 24px;
     height: 24px;
@@ -619,8 +593,6 @@ button.toggle-link {
     font-size: 0.9rem;
 }
 
-
-
 .notes-popup-overlay {
     position: fixed;
     top: 0;
@@ -672,8 +644,6 @@ button.toggle-link {
     width: auto;
     min-width: 60px;
 }
-
-
 
 /* Add Fruit Popup Styles */
 .add-fruit-popup-overlay {
@@ -778,26 +748,9 @@ button.close-btn:hover {
 }
 
 .location-btn {
-    background-color: var(--red);
-    border: 2px outset var(--red);
-    color: white;
-    padding: 8px 10px;
-    font-size: 0.8rem;
-    font-weight: normal;
     display: block;
     width: 100% !important;
     margin: 0 0 6px !important;
-    border-radius: 4px;
-    cursor: pointer;
-    box-sizing: border-box;
-}
-
-.location-btn:hover {
-    background-color: var(--red-dark);
-}
-
-.location-btn:active {
-    border: 2px inset var(--red);
 }
 
 .location-display {
@@ -822,45 +775,6 @@ button.close-btn:hover {
     background-color: var(--card);
     border-radius: 0 0 6px 6px;
     justify-content: flex-end;
-}
-
-.popup-footer button {
-    width: auto;
-    min-width: 80px;
-    margin: 0;
-    font-weight: normal;
-}
-
-.cancel-btn {
-    background-color: #888;
-    border-color: #888;
-}
-
-.cancel-btn:hover {
-    background-color: #999;
-}
-
-.cancel-btn:active {
-    border: 2px inset #888;
-}
-
-.submit-btn {
-    background-color: var(--red);
-    border-color: var(--red);
-}
-
-.submit-btn:hover {
-    background-color: var(--red-dark);
-}
-
-.submit-btn:active {
-    border: 2px inset var(--red);
-}
-
-.submit-btn:disabled {
-    background-color: #cccccc;
-    border-color: #cccccc;
-    cursor: not-allowed;
 }
 
 /* Hamburger menu button */
@@ -1001,7 +915,7 @@ button.close-btn:hover {
         font-size: 0.8rem;
     }
     
-    button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):not(.toggle-link):not(.secondary-link):not(.fruit-suggestion-btn):not(.guest-bar-bet-btn):not(.still-good-btn):not(.bar-handle):not(.auth-bar-action-btn):not(.bar-tab):not(.map-empty-card__link):not(.ripe-entry):not(.pin-notes-btn), .action-btn {
+    .btn {
         font-size: 0.8rem;
         padding: 6px 10px;
     }
@@ -1173,7 +1087,7 @@ button.close-btn:hover {
         padding: 7px 10px;
     }
 
-    button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):not(.toggle-link):not(.secondary-link):not(.fruit-suggestion-btn):not(.guest-bar-bet-btn):not(.still-good-btn):not(.bar-handle):not(.auth-bar-action-btn):not(.bar-tab):not(.map-empty-card__link):not(.ripe-entry):not(.pin-notes-btn), .action-btn {
+    .btn {
         font-size: 0.75rem;
         padding: 6px 8px;
     }
