@@ -9,6 +9,7 @@ import { logEmailResult } from '../utils/email.js';
 import { createIpLocator, EMPTY_LOCATION } from '../utils/ipLocate.js';
 import { FRUIT_LIST } from '../../client/utils/fruitList.js';
 import { appUrl as emailBaseUrl } from '../utils/appUrl.js';
+import { NUDGE_LIMIT_M, withinNudge } from '../../client/utils/findPlacement.js';
 
 const FRUIT_SET = new Set(FRUIT_LIST);
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
@@ -194,26 +195,44 @@ export const getMyPins = async (req, res) => {
 export const updatePin = async (req, res) => {
   try {
     const { pinId } = req.params;
-    const { notes } = req.body;
+    // Types first: string methods below must never meet a number or an object.
+    const check = db.validatePinUpdate(req.body, FRUIT_SET);
+    if (!check.valid) {
+      return res.status(400).json({ success: false, message: check.message });
+    }
+    const { notes, fruitType, coordinates } = req.body;
     const pin = await db.getPinById(pinId);
     if (!pin) {
       return res.status(404).json({ success: false, message: 'Pin not found' });
     }
     const isOwner = pin.submittedBy === req.user.userName;
-    if (!isOwner && !(await isCurrentAdmin(req))) {
+    // Admin is checked lazily: owners only need it to move a find further than a block.
+    let admin = null;
+    const checkAdmin = async () => {
+      if (admin === null) admin = await isCurrentAdmin(req);
+      return admin;
+    };
+    if (!isOwner && !(await checkAdmin())) {
       return res.status(403).json({
         success: false,
         message: 'Only admin or pin owner can edit this pin',
       });
     }
-    const notesCheck = db.validateNotes(notes);
-    if (!notesCheck.valid) {
-      return res.status(400).json({ success: false, message: notesCheck.message });
-    }
-    if (containsProfanity(notes)) {
+    if (notes !== undefined && containsProfanity(notes)) {
       return res.status(400).json({ success: false, message: 'Please keep notes family-friendly.' });
     }
-    const updatedPin = await db.updatePin(pinId, { notes: db.sanitizeString(notes || '') });
+    if (coordinates !== undefined && pin.coordinates
+      && !withinNudge(pin.coordinates, coordinates) && !(await checkAdmin())) {
+      return res.status(400).json({
+        success: false,
+        message: `A find can only move about ${NUDGE_LIMIT_M} m. Delete it and add it again to move it further.`,
+      });
+    }
+    const updates = {};
+    if (notes !== undefined) updates.notes = db.sanitizeString(notes || '');
+    if (fruitType !== undefined) updates.fruitType = fruitType.trim().toLowerCase();
+    if (coordinates !== undefined) updates.coordinates = { lat: coordinates.lat, lng: coordinates.lng };
+    const updatedPin = await db.updatePin(pinId, updates);
     res.json({ success: true, message: 'Pin updated successfully', pin: updatedPin });
   } catch (error) {
     console.error('Error in updatePin controller:', error);

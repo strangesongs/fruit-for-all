@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 
 import { getSeasonDisplay } from '../utils/fruitSeasons.js';
 import { familyOf, familyLabel, markSvg } from '../utils/fruitFamilies.js';
@@ -44,13 +44,8 @@ export default function PinPopup({
   pin,
   isMyPin,
   isAdmin,
-  editingPinId,
-  editingNotes,
-  startEditingNotes,
-  cancelEditingNotes,
-  saveEditedNotes,
+  onEdit,
   deletePin,
-  setEditingNotes,
 }) {
   // Hooks must run before any early return (rules of hooks).
   const [confirmations, setConfirmations] = useState(pin?.confirmations || []);
@@ -59,6 +54,29 @@ export default function PinPopup({
     try { return !!localStorage.getItem(storageKey(pin.pinId)); } catch { return false; }
   });
   const [confirmError, setConfirmError] = useState(null);
+  // Delete asks first, in the popup ('ask'), then shows any error ('busy' while it runs).
+  const [deleteState, setDeleteState] = useState('idle');
+  const [deleteError, setDeleteError] = useState(null);
+
+  // The card can grow after it opens (delete asks, "thanks for checking", an error).
+  // Leaflet grows a popup upwards from its pin, so tell the map to keep it on screen.
+  const rootRef = useRef(null);
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || typeof ResizeObserver !== 'function') return undefined;
+    let lastH = null;
+    let frame = 0;
+    const ro = new ResizeObserver(() => {
+      const h = el.getBoundingClientRect().height;
+      if (lastH !== null && Math.abs(h - lastH) > 1) {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => window.dispatchEvent(new CustomEvent('ffa:popup-resize')));
+      }
+      lastH = h;
+    });
+    ro.observe(el);
+    return () => { ro.disconnect(); cancelAnimationFrame(frame); };
+  }, []);
 
   const handleConfirm = useCallback(async () => {
     if (!pin || confirmed) return;
@@ -129,7 +147,7 @@ export default function PinPopup({
   const canEdit = isMyPin || isAdmin;
 
   return (
-    <div className="pin-popup pin-entry">
+    <div className="pin-popup pin-entry" ref={rootRef}>
       <div className="entry-head">
         <span className="entry-kind">{familyLabel(family)}</span>
         <div className="entry-title">
@@ -141,41 +159,16 @@ export default function PinPopup({
       <div className="entry-rules" aria-hidden="true"><span /><span /></div>
 
       <div className="entry-notes">
-        {editingPinId === pin.pinId ? (
-          <div className="edit-notes-box">
-            <textarea
-              value={editingNotes}
-              onChange={(e) => setEditingNotes(e.target.value)}
-              className="notes-textarea"
-              aria-label="notes"
-              maxLength={1000}
-            />
-            <div className="edit-notes-actions">
-              <button onClick={() => saveEditedNotes(pin.pinId)} className="btn save-notes-btn">save</button>
-              <button onClick={cancelEditingNotes} className="btn cancel-notes-btn">cancel</button>
-            </div>
-          </div>
-        ) : pin.notes ? (
+        {pin.notes ? (
           <>
-            {canEdit ? (
-              <button
-                type="button"
-                className="pin-notes clickable-notes pin-notes-btn"
-                onClick={() => startEditingNotes(pin.pinId, pin.notes)}
-                title="edit notes"
-              >
-                {pin.notes}
-              </button>
-            ) : (
-              <p className="pin-notes">{pin.notes}</p>
-            )}
+            <p className="pin-notes">{pin.notes}</p>
             {pin.submittedBy && <span className="entry-signature">—{pin.submittedBy}{added ? `, ${added.replace(/, \d{4}$/, '')}` : ''}</span>}
           </>
         ) : canEdit ? (
           <button
             type="button"
             className="pin-notes add-notes-prompt pin-notes-btn"
-            onClick={() => startEditingNotes(pin.pinId, '')}
+            onClick={() => onEdit && onEdit(pin)}
           >
             + add a note: what's there, how to reach it
           </button>
@@ -230,9 +223,30 @@ export default function PinPopup({
       {confirmError && <p className="freshness-line confirm-error">{confirmError}</p>}
 
       {canEdit && (
-        <div className="pin-actions">
-          <button className="btn delete-pin-btn" onClick={() => deletePin(pin.pinId)}>delete this find</button>
-        </div>
+        deleteState === 'idle' ? (
+          <div className="pin-actions">
+            <button type="button" className="btn pin-edit-btn" onClick={() => onEdit && onEdit(pin)}>edit</button>
+            {/* Swapping the popup's contents inside the click detaches the button before
+                Leaflet sees the click (it then closes the popup), so wait a tick. */}
+            <button type="button" className="btn delete-pin-btn" onClick={() => setTimeout(() => setDeleteState('ask'), 0)}>delete</button>
+          </div>
+        ) : (
+          <div className="pin-actions pin-actions--confirm" role="group" aria-label="delete this find?">
+            <p className="pin-delete-ask">delete this {fruit} for good?</p>
+            <button type="button" className="btn delete-pin-btn delete-pin-btn--confirm" disabled={deleteState === 'busy'}
+              onClick={async () => {
+                setDeleteState('busy');
+                setDeleteError(null);
+                const r = await deletePin(pin.pinId);
+                if (r && !r.ok) { setDeleteState('ask'); setDeleteError(r.message); }
+              }}>
+              {deleteState === 'busy' ? 'deleting…' : 'delete'}
+            </button>
+            <button type="button" className="btn delete-pin-btn" disabled={deleteState === 'busy'}
+              onClick={() => setTimeout(() => { setDeleteState('idle'); setDeleteError(null); }, 0)}>keep it</button>
+            {deleteError && <p className="pin-delete-error" role="alert">{deleteError}</p>}
+          </div>
+        )
       )}
     </div>
   );

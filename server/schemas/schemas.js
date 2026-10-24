@@ -27,6 +27,7 @@ export {
   isReservedUserName,
   validateNotes,
   validatePinInput,
+  validatePinUpdate,
 } from './validation.js';
 export { detectZone, detectZoneFallback } from './zone.js';
 export { escapeHtml } from '../utils/html.js';

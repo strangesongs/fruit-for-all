@@ -2,7 +2,7 @@
 
 A mobile-first community map of free street fruit ("open source orchard"). Live at https://fruitforall.app. GPL-3.0.
 
-Guests can browse the map. Signed-in users can add a pin at their current GPS location, edit or delete their own pins, and filter to "my pins". Anyone can tap "still good?" to confirm a pin.
+Guests can browse the map. Signed-in users can add a find where they're standing (nudging the pin up to ~100 m to the tree), edit its notes, kind and spot, delete it, and filter to "my pins". Anyone can tap "still good?" to confirm a pin.
 
 ## Commands
 
@@ -12,6 +12,8 @@ npm run build    # production bundle → dist/ (Railway runs this on deploy)
 npm start        # node server.js — serves dist/ + /api
 npm test         # node --test tests/server/*.test.js tests/client/*.test.js
 ```
+
+- **Trying a branch on a phone without production:** `npm run build && npm run preview` serves `dist/` on :4173 with a fake in-memory API (`scripts/preview-server.mjs`): any username signs in (`admin…` = admin), sample finds appear near you, the real validation runs, nothing reaches DynamoDB. iPhone Safari only shares location over https: tunnel it (`cloudflared tunnel --url http://localhost:4173`). Tiles go through the preview server: Stadia with `STADIA_API_KEY` from `.env`, else OpenStreetMap's tiles (it logs Stadia's status once if the key is refused).
 
 - The pre-commit hook (husky) runs `npm test`. CI runs tests, a build, and `npm audit` (warn only).
 - Node 22 (pinned: `.nvmrc`, `engines`, CI). ESM throughout (`"type": "module"`).
@@ -38,10 +40,10 @@ server/controllers/           auth.js (register/login/reset, verifyToken), pinsC
 server/schemas/               users.js, pins.js (Dynamo access), validation.js, zone.js, errors.js, schemas.js (barrel)
 server/utils/                 html.js (escapeHtml), profanity.js, confirmDedup.js (Redis 24h per-IP dedup)
 client/index.js               entry: App wires Sidebar ↔ Map via refs; /reset-password renders ResetPassword
-client/sidebar.jsx            ALL non-map UI (~1.5k lines): auth state + handlers, add-a-find modal, filters, three layouts
+client/sidebar.jsx            ALL non-map UI (~1.5k lines): auth state + handlers, filters, three layouts (renders AddFind)
 client/map.jsx                Leaflet map, pin loading/merging, clustering, popups, locate-me, "nearest good bet"
-client/components/            PinPopup.jsx (catalog-entry popup), AuthForm.jsx (sign in / register / forgot password for all three layouts; `variant` = bar | panel | desktop, state stays in Sidebar), SeasonStrip.jsx (now unused); AddFruitPopup/GuestBar/MapControls are EMPTY placeholders
-client/utils/                 auth, cache, network (fetchWithRetry), clustering, fruitList, fruitSeasons, fruitFamilies (marks), pinSummary (ripeness, view summary), zoneFallback (shared with server), breakpoints, …
+client/components/            AddFind.jsx (add / edit a find: locate → place → details → kinds; see below), PinPopup.jsx (catalog-entry popup), AuthForm.jsx (sign in / register / forgot password for all three layouts; `variant` = bar | panel | desktop, state stays in Sidebar), SeasonStrip.jsx (now unused); AddFruitPopup/GuestBar/MapControls are EMPTY placeholders
+client/utils/                 auth, cache, network (fetchWithRetry), clustering, fruitList (+ FRUIT_ALIASES), kindSearch, findPlacement (nudge range, shared with server), fruitSeasons, fruitFamilies (marks), pinSummary (ripeness, view summary), zoneFallback (shared with server), breakpoints, …
 client/stylesheets/           sidebar.css (tokens + every non-map layout), map.css (Leaflet overrides, controls, popups)
 client/sw.js                  service worker (production only): network-first navigations, cache-first static assets
 ```
@@ -67,6 +69,17 @@ Rules:
 - The bar's data comes from the map: `publishPinSummary` sends `detail.summary` = `buildViewSummary()` (client/utils/pinSummary.js, pure + tested) on every viewport change. Bar entries call `ffa:fly-to` to pan to a find; the map's empty-area card fires `ffa:add-find`.
 - iOS Safari zooms the page when a focused input's font-size is < 16px. Keep form inputs at ≥ 16px on phones.
 - Test at **240×427, 375×667, 393×852 and ≥1024 wide** (the CONTRIBUTING doc's 360/480 widths do not hit the 361–768 tree well).
+
+## Add a find / edit a find (Oct 2026)
+
+- `client/components/AddFind.jsx` (styles: `client/stylesheets/addFind.css`) is rendered by every layout through `Sidebar.renderAddFruitPopup()` while `state.addFind` is set (`{ mode: 'add' }` or `{ mode: 'edit', pin }`). It adds `body.ffa-adding`, which hides that layout's own chrome (bar, shelf, Jelly FAB/panel, desktop sidebar).
+- Steps: **locating** (fresh high-accuracy fix) → **placing** (the map moves under a pin fixed mid-map; dashed range circle) → **details** (the spot in words, "what's there", notes) ⇄ **kinds** (the whole list grouped by family, with search that knows other names) → save. No location = no adding (it explains how to allow it); admin may place anywhere, with no range.
+- Range: `NUDGE_LIMIT_M` = 100 m from your fix (editing: from where the find was) in `client/utils/findPlacement.js`. The map pulls the pin back on `moveend`; the server re-checks moves on PATCH (`withinNudge`, +10 m slack; admin exempt). It can't check a create (it never sees your GPS).
+- AddFind ↔ map talk through window events: `ffa:place-start`, `ffa:place-move` (map → form: centre, distance, `atLimit`, finds within 30 m), `ffa:place-spot`, `ffa:place-end`, `ffa:find-saved` (map upserts the pin, flies there, opens its popup; no reload). The popup's "edit" fires `ffa:edit-find`; `ffa:notice` shows the short line after a save or delete.
+- Same kind within 15 m of the spot → a dotted aside suggesting "still good" instead (it doesn't block).
+- `PATCH /api/pins/:id` takes any of `notes`, `fruitType`, `coordinates` (validated by `validatePinUpdate` before anything else); a move re-detects the zone. The client sends only what changed.
+- Delete asks inside the popup (no `confirm()`); every add/edit/delete error is shown in place (`saveErrorMessage`), never `alert()`.
+- FRUIT_LIST is ~240 kinds. New kinds need a family (tested); medicinal ones also need season data. Kinds without season data say "season varies" and stay off the in-season shelf. Other names (`FRUIT_ALIASES`, e.g. pineapple guava → feijoa) are search-only: what's saved is the list name.
 
 ## Design system (non-negotiable aesthetic)
 

@@ -89,23 +89,24 @@ const MEMBERS = {
   tree: [
     'apple', 'apricot', 'asian pear', 'cherry', 'crabapple', 'fig', 'loquat', 'medlar', 'nectarine',
     'pawpaw', 'peach', 'pear', 'persimmon', 'plum', 'pluot', 'quince', 'sour cherry',
-    'date', 'jujube', 'olive', 'pomegranate',
+    'date', 'jujube', 'olive', 'pomegranate', 'beach plum', 'carob', 'cherry plum', 'chokecherry', 'cornelian cherry', 'mayhaw', 'sloe', 'strawberry tree', 'tejocote',
   ],
   citrus: [
     'bergamot', 'blood orange', 'calamansi', 'citron', 'clementine', 'grapefruit', 'kumquat', 'lemon',
-    'lime', 'mandarin', 'orange', 'pomelo', 'tangerine', 'yuzu',
+    'lime', 'mandarin', 'orange', 'pomelo', 'tangerine', 'yuzu', 'finger lime', 'makrut lime', 'sour orange', 'trifoliate orange',
   ],
   tropical: [
     'avocado', 'banana', 'breadfruit', 'cherimoya', 'dragon fruit', 'feijoa', 'guava', 'jackfruit',
     'jaboticaba', 'longan', 'lychee', 'mango', 'papaya', 'passion fruit', 'rambutan', 'sapote', 'soursop',
-    'starfruit', 'surinam cherry', 'tamarind', 'prickly pear',
+    'starfruit', 'surinam cherry', 'tamarind', 'prickly pear', 'acerola', 'black sapote', 'canistel', 'ice cream bean', 'mamey sapote', 'natal plum', 'sea grape', 'strawberry guava', 'wax apple', 'white sapote',
   ],
   berries: [
     'aronia', 'autumn olive', 'blackberry', 'blueberry', 'boysenberry', 'cranberry', 'currant', 'dewberry',
     'elderberry', 'gooseberry', 'grape', 'hawthorn', 'huckleberry', 'kiwi', 'loganberry', 'raspberry',
-    'rose hip', 'strawberry', 'wintergreen', 'mulberry', 'serviceberry',
+    'rose hip', 'strawberry', 'wintergreen', 'mulberry', 'serviceberry', 'goji', 'goumi', 'haskap', 'lingonberry', 'manzanita', 'muscadine', 'oregon grape', 'salal', 'salmonberry', 'sea buckthorn', 'thimbleberry', 'wineberry',
   ],
-  nuts: ['almond', 'chestnut', 'hazelnut', 'macadamia', 'pecan', 'pine nut', 'pistachio', 'walnut', 'coconut'],
+  nuts: ['almond', 'chestnut', 'hazelnut', 'macadamia', 'pecan', 'pine nut', 'pistachio', 'walnut', 'coconut',
+    'acorn', 'beechnut', 'black walnut', 'butternut', 'hickory'],
   mushrooms: [
     'black trumpet', 'cauliflower mushroom', 'chanterelle', 'chicken of the woods', 'giant puffball',
     'hedgehog mushroom', 'hen of the woods', "lion's mane", 'lobster mushroom', 'matsutake',
@@ -115,14 +116,14 @@ const MEMBERS = {
     'basil', 'bay laurel', 'borage', 'chervil', 'chives', 'cilantro', 'curry leaf', 'dill',
     'epazote', 'fennel', 'holy basil', 'hyssop', 'lavender', 'lemon verbena', 'lovage', 'marjoram', 'mint',
     'oregano', 'parsley', 'perilla', 'rosemary', 'rue', 'sage', 'shiso', 'sorrel', 'summer savory',
-    'stevia', 'tarragon', 'thyme', 'vietnamese coriander', 'winter savory',
+    'stevia', 'tarragon', 'thyme', 'vietnamese coriander', 'winter savory', 'lemongrass', 'pineapple sage',
   ],
   greens: [
     'anise hyssop', 'burdock', 'cattail', 'chickweed', 'chicory', 'dandelion',
     'fiddlehead fern', 'field garlic', 'garlic mustard', 'ground ivy', 'jerusalem artichoke',
     'lambsquarters', 'mallow', "miner's lettuce", 'nettles', 'purslane',
     'ramps', 'sheep sorrel', 'spicebush', 'sweet cicely', 'violet', 'watercress', 'wild bergamot',
-    'wild ginger', 'wild mint', 'wild onion', 'wood nettle', 'wood sorrel',
+    'wild ginger', 'wild mint', 'wild onion', 'wood nettle', 'wood sorrel', 'amaranth', 'curly dock', 'nasturtium', 'new zealand spinach', 'nopales', 'sow thistle', 'wild asparagus', 'wild mustard', 'wild radish',
   ],
   medicinal: [
     'aloe vera',
