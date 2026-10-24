@@ -98,7 +98,7 @@ Rules:
 
 ## Environment
 
-`.env` (never commit): `NODE_ENV`, `JWT_SECRET` (required when NODE_ENV=production), `AWS_REGION`, `DYNAMODB_USERS_TABLE`, `PINS_TABLE`, `ALLOWED_ORIGINS`, `PORT`, `STADIA_API_KEY`. Optional: `REDIS_URL`, `RESEND_API_KEY`, `APP_URL`, `ADMIN_EMAIL`, `PIN_NOTIFICATIONS=true`.
+`.env` (never commit): `NODE_ENV`, `JWT_SECRET` (required when NODE_ENV=production), `AWS_REGION`, `DYNAMODB_USERS_TABLE`, `PINS_TABLE`, `ALLOWED_ORIGINS`, `PORT`, `STADIA_API_KEY`. Optional: `REDIS_URL`, `RESEND_API_KEY`, `APP_URL` (base for links in emails; `server/utils/appUrl.js` defaults it to https://fruitforall.app in production, localhost otherwise), `ADMIN_EMAIL`, `PIN_NOTIFICATIONS=true`.
 Never print or paste `.env` values. AWS creds come from env or `~/.aws`.
 
 ## Known issues / open review items
