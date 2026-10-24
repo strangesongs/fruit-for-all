@@ -2,7 +2,7 @@
 
 A mobile-first community map of free street fruit ("open source orchard"). Live at https://fruitforall.app. GPL-3.0.
 
-Guests can browse the map. Signed-in users can add a find where they're standing (nudging the pin up to ~100 m to the tree), edit its notes, kind and spot, delete it, and filter to "my pins". Anyone can tap "still good?" to confirm a pin.
+Guests can browse the map, share a find (`/find/<id>`) and report a problem with one. Signed-in users can add a find where they're standing (nudging the pin up to ~100 m to the tree), edit its notes, kind and spot, delete it, and filter to "my pins". Anyone can tap "still good?" to confirm a pin.
 
 ## Commands
 
@@ -81,6 +81,14 @@ Rules:
 - Delete asks inside the popup (no `confirm()`); every add/edit/delete error is shown in place (`saveErrorMessage`), never `alert()`.
 - FRUIT_LIST is ~240 kinds. New kinds need a family (tested); medicinal ones also need season data. Kinds without season data say "season varies" and stay off the in-season shelf. Other names (`FRUIT_ALIASES`, e.g. pineapple guava → feijoa) are search-only: what's saved is the list name.
 
+## A link per find, and reports (Oct 2026)
+
+- Every find has a page: `/find/<pinId>` (`client/utils/findLinks.js`: `findPath`, `pinIdFromPath`; ids are v4 UUIDs). The server answers it with the app plus that find's title and Open Graph tags (`makeFindPage` → `server/utils/findPage.js`, which swaps the `share:start…share:end` block in `client/map-index.html`; keep those markers). Preview text comes from `findSummary` (kind, season at the find's zone, the note; never who added it).
+- The map reads the id on load (`openLinkedFind`): `GET /api/pins/:id`, then it opens that find at z17 and loads the area around it. While a link "holds the view" (`linkHoldsView()`), the IP/precise location is noted but not flown to; pressing locate-me releases it. A find that's gone shows `ffa:notice` and carries on as a normal visit.
+- The address bar follows the open popup (`syncFindUrl`, `history.replaceState`, keeps `?landing=…`), and so does the tab title.
+- Popup: "share" (system share sheet, else copy the link, else show it) for everyone; "report a problem" for anyone who can't edit the find. Reasons in `REPORT_REASONS` (gone, private property, unsafe, a different plant, something else + note). `POST /api/pins/:id/report`: once per find per IP per day, stored on the pin (`reports`, `reportCount`; never returned to browsers), emailed to `ADMIN_EMAIL`; the find stays up.
+- `getPinById` throws `PinsQueryError` on a database failure (it used to return null, i.e. "no such find").
+
 ## Design system (non-negotiable aesthetic)
 
 "Earthy, crunchy, Whole Earth Catalog."
@@ -105,7 +113,8 @@ Rules:
 - Server handlers: validate input types **before** using string methods, and wrap the whole body in try/catch. An exception thrown in an async Express 4 handler is an unhandled rejection that kills the Node process.
 - Dynamo pin-list failures throw `PinsQueryError` → handlers return 503 via `sendPinsError` (never an empty map).
 - Users-table failures throw `UsersQueryError` (never `null`/`false`, which read as "no such user"). Messages meant for people are `UserError`; auth handlers send those as-is and answer anything else with a generic 500 (`sendAuthError`).
-- Public responses must never include `submittedBy` (stripped in `getPublicPins`).
+- Public responses must never include `submittedBy` or reports: use `toPublicPin` (pinsController.js).
+- Controllers call the database through the `server/schemas/schemas.js` barrel: export new functions there (a test checks every `db.*` call; a missing `confirmPin` export broke "still good?" until Oct 2026).
 - New third-party hosts the browser talks to must be added to the helmet CSP in server.js (`connectSrc`/`imgSrc`).
 - Production builds content-hash every file, including the entry (`--entry-names`); `scripts/build-html.mjs` rewrites `dist/index.html` to point at them. The SW serves `.js`/`.css` cache-first, which is only safe because names change. Bump `CACHE_VERSION` in `client/sw.js` when the caching strategy or precache list changes.
 - The Resend SDK returns `{ data, error }` instead of throwing. Wrap every send with `logEmailResult()` (server/utils/email.js).

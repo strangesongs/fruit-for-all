@@ -14,6 +14,7 @@ import { detectZoneFallback } from './utils/zoneFallback.js';
 import { popupPanDelta } from './utils/popupFit.js';
 import { LOCATE_OPTIONS, isAppleMobile, locateErrorMessage, parseLastLocation } from './utils/geolocation.js';
 import { clampToRange, distanceMeters } from './utils/findPlacement.js';
+import { pinIdFromPath, findPath, findSummary } from './utils/findLinks.js';
 import L from 'leaflet';
 
 import './stylesheets/map.css';
@@ -159,32 +160,40 @@ function OpenPopupOnPin({ target, seq }) {
     React.useEffect(() => {
         if (!target || seq === lastSeq.current) return;
         lastSeq.current = seq;
+        // The pin can still be inside a cluster when the move ends (the zoom reaches
+        // React a render later), so look again for a moment before giving up.
+        let tries = 0;
+        let timer = null;
         const openPopup = () => {
+            let found = false;
             map.eachLayer(layer => {
-                if (!(layer instanceof L.Marker)) return;
+                if (found || !(layer instanceof L.Marker) || !layer.getPopup()) return;
                 const ll = layer.getLatLng();
                 if (Math.abs(ll.lat - target.lat) < 0.000001 &&
                     Math.abs(ll.lng - target.lng) < 0.000001) {
+                    found = true;
                     layer.openPopup();
                 }
             });
+            if (!found && tries++ < 15) timer = setTimeout(openPopup, 100);
         };
         map.once('moveend', openPopup);
-        return () => map.off('moveend', openPopup);
+        return () => { map.off('moveend', openPopup); clearTimeout(timer); };
     }, [seq]);
     return null;
 }
 
 // Component to fly the map to a new location (e.g. after geolocation resolves)
-function MapFlyTo({ target }) {
+// While `hold` is set (a shared link is showing its find) a new target is noted, not flown to.
+function MapFlyTo({ target, hold }) {
     const map = useMap();
     const prevTarget = React.useRef(null);
     React.useEffect(() => {
         if (target && target !== prevTarget.current) {
             prevTarget.current = target;
-            map.flyTo([target.lat, target.lng], 13, { duration: 1.2 });
+            if (!hold) map.flyTo([target.lat, target.lng], 13, { duration: 1.2 });
         }
-    }, [target]);
+    }, [target, hold]);
     return null;
 }
 
@@ -431,13 +440,94 @@ class Map extends Component {
         // served with max-age, so a revisited view could otherwise show the old list.
         this._skipHttpCacheUntil = 0;
         this._viewBounds = null; // last viewport bounds, for the "in this view" summary
+        // A link to one find (/find/<id>): 'pending' while it loads, 'found', 'gone', or null.
+        // While pending or found, the map stays on the find instead of flying to you.
+        this._linkId = typeof window !== 'undefined' ? pinIdFromPath(window.location.pathname) : null;
+        this._linkState = this._linkId ? 'pending' : null;
+        this._linkedPin = null;
+        this._ipDone = false;
+        this._onMapReady = null;
     }
+
+    linkHoldsView = () => this._linkState === 'pending' || this._linkState === 'found';
+
+    // ── A link to one find ────────────────────────────────────────────────────
+
+    // Load the find named in the address bar, then open it. The area around it loads
+    // as usual, so the map isn't empty except for it.
+    openLinkedFind = async (pinId) => {
+        let pin = null;
+        let gone = false;
+        try {
+            const response = await fetchWithRetry(`${API_BASE}/api/pins/${encodeURIComponent(pinId)}`, {}, {
+                timeoutMs: 9000,
+                retries: 2,
+            });
+            if (response.status === 404) gone = true;
+            else if (response.ok) {
+                const data = await response.json();
+                if (data && data.success && data.pin && data.pin.coordinates) pin = data.pin;
+            }
+        } catch (e) { /* network trouble: treat as not found below, without saying it's gone */ }
+        if (!pin) {
+            this._linkState = 'gone';
+            this.syncFindUrl(null);
+            window.dispatchEvent(new CustomEvent('ffa:notice', {
+                detail: { text: gone ? 'that find was removed.' : 'couldn’t open that find.' },
+            }));
+            // Carry on as a normal visit: go to where you are and load that area.
+            const loc = this.state.userLocation;
+            if (loc) {
+                if (this._leafletMap) this._leafletMap.flyTo([loc.lat, loc.lng], 13, { duration: 1.2 });
+                this.fetchPins(false, this.getLocationBounds(loc.lat, loc.lng));
+            } else if (this._ipDone) {
+                this.fetchPins(false, this.getFallbackBounds());
+            }
+            return;
+        }
+        this._linkState = 'found';
+        this._linkedPin = pin;
+        const target = { lat: pin.coordinates.lat, lng: pin.coordinates.lng };
+        this.updatePinsState(mergePins(this.state.pins, [pin]), {
+            spotlightPin: target,
+            spotlightSeq: this.state.spotlightSeq + 1,
+        });
+        this.whenMapReady((map) => {
+            this._blockViewportFetchUntil = Date.now() + 4000;
+            this.fetchPins(false, this.getLocationBounds(target.lat, target.lng));
+            // After OpenPopupOnPin has registered for the move's end.
+            setTimeout(() => map.setView([target.lat, target.lng], 17, { animate: false }), 60);
+        });
+    };
+
+    whenMapReady = (fn) => {
+        if (this._leafletMap) fn(this._leafletMap);
+        else this._onMapReady = fn;
+    };
+
+    // The address bar follows the open find, so it can be copied or reloaded.
+    // Closing it goes back to "/" (keeping ?landing=… and the like).
+    syncFindUrl = (pin) => {
+        if (typeof window === 'undefined' || !window.history || !window.history.replaceState) return;
+        const path = pin ? findPath(pin.pinId) : '/';
+        if (window.location.pathname !== path) {
+            try {
+                window.history.replaceState(window.history.state, '', `${path}${window.location.search}${window.location.hash}`);
+            } catch (e) { /* some embedded browsers refuse */ }
+        }
+        document.title = pin ? findSummary(pin, new Date().getMonth() + 1).title : 'fruit for all';
+    };
+
+    handlePopupClosed = (pin) => {
+        if (pinIdFromPath(window.location.pathname) === pin.pinId) this.syncFindUrl(null);
+    };
 
     closePopups = () => {
         this.setState(prev => ({ closePopupsSignal: prev.closePopupsSignal + 1 }));
     };
 
     componentDidMount() {
+        if (this._linkId) this.openLinkedFind(this._linkId);
         this.requestIpLocation();
         window.addEventListener('ffa:nearest-good-bet', this.handleNearestGoodBet);
         window.addEventListener('ffa:fly-to', this.handleFlyTo);
@@ -588,6 +678,7 @@ class Map extends Component {
     handleFindSaved = (e) => {
         const pin = e && e.detail && e.detail.pin;
         if (!pin || !pin.pinId || !pin.coordinates) return;
+        if (this._linkedPin && this._linkedPin.pinId === pin.pinId) this._linkedPin = { ...this._linkedPin, ...pin };
         this.invalidatePinCaches();
         const exists = this.state.pins.some(p => p.pinId === pin.pinId);
         const nextPins = exists
@@ -819,6 +910,8 @@ class Map extends Component {
     };
 
     updatePinsState = (nextPins, extraState = {}) => {
+        const linked = this._linkedPin;
+        if (linked && !nextPins.some(p => p.pinId === linked.pinId)) nextPins = [...nextPins, linked];
         this.setState({
             pins: nextPins,
             ...extraState,
@@ -849,6 +942,8 @@ class Map extends Component {
                     }
                     this.setState({ userLocation });
                     if (this._shelfOn) this.setPersonAnchor({ ...userLocation, kind: 'approx', city: data.city || null });
+                    // A shared link: the map stays on its find and loads around it instead.
+                    if (this.linkHoldsView()) return;
                     this.fetchPins(false, this.getLocationBounds(data.lat, data.lng));
                     return;
                 }
@@ -857,10 +952,12 @@ class Map extends Component {
             if (controller.signal.aborted) return;
             /* network error — fall through */
         } finally {
+            this._ipDone = true;
             if (this._requestControllers.ipLocate === controller) {
                 this._requestControllers.ipLocate = null;
             }
         }
+        if (this.linkHoldsView()) return;
         // No IP location: load the area around where the map is (the default centre on
         // first load), not an unbounded list from anywhere in the world.
         this.fetchPins(false, this.getFallbackBounds());
@@ -1146,6 +1243,7 @@ class Map extends Component {
             if (handleUnauthorized(response)) return { ok: false, message: 'your session expired. sign in again.' };
             const result = await response.json().catch(() => ({}));
             if (response.ok && result.success) {
+                if (this._linkedPin && this._linkedPin.pinId === pinId) this._linkedPin = null;
                 const updatedPins = this.state.pins.filter(pin => pin.pinId !== pinId);
                 this.invalidatePinCaches();
                 this.updatePinsState(updatedPins);
@@ -1214,13 +1312,20 @@ class Map extends Component {
             <div className={`map-area${adding ? ' is-adding' : ''}${placing ? ' is-placing' : ''}`}>
                     <MapContainer center={DEFAULT_CENTER} zoom={13} scrollWheelZoom={true} zoomControl={false}>
                         <ZoomControl position="topright" />
-                        <MapRefCapture onMap={(map) => { this._leafletMap = map; }} />
-                        <MapFlyTo target={this.state.userLocation} />
+                        <MapRefCapture onMap={(map) => {
+                            this._leafletMap = map;
+                            if (this._onMapReady) { const fn = this._onMapReady; this._onMapReady = null; fn(map); }
+                        }} />
+                        <MapFlyTo target={this.state.userLocation} hold={this.linkHoldsView()} />
                         <PanToPin target={this.state.pinFlyTarget} seq={this.state.pinFlySeq} />
                         <OpenPopupOnPin target={this.state.spotlightPin} seq={this.state.spotlightSeq} />
                         <ClosePopupsOnCommand signal={this.state.closePopupsSignal} />
                         <LocateMeButton
-                            onLocate={() => { this._blockViewportFetchUntil = Date.now() + 4000; }}
+                            onLocate={() => {
+                                this._blockViewportFetchUntil = Date.now() + 4000;
+                                // You asked to go to where you are: a shared link stops holding the view.
+                                if (this.linkHoldsView()) this._linkState = 'released';
+                            }}
                             onPreciseLocation={(loc, precise) => {
                                 this.setState({ userLocation: loc });
                                 if (this._shelfOn && precise) this.setPersonAnchor({ ...loc, kind: 'precise', city: null });
@@ -1330,7 +1435,7 @@ class Map extends Component {
                                         key={pin.pinId}
                                         icon={markerIcon}
                                     >
-                                        <Popup autoPan={false} eventHandlers={{ add: () => { this.setState(prev => ({ pinFlyTarget: { lat: pin.coordinates.lat, lng: pin.coordinates.lng }, pinFlySeq: prev.pinFlySeq + 1 })); this.props.onPinOpen && this.props.onPinOpen(); clearTimeout(this._popupFitTimer); this._popupFitTimer = setTimeout(this.keepPopupOnScreen, 700); } }}>
+                                        <Popup autoPan={false} eventHandlers={{ remove: () => this.handlePopupClosed(pin), add: () => { this.syncFindUrl(pin); this.setState(prev => ({ pinFlyTarget: { lat: pin.coordinates.lat, lng: pin.coordinates.lng }, pinFlySeq: prev.pinFlySeq + 1 })); this.props.onPinOpen && this.props.onPinOpen(); clearTimeout(this._popupFitTimer); this._popupFitTimer = setTimeout(this.keepPopupOnScreen, 700); } }}>
                                             <PinPopup
                                                 pin={pin}
                                                 isMyPin={isMyPin}

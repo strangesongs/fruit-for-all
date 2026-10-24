@@ -24,6 +24,8 @@ import { withinNudge, NUDGE_LIMIT_M } from '../client/utils/findPlacement.js';
 import { validatePinInput, validatePinUpdate } from '../server/schemas/validation.js';
 import { containsProfanity } from '../server/utils/profanity.js';
 import { detectZoneFallback } from '../client/utils/zoneFallback.js';
+import { isPinId, validateReport, reportReasonLabel } from '../client/utils/findLinks.js';
+import { findPageHtml } from '../server/utils/findPage.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DIST = path.resolve(here, '..', 'dist');
@@ -103,7 +105,7 @@ function listPins(q) {
     p.coordinates.lat >= b.minLat && p.coordinates.lat <= b.maxLat
     && p.coordinates.lng >= b.minLng && p.coordinates.lng <= b.maxLng));
 }
-const strip = ({ submittedBy, ...pin }) => pin;
+const strip = ({ submittedBy, reports, ...pin }) => pin;
 
 // ── app ──────────────────────────────────────────────────────────────────────
 const app = express();
@@ -138,6 +140,28 @@ app.get('/api/pins/public', (req, res) => res.json({ success: true, pins: listPi
 app.get('/api/pins', (req, res) => {
   if (!userFor(req)) return res.status(401).json({ success: false, message: 'Sign in again (the preview restarted?)' });
   return res.json({ success: true, pins: listPins(req.query), cursor: null, hasMore: false });
+});
+
+// One find, for a shared link (/find/<id>).
+app.get('/api/pins/:pinId', (req, res) => {
+  const pin = pins.get(String(req.params.pinId).toLowerCase());
+  if (!pin) return res.status(404).json({ success: false, message: 'No such find' });
+  return res.json({ success: true, pin: strip(pin) });
+});
+
+// "report a problem": the real validation; logged here instead of emailed.
+const reported = new Set(); // `${pinId}|${ip}`, for the once-a-day rule
+app.post('/api/pins/:pinId/report', (req, res) => {
+  const check = validateReport(req.body);
+  if (!check.valid) return res.status(400).json({ success: false, message: check.message });
+  const pin = pins.get(String(req.params.pinId).toLowerCase());
+  if (!pin) return res.status(404).json({ success: false, message: 'No such find' });
+  const key = `${pin.pinId}|${req.ip}`;
+  if (reported.has(key)) return res.status(409).json({ success: false, message: 'You already reported this find today. Thank you.' });
+  reported.add(key);
+  (pin.reports ||= []).push({ ...check.report, at: new Date().toISOString() });
+  console.log(`[preview] report on ${pin.fruitType}: ${reportReasonLabel(check.report.reason)}${check.report.note ? ` (“${check.report.note}”)` : ''}`);
+  return res.json({ success: true });
 });
 
 app.post('/api/pins', (req, res) => {
@@ -246,6 +270,14 @@ app.get(/\.js$/, (req, res, next) => {
   res.type('application/javascript').send(src);
 });
 app.use(express.static(DIST, { index: false }));
+// A link to one find: the app with its preview tags, as the real server does.
+app.get('/find/:pinId', (req, res) => {
+  const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
+  const pin = isPinId(req.params.pinId) ? pins.get(req.params.pinId.toLowerCase()) : null;
+  if (!pin) return res.status(404).type('html').send(html);
+  const base = `${req.headers['x-forwarded-proto'] || req.protocol}://${req.headers.host}`;
+  return res.type('html').send(findPageHtml(html, strip(pin), { baseUrl: base }));
+});
 app.get('*', (req, res) => res.sendFile(path.join(DIST, 'index.html')));
 
 app.listen(PORT, () => {

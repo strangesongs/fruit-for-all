@@ -68,3 +68,27 @@ export async function markConfirmed(redisClient, pinId, ip) {
     // non-critical — dedup just won't apply for this confirmation
   }
 }
+
+// Reports use the same store and window: one report per find per IP per day.
+export function reportDedupKey(pinId, ip) {
+  return `report:${pinId}:${ip}`;
+}
+
+/** Fails open, like isDuplicateConfirm. */
+export async function isDuplicateReport(store, pinId, ip) {
+  if (!store) return false;
+  try {
+    return !!(await store.get(reportDedupKey(pinId, ip)));
+  } catch {
+    return false;
+  }
+}
+
+export async function markReported(store, pinId, ip) {
+  if (!store) return;
+  try {
+    await store.set(reportDedupKey(pinId, ip), '1', { EX: DEDUP_TTL_SECONDS });
+  } catch {
+    // non-critical
+  }
+}

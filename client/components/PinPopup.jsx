@@ -4,6 +4,9 @@ import { getSeasonDisplay } from '../utils/fruitSeasons.js';
 import { familyOf, familyLabel, markSvg } from '../utils/fruitFamilies.js';
 import { seasonMonthsFor, seasonRangeText, zoneOf } from '../utils/pinSummary.js';
 import { API_BASE } from '../utils/config.js';
+import {
+  findUrl, findSummary, REPORT_REASONS, REPORT_NOTE_MAX, validateReport,
+} from '../utils/findLinks.js';
 
 function relativeTime(isoString) {
   const diff = Date.now() - new Date(isoString).getTime();
@@ -57,6 +60,13 @@ export default function PinPopup({
   // Delete asks first, in the popup ('ask'), then shows any error ('busy' while it runs).
   const [deleteState, setDeleteState] = useState('idle');
   const [deleteError, setDeleteError] = useState(null);
+  // Share: the system share sheet, else copy the link, else show it to copy by hand.
+  const [shareNote, setShareNote] = useState(null); // 'copied' | { url }
+  // Report: 'idle' → 'open' (the form) → 'busy' → 'sent'
+  const [reportState, setReportState] = useState('idle');
+  const [reportReason, setReportReason] = useState(null);
+  const [reportNote, setReportNote] = useState('');
+  const [reportError, setReportError] = useState(null);
 
   // The card can grow after it opens (delete asks, "thanks for checking", an error).
   // Leaflet grows a popup upwards from its pin, so tell the map to keep it on screen.
@@ -123,6 +133,70 @@ export default function PinPopup({
       setConfirmError('something went wrong');
     }
   }, [confirmed, confirmations, pin]);
+
+  // The report form opens below the fold of a tall card on a phone (the card scrolls
+  // inside its max-height): bring the form to the top of the card.
+  const reportRef = useRef(null);
+  useEffect(() => {
+    if (reportState !== 'open' || !reportRef.current) return;
+    const form = reportRef.current;
+    let box = form.parentElement;
+    while (box && box !== document.body && !(box.scrollHeight > box.clientHeight + 1
+      && /(auto|scroll)/.test(getComputedStyle(box).overflowY))) box = box.parentElement;
+    if (!box || box === document.body) return;
+    const top = form.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop - 8;
+    box.scrollTo({ top, behavior: 'smooth' });
+  }, [reportState === 'open']);
+
+  const handleShare = useCallback(async () => {
+    if (!pin) return;
+    const url = findUrl(window.location.origin, pin.pinId);
+    const { title } = findSummary(pin, new Date().getMonth() + 1);
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ title, url });
+        return;
+      } catch (e) {
+        if (e && e.name === 'AbortError') return; // they closed the sheet
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareNote('copied');
+    } catch {
+      setShareNote({ url });
+    }
+  }, [pin]);
+
+  const sendReport = useCallback(async () => {
+    if (!pin) return;
+    const check = validateReport({ reason: reportReason, note: reportNote });
+    if (!check.valid) {
+      setReportError(reportReason ? 'say a few words about what’s wrong.' : 'choose what’s wrong.');
+      return;
+    }
+    setReportState('busy');
+    setReportError(null);
+    try {
+      // Not auto-retried: it's a POST.
+      const res = await fetch(`${API_BASE}/api/pins/${encodeURIComponent(pin.pinId)}/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(check.report),
+      });
+      if (res.ok || res.status === 409) {
+        setReportState('sent');
+        return;
+      }
+      setReportState('open');
+      if (res.status === 429) setReportError('too many reports from here. try again later.');
+      else if (res.status === 404) setReportError('this find is no longer on the map.');
+      else setReportError('couldn’t send it. try again in a moment.');
+    } catch {
+      setReportState('open');
+      setReportError('couldn’t reach fruit for all. check your connection and try again.');
+    }
+  }, [pin, reportReason, reportNote]);
 
   if (!pin) return null;
 
@@ -221,6 +295,61 @@ export default function PinPopup({
         <a className="entry-directions" href={directionsUrl} target="_blank" rel="noopener noreferrer">directions</a>
       </div>
       {confirmError && <p className="freshness-line confirm-error">{confirmError}</p>}
+
+      {reportState === 'idle' && (
+        <div className="entry-links">
+          <button type="button" className="entry-link" onClick={handleShare}>share</button>
+          {!canEdit && (
+            // A tick's wait, as with delete: the click must land before the contents swap.
+            <button type="button" className="entry-link"
+              onClick={() => setTimeout(() => { setReportState('open'); setShareNote(null); }, 0)}>
+              report a problem
+            </button>
+          )}
+        </div>
+      )}
+      {reportState === 'idle' && shareNote === 'copied' && (
+        <p className="entry-share-note" role="status">link copied. paste it anywhere.</p>
+      )}
+      {reportState === 'idle' && shareNote && shareNote.url && (
+        <label className="entry-share-note">
+          copy this link:
+          <input className="entry-share-url" readOnly value={shareNote.url}
+            onFocus={(e) => e.target.select()} />
+        </label>
+      )}
+
+      {(reportState === 'open' || reportState === 'busy') && (
+        <form className="entry-report" ref={reportRef} onSubmit={(e) => { e.preventDefault(); sendReport(); }}>
+          <fieldset disabled={reportState === 'busy'}>
+            <legend>what’s wrong with this {fruit}?</legend>
+            {REPORT_REASONS.map((r) => (
+              <label key={r.id} className={`entry-report__reason${reportReason === r.id ? ' is-on' : ''}`}>
+                <input type="radio" name={`report-${pin.pinId}`} value={r.id}
+                  checked={reportReason === r.id}
+                  onChange={() => { setReportReason(r.id); setReportError(null); }} />
+                <span>{r.label}{r.hint && <small>{r.hint}</small>}</span>
+              </label>
+            ))}
+            <textarea className="entry-report__note" rows={2} maxLength={REPORT_NOTE_MAX}
+              placeholder={reportReason === 'other' ? 'what’s wrong?' : 'anything else? (optional)'}
+              value={reportNote} onChange={(e) => setReportNote(e.target.value)} />
+            <div className="entry-report__actions">
+              <button type="submit" className="btn entry-report__send">
+                {reportState === 'busy' ? 'sending…' : 'send report'}
+              </button>
+              <button type="button" className="btn entry-report__cancel"
+                onClick={() => setTimeout(() => { setReportState('idle'); setReportError(null); }, 0)}>
+                never mind
+              </button>
+            </div>
+            {reportError && <p className="entry-report__error" role="alert">{reportError}</p>}
+          </fieldset>
+        </form>
+      )}
+      {reportState === 'sent' && (
+        <p className="entry-report-thanks" role="status">thanks for telling us. we’ll take a look.</p>
+      )}
 
       {canEdit && (
         deleteState === 'idle' ? (

@@ -15,6 +15,9 @@ import {
   getMyPins,
   updatePin,
   deletePin,
+  getPublicPin,
+  reportPin,
+  makeFindPage,
 } from './pinsController.js';
 
 export default {
@@ -31,5 +34,8 @@ export default {
   getMyPins,
   updatePin,
   deletePin,
+  getPublicPin,
+  reportPin,
+  makeFindPage,
   verifyToken,
 };
