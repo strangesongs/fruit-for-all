@@ -13,6 +13,8 @@ npm start        # node server.js — serves dist/ + /api
 npm test         # node --test tests/server/*.test.js tests/client/*.test.js
 ```
 
+- **Trying a branch on a phone without production:** `npm run build && npm run preview` serves `dist/` on :4173 with a fake in-memory API (`scripts/preview-server.mjs`): any username signs in (`admin…` = admin), sample finds appear near you, the real validation runs, nothing reaches DynamoDB. iPhone Safari only shares location over https: tunnel it (`cloudflared tunnel --url http://localhost:4173`). With `STADIA_API_KEY` in `.env`, tiles are proxied with the key so they load on the tunnel's domain.
+
 - The pre-commit hook (husky) runs `npm test`. CI runs tests, a build, and `npm audit` (warn only).
 - Node 22 (pinned: `.nvmrc`, `engines`, CI). ESM throughout (`"type": "module"`).
 - **Do not "simplify" the `NODE_ENV` quoting in package.json** (`\\\"production\\\"`). esbuild needs a JS string literal; without it React crashes with `development is not defined`.

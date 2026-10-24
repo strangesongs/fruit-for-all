@@ -11,6 +11,7 @@
     "build": "rm -rf dist && npm run copy:html && esbuild client/index.js --bundle --splitting --format=esm --outdir=dist --minify --entry-names='[name]-[hash]' --metafile=dist/.meta.json --define:process.env.NODE_ENV=\\\"production\\\" --jsx=automatic --loader:.js=jsx --loader:.jsx=jsx --loader:.png=file && node scripts/build-html.mjs",
     "copy:html": "mkdir -p dist && cp client/map-index.html dist/index.html && cp client/manifest.json dist/manifest.json && cp client/sw.js dist/sw.js && cp favicon.svg dist/favicon.svg && cp loquat-48.png dist/loquat-48.png && cp loquat-192.png dist/loquat-192.png && cp loquat-512.png dist/loquat-512.png",
     "start": "node server.js",
+    "preview": "node $(test -f .env && echo --env-file=.env) scripts/preview-server.mjs",
     "test": "node --test tests/server/*.test.js tests/client/*.test.js",
     "prepare": "husky"
   },
