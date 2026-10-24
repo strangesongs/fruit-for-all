@@ -27,7 +27,8 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"],
+        // Cloudflare Web Analytics: the beacon script, and where it reports.
+        scriptSrc: ["'self'", 'https://static.cloudflareinsights.com'],
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         imgSrc: [
@@ -38,7 +39,7 @@ app.use(
           'https://*.tile.openstreetmap.org',
           'https://tiles.stadiamaps.com',
         ],
-        connectSrc: ["'self'"],
+        connectSrc: ["'self'", 'https://cloudflareinsights.com'],
       },
     },
     crossOriginEmbedderPolicy: false, // Leaflet map tiles require this off
