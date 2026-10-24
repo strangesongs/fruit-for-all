@@ -263,12 +263,19 @@
 }
 
 .pin-notes-btn {
+    display: block;
     width: 100%;
+    margin: 3px 0 0 0;
     background: transparent;
     border: none;
+    box-shadow: none;
     padding: 0;
     text-align: left;
-    font-family: inherit;
+    font-family: var(--font);
+    font-size: 0.85rem;
+    color: var(--text);
+    white-space: normal;
+    cursor: pointer;
 }
 
 .pin-notes-btn:disabled {
