@@ -89,6 +89,7 @@ Rules:
 - Sidebar ↔ Map communicate via refs from `App` **and** window CustomEvents (`ffa:pins-summary`, `ffa:nearest-good-bet`).
 - Server handlers: validate input types **before** using string methods, and wrap the whole body in try/catch. An exception thrown in an async Express 4 handler is an unhandled rejection that kills the Node process.
 - Dynamo pin-list failures throw `PinsQueryError` → handlers return 503 via `sendPinsError` (never an empty map).
+- Users-table failures throw `UsersQueryError` (never `null`/`false`, which read as "no such user"). Messages meant for people are `UserError`; auth handlers send those as-is and answer anything else with a generic 500 (`sendAuthError`).
 - Public responses must never include `submittedBy` (stripped in `getPublicPins`).
 - New third-party hosts the browser talks to must be added to the helmet CSP in server.js (`connectSrc`/`imgSrc`).
 - Production builds content-hash every file, including the entry (`--entry-names`); `scripts/build-html.mjs` rewrites `dist/index.html` to point at them. The SW serves `.js`/`.css` cache-first, which is only safe because names change. Bump `CACHE_VERSION` in `client/sw.js` when the caching strategy or precache list changes.

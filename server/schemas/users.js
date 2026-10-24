@@ -2,7 +2,7 @@ import { GetItemCommand, PutItemCommand, ScanCommand } from '@aws-sdk/client-dyn
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { dynamoClient, USERS_TABLE } from '../db/dynamo.js';
-import { UserError } from './errors.js';
+import { UserError, UsersQueryError } from './errors.js';
 import {
   validateEmail,
   validatePassword,
@@ -30,7 +30,7 @@ export async function getUser(userName) {
     };
   } catch (err) {
     console.error('Error getting user:', err);
-    return null;
+    throw new UsersQueryError('Failed to read user', err);
   }
 }
 
@@ -52,7 +52,7 @@ export async function saveUser(user) {
     return true;
   } catch (err) {
     console.error('Error saving user:', err);
-    return false;
+    throw new UsersQueryError('Failed to save user', err);
   }
 }
 
@@ -80,7 +80,7 @@ export async function getUserByEmail(email) {
     };
   } catch (err) {
     console.error('Error finding user by email:', err);
-    return null;
+    throw new UsersQueryError('Failed to look up user by email', err);
   }
 }
 
@@ -120,9 +120,7 @@ export async function createUser(userData) {
     isAdmin: false,
     savedPins: [],
   };
-  if (!(await saveUser(user))) {
-    throw new UserError('Failed to create user');
-  }
+  await saveUser(user);
   const { passwordHash: _, ...safeUser } = user;
   return safeUser;
 }
@@ -140,7 +138,12 @@ export async function verifyUser(userName, password) {
     throw new UserError('Invalid username or password');
   }
   user.lastLogin = new Date().toISOString();
-  await saveUser(user);
+  // Recording the login time is best-effort: the password already checked out.
+  try {
+    await saveUser(user);
+  } catch {
+    // saveUser has logged it.
+  }
   const { passwordHash: _, ...safeUser } = user;
   return safeUser;
 }
