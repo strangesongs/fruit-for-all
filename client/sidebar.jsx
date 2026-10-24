@@ -9,6 +9,7 @@ import { getTinyScreenGuestAuthState } from './utils/sidebarState.js';
 import { familyLabel, markSvg, familyOf } from './utils/fruitFamilies.js';
 import { formatMiles, MONTH_NAMES } from './utils/pinSummary.js';
 import { fetchWithRetry } from './utils/network.js';
+import AuthForm from './components/AuthForm.jsx';
 
 import './stylesheets/sidebar.css';
 
@@ -1034,102 +1035,8 @@ export default class Sidebar extends React.Component {
                                     <button type="button" onClick={() => this.setState({ showAbout: false, guestAddAttempted: false })} className="toggle-link">← back</button>
                                 </p>
                             </div>
-                        ) : isForgotMode ? (
-                            forgotSuccess ? (
-                                <div>
-                                    <p className="auth-success-msg">if that email is registered, a reset link has been sent.</p>
-                                    <p className="toggle-auth">
-                                        <button type="button" onClick={() => this.setState({ isForgotMode: false, forgotSuccess: false, forgotEmail: '' })} className="toggle-link">back to sign in</button>
-                                        {' · '}
-                                        <button type="button" onClick={() => this.setState({ guestAddAttempted: false, authError: '', isForgotMode: false })} className="toggle-link">browse as guest</button>
-                                    </p>
-                                </div>
-                            ) : (
-                                <form onSubmit={this.handleForgotPassword} className="guest-bar-form">
-                                    <div className="form-group">
-                                        <input
-                                            type="email"
-                                            value={forgotEmail}
-                                            onChange={(e) => this.setState({ forgotEmail: e.target.value })}
-                                            placeholder="your email address"
-                                        autoComplete="email"
-                                            disabled={forgotLoading}
-                                        />
-                                    </div>
-                                    {forgotError && <p className="error-message">{forgotError}</p>}
-                                    <button type="submit" className="auth-submit-btn" disabled={forgotLoading}>
-                                        {forgotLoading ? 'please wait...' : 'send reset link'}
-                                    </button>
-                                    <p className="toggle-auth">
-                                        <button type="button" onClick={() => this.setState({ isForgotMode: false, forgotError: '', forgotEmail: '' })} className="toggle-link">back to sign in</button>
-                                        {' · '}
-                                        <button type="button" onClick={() => this.setState({ guestAddAttempted: false, authError: '', isForgotMode: false })} className="toggle-link">browse as guest</button>
-                                    </p>
-                                </form>
-                            )
                         ) : (
-                            <form onSubmit={isLoginMode ? this.handleLogin : this.handleRegister} className="guest-bar-form">
-                                <div className="form-group">
-                                    <input
-                                        type="text"
-                                        value={authUserName}
-                                        onChange={(e) => this.handleInputChange('authUserName', e.target.value)}
-                                        placeholder="username"
-                                        autoComplete="username"
-                                        autoCapitalize="none"
-                                        autoCorrect="off"
-                                        spellCheck={false}
-                                        disabled={authLoading}
-                                    />
-                                </div>
-                                {!isLoginMode && (
-                                    <div className="form-group">
-                                        <input
-                                            type="email"
-                                            value={authEmail}
-                                            onChange={(e) => this.handleInputChange('authEmail', e.target.value)}
-                                            placeholder="email"
-                                        autoComplete="email"
-                                            disabled={authLoading}
-                                        />
-                                    </div>
-                                )}
-                                <div className="form-group">
-                                    <input
-                                        type="password"
-                                        value={authPassword}
-                                        onChange={(e) => this.handleInputChange('authPassword', e.target.value)}
-                                        placeholder="password"
-                                        autoComplete={isLoginMode ? 'current-password' : 'new-password'}
-                                        disabled={authLoading}
-                                    />
-                                    {!isLoginMode && <p className="password-hint">min 10 chars, 1 number, 1 symbol</p>}
-                                </div>
-                                {authError && <p className="error-message">{authError}</p>}
-                                <button type="submit" className="auth-submit-btn" disabled={authLoading}>
-                                    {authLoading ? 'please wait...' : (isLoginMode ? 'sign in' : 'create account')}
-                                </button>
-                                {isLoginMode ? (
-                                    <>
-                                        <p className="toggle-auth toggle-auth-tight">
-                                            <button type="button" onClick={this.toggleAuthMode} className="toggle-link">no account? register</button>
-                                        </p>
-                                        {this.renderForgotPasswordAction('toggle-auth toggle-auth-tight')}
-                                        <p className="toggle-auth">
-                                            <button type="button" onClick={() => this.setState({ guestAddAttempted: false, authError: '' })} className="toggle-link">browse as guest</button>
-                                        </p>
-                                    </>
-                                ) : (
-                                    <>
-                                        <p className="toggle-auth toggle-auth-tight">
-                                            <button type="button" onClick={this.toggleAuthMode} className="toggle-link">have account? sign in</button>
-                                        </p>
-                                        <p className="toggle-auth">
-                                            <button type="button" onClick={() => this.setState({ guestAddAttempted: false, authError: '' })} className="toggle-link">browse as guest</button>
-                                        </p>
-                                    </>
-                                )}
-                            </form>
+                            <AuthForm variant="bar" {...this.authFormProps()} />
                         )}
                     </div>
                 )}
@@ -1139,17 +1046,26 @@ export default class Sidebar extends React.Component {
         );
     }
 
-    renderForgotPasswordAction = (className = 'toggle-auth') => (
-        <p className={className}>
-            <button
-                type="button"
-                onClick={() => this.setState({ isForgotMode: true, authError: '' })}
-                className="toggle-link"
-            >
-                forgot password?
-            </button>
-        </p>
-    );
+    // Props for <AuthForm>: the state it shows and the callbacks it fires.
+    authFormProps() {
+        const {
+            isLoginMode, isForgotMode, authUserName, authEmail, authPassword, authLoading, authError,
+            forgotEmail, forgotLoading, forgotError, forgotSuccess,
+        } = this.state;
+        return {
+            isLoginMode, isForgotMode, authUserName, authEmail, authPassword, authLoading, authError,
+            forgotEmail, forgotLoading, forgotError, forgotSuccess,
+            onFieldChange: this.handleInputChange,
+            onForgotEmailChange: (value) => this.setState({ forgotEmail: value }),
+            onLogin: this.handleLogin,
+            onRegister: this.handleRegister,
+            onForgot: this.handleForgotPassword,
+            onToggleMode: this.toggleAuthMode,
+            onShowForgot: () => this.setState({ isForgotMode: true, authError: '' }),
+            onBackToSignIn: () => this.setState({ isForgotMode: false, forgotSuccess: false, forgotError: '', forgotEmail: '' }),
+            onLeave: () => this.setState({ guestAddAttempted: false, authError: '', isForgotMode: false }),
+        };
+    }
 
     renderAddFruitPopup() {
         if (!this.state.showAddFruitPopup) return null;
@@ -1319,106 +1235,7 @@ export default class Sidebar extends React.Component {
                         </div>
                     ) : !authenticated && guestAddAttempted ? (
                         <div className="mobile-panel-auth">
-                            {isForgotMode ? (
-                                forgotSuccess ? (
-                                    <div>
-                                        <p className="auth-success-msg">if that email is registered, a reset link has been sent.</p>
-                                        <p className="toggle-auth">
-                                            <button type="button" onClick={() => this.setState({ isForgotMode: false, forgotSuccess: false, forgotEmail: '' })} className="toggle-link">back to sign in</button>
-                                        </p>
-                                        <p className="toggle-auth">
-                                            <button type="button" onClick={() => this.setState({ guestAddAttempted: false, authError: '', isForgotMode: false })} className="toggle-link">browse as guest</button>
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <p className="mobile-panel-auth-head">reset password</p>
-                                        <form onSubmit={this.handleForgotPassword}>
-                                            <div className="form-group">
-                                                <input
-                                                    type="email"
-                                                    value={forgotEmail}
-                                                    onChange={(e) => this.setState({ forgotEmail: e.target.value })}
-                                                    placeholder="your email address"
-                                        autoComplete="email"
-                                                    disabled={forgotLoading}
-                                                />
-                                            </div>
-                                            {forgotError && <p className="error-message">{forgotError}</p>}
-                                            <button type="submit" className="auth-submit-btn" disabled={forgotLoading}>
-                                                {forgotLoading ? 'please wait...' : 'send reset link'}
-                                            </button>
-                                        </form>
-                                        <p className="toggle-auth">
-                                            <button type="button" onClick={() => this.setState({ isForgotMode: false, forgotError: '', forgotEmail: '' })} className="toggle-link">back to sign in</button>
-                                        </p>
-                                    </>
-                                )
-                            ) : (
-                                <>
-                                    <p className="mobile-panel-auth-head">
-                                        {isLoginMode ? 'sign in to add a find' : 'create account'}
-                                    </p>
-                                    <form onSubmit={isLoginMode ? this.handleLogin : this.handleRegister}>
-                                        <div className="form-group">
-                                            <input
-                                                type="text"
-                                                value={authUserName}
-                                                onChange={(e) => this.handleInputChange('authUserName', e.target.value)}
-                                                placeholder="username"
-                                        autoComplete="username"
-                                        autoCapitalize="none"
-                                        autoCorrect="off"
-                                        spellCheck={false}
-                                                disabled={authLoading}
-                                            />
-                                        </div>
-                                        {!isLoginMode && (
-                                            <div className="form-group">
-                                                <input
-                                                    type="email"
-                                                    value={authEmail}
-                                                    onChange={(e) => this.handleInputChange('authEmail', e.target.value)}
-                                                    placeholder="email"
-                                        autoComplete="email"
-                                                    disabled={authLoading}
-                                                />
-                                            </div>
-                                        )}
-                                        <div className="form-group">
-                                            <input
-                                                type="password"
-                                                value={authPassword}
-                                                onChange={(e) => this.handleInputChange('authPassword', e.target.value)}
-                                                placeholder="password"
-                                        autoComplete={isLoginMode ? 'current-password' : 'new-password'}
-                                                disabled={authLoading}
-                                            />
-                                            {!isLoginMode && (
-                                                <p className="password-hint">min 10 chars, 1 number, 1 symbol</p>
-                                            )}
-                                        </div>
-                                        {authError && <p className="error-message">{authError}</p>}
-                                        <button type="submit" className="auth-submit-btn" disabled={authLoading}>
-                                            {authLoading ? 'please wait...' : (isLoginMode ? 'sign in' : 'create account')}
-                                        </button>
-                                    </form>
-                                    <p className="toggle-auth">
-                                        {isLoginMode ? 'no account? ' : 'have account? '}
-                                        <button type="button" onClick={this.toggleAuthMode} className="toggle-link">
-                                            {isLoginMode ? 'register' : 'sign in'}
-                                        </button>
-                                    </p>
-                                    {isLoginMode && this.renderForgotPasswordAction('toggle-auth')}
-                                    <p className="toggle-auth">
-                                        <button
-                                            type="button"
-                                            onClick={() => this.setState({ guestAddAttempted: false, authError: '' })}
-                                            className="toggle-link"
-                                        >← back</button>
-                                    </p>
-                                </>
-                            )}
+                            <AuthForm variant="panel" {...this.authFormProps()} />
                         </div>
                     ) : (
                         /* Default panel actions */
@@ -1648,105 +1465,8 @@ export default class Sidebar extends React.Component {
                                 <button type="button" onClick={() => this.setState({ showAbout: false })} className="toggle-link about-back">← back</button>
                             </p>
                         </div>
-                    ) : this.state.isForgotMode ? (
-                        <div>
-                            {this.state.forgotSuccess ? (
-                                <div>
-                                    <p className="auth-success-msg">If that email is registered, a reset link has been sent.</p>
-                                    <p className="toggle-auth">
-                                        <button type="button" onClick={() => this.setState({ isForgotMode: false, forgotSuccess: false, forgotEmail: '' })} className="toggle-link">back to sign in</button>
-                                    </p>
-                                </div>
-                            ) : (
-                                <form onSubmit={this.handleForgotPassword}>
-                                    <div className="form-group">
-                                        <input
-                                            type="email"
-                                            value={this.state.forgotEmail}
-                                            onChange={(e) => this.setState({ forgotEmail: e.target.value })}
-                                            placeholder="your email address"
-                                        autoComplete="email"
-                                            disabled={this.state.forgotLoading}
-                                        />
-                                    </div>
-                                    {this.state.forgotError && <p className="error-message">{this.state.forgotError}</p>}
-                                    <button type="submit" className="auth-submit-btn" disabled={this.state.forgotLoading}>
-                                        {this.state.forgotLoading ? 'please wait...' : 'send reset link'}
-                                    </button>
-                                    <p className="toggle-auth">
-                                        <button type="button" onClick={() => this.setState({ isForgotMode: false, forgotError: '', forgotEmail: '' })} className="toggle-link">back to sign in</button>
-                                    </p>
-                                </form>
-                            )}
-                        </div>
                     ) : (
-                        <form onSubmit={isLoginMode ? this.handleLogin : this.handleRegister}>
-                            <div className="form-group">
-                                <input
-                                    type="text"
-                                    value={authUserName}
-                                    onChange={(e) => this.handleInputChange('authUserName', e.target.value)}
-                                    placeholder="username"
-                                        autoComplete="username"
-                                        autoCapitalize="none"
-                                        autoCorrect="off"
-                                        spellCheck={false}
-                                    disabled={authLoading}
-                                />
-                            </div>
-
-                            {!isLoginMode && (
-                                <div className="form-group">
-                                    <input
-                                        type="email"
-                                        value={authEmail}
-                                        onChange={(e) => this.handleInputChange('authEmail', e.target.value)}
-                                        placeholder="email"
-                                        autoComplete="email"
-                                        disabled={authLoading}
-                                    />
-                                </div>
-                            )}
-
-                            <div className="form-group">
-                                <input
-                                    type="password"
-                                    value={authPassword}
-                                    onChange={(e) => this.handleInputChange('authPassword', e.target.value)}
-                                    placeholder="password"
-                                        autoComplete={isLoginMode ? 'current-password' : 'new-password'}
-                                    disabled={authLoading}
-                                />
-                                {!isLoginMode && (
-                                    <p className="password-hint">min 10 chars, 1 number, 1 symbol</p>
-                                )}
-                            </div>
-
-                            {authError && <p className="error-message">{authError}</p>}
-
-                            <button
-                                type="submit"
-                                className="auth-submit-btn"
-                                disabled={authLoading}
-                            >
-                                {authLoading ? 'please wait...' : (isLoginMode ? 'sign in' : 'create account')}
-                            </button>
-
-                            <p className="toggle-auth">
-                                {isLoginMode ? 'no account? ' : 'have account? '}
-                                <button type="button" onClick={this.toggleAuthMode} className="toggle-link">
-                                    {isLoginMode ? 'register' : 'sign in'}
-                                </button>
-                            </p>
-                            {isLoginMode && this.renderForgotPasswordAction('toggle-auth')}
-                            <p className="toggle-auth" style={{marginTop: '10px'}}>
-                                <button
-                                    type="button"
-                                    onClick={() => this.setState({ guestAddAttempted: false, authError: '' })}
-                                    className="toggle-link"
-                                >← back</button>
-                            </p>
-                        </form>
+                        <AuthForm variant="desktop" {...this.authFormProps()} />
                     )}
                 </div>
 
