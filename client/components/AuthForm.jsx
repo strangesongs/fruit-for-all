@@ -96,6 +96,16 @@ function ForgotFields({ forgotEmail, forgotLoading, forgotError, onForgotEmailCh
 
 const SENT = 'if that email is registered, a reset link has been sent.';
 
+// Shown when a guest tapped "add a find": why an account, in one line.
+function Why({ forAdd, isLoginMode }) {
+    if (!forAdd) return null;
+    return (
+        <p className="auth-why">
+            {isLoginMode ? 'sign in to add a find.' : 'make an account to add a find.'} it's free; an account just lets you edit or delete what you add.
+        </p>
+    );
+}
+
 function SubmitButton({ isLoginMode, authLoading }) {
     return (
         <button type="submit" className="auth-submit-btn" disabled={authLoading}>
@@ -140,6 +150,7 @@ function BarForm(props) {
     }
     return (
         <form onSubmit={isLoginMode ? onLogin : onRegister} className="guest-bar-form">
+            <Why forAdd={props.forAdd} isLoginMode={isLoginMode} />
             <CredentialFields {...props} />
             {authError && <p className="error-message">{authError}</p>}
             <SubmitButton {...props} />
@@ -179,6 +190,7 @@ function PanelForm(props) {
         <>
             <p className="mobile-panel-auth-head">{isLoginMode ? 'sign in to add a find' : 'create account'}</p>
             <form onSubmit={isLoginMode ? onLogin : onRegister}>
+                <Why forAdd={props.forAdd && !isLoginMode} isLoginMode={isLoginMode} />
                 <CredentialFields {...props} />
                 {authError && <p className="error-message">{authError}</p>}
                 <SubmitButton {...props} />
@@ -212,6 +224,7 @@ function DesktopForm(props) {
     }
     return (
         <form onSubmit={isLoginMode ? onLogin : onRegister}>
+            <Why forAdd={props.forAdd} isLoginMode={isLoginMode} />
             <CredentialFields {...props} />
             {authError && <p className="error-message">{authError}</p>}
             <SubmitButton {...props} />

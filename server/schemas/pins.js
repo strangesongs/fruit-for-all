@@ -269,6 +269,24 @@ export async function updatePin(pinId, updates) {
     updateExpressions.push('notes = :notes');
     attributeValues[':notes'] = { S: String(updates.notes || '') };
   }
+  if (updates.fruitType !== undefined) {
+    const name = escapeHtml(sanitizeString(updates.fruitType));
+    updateExpressions.push('fruitType = :fruitType', 'fruitTypeDisplay = :fruitTypeDisplay');
+    attributeValues[':fruitType'] = { S: name.toLowerCase() };
+    attributeValues[':fruitTypeDisplay'] = { S: name };
+  }
+  if (updates.coordinates !== undefined) {
+    const lat = parseFloat(updates.coordinates.lat);
+    const lng = parseFloat(updates.coordinates.lng);
+    const coordValidation = validateCoordinates(lat, lng);
+    if (!coordValidation.valid) throw new Error(coordValidation.message);
+    // The season follows the find's spot, so a moved find gets its zone again.
+    const zone = await detectZone(lat, lng);
+    updateExpressions.push('coordinates = :coordinates', 'geoHash = :geoHash', '#zone = :zone');
+    attributeValues[':coordinates'] = { S: JSON.stringify({ lat, lng }) };
+    attributeValues[':geoHash'] = { S: generateGeoHash(lat, lng) };
+    attributeValues[':zone'] = { N: String(zone) };
+  }
   if (updateExpressions.length === 0) {
     return pin;
   }
@@ -285,6 +303,8 @@ export async function updatePin(pinId, updates) {
           ...attributeValues,
           ':now': { S: new Date().toISOString() },
         },
+        // "zone" is a DynamoDB reserved word
+        ...(updates.coordinates !== undefined ? { ExpressionAttributeNames: { '#zone': 'zone' } } : {}),
         ReturnValues: 'ALL_NEW',
       }),
     );

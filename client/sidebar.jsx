@@ -1,16 +1,15 @@
 import React, { Component } from 'react';
 import { logoSvg } from './utils/logo.js';
-import { getAuthHeader, getUser, clearAuth, saveAuth, isAuthenticated, handleUnauthorized, SESSION_EXPIRED_EVENT } from './utils/auth.js';
+import { getAuthHeader, getUser, clearAuth, saveAuth, isAuthenticated, isAdmin, handleUnauthorized, SESSION_EXPIRED_EVENT } from './utils/auth.js';
 import { FRUIT_SEASONS, getSeasonStatus } from './utils/fruitSeasons.js';
-import { FRUIT_LIST } from './utils/fruitList.js';
 import { API_BASE } from './utils/config.js';
-import { containsProfanity } from './utils/profanity.js';
 import { getTinyScreenGuestAuthState } from './utils/sidebarState.js';
-import { familyLabel, markSvg, familyOf } from './utils/fruitFamilies.js';
+import { familyLabel, markSvg } from './utils/fruitFamilies.js';
 import { formatMiles, MONTH_NAMES, lookForHints } from './utils/pinSummary.js';
 import { shelfEnabled, shelfHeadText, shelfReachText } from './utils/seasonShelf.js';
 import { fetchWithRetry } from './utils/network.js';
 import AuthForm from './components/AuthForm.jsx';
+import AddFind from './components/AddFind.jsx';
 
 import './stylesheets/sidebar.css';
 
@@ -41,12 +40,11 @@ export default class Sidebar extends React.Component {
             authLoading: false,
             authError: '',
             
-            // Pin submission form state
-            currentLocation: null,
-            fruitType: '',
-            notes: '',
-            submitting: false,
-            showAddFruitPopup: false,
+            // Add a find / edit a find (components/AddFind.jsx):
+            // null | { mode: 'add' } | { mode: 'edit', pin }
+            addFind: null,
+            // A short line after a save or delete ("added to the map"), then it fades.
+            notice: '',
             
             // Fruit type filter
             selectedFruitFilter: 'all',
@@ -73,10 +71,6 @@ export default class Sidebar extends React.Component {
             // About panel
             showAbout: false,
 
-            // Fruit type autocomplete
-            fruitTypeSuggestions: [],
-            showFruitSuggestions: false,
-
             // Standard mobile authenticated bar open/closed
             isMobileBarOpen: false,
 
@@ -102,10 +96,6 @@ export default class Sidebar extends React.Component {
             shelfIntro: readFirstVisit(),
         }
         this._shelfOn = shelfEnabled();
-        this.addFruitPopupRef = React.createRef();
-        this.addFruitPopupTitleId = 'add-fruit-popup-title';
-        this.lastFocusedElement = null;
-        this.previousBodyOverflow = '';
         this._requestControllers = new Set();
         this._bottomBarObserver = null;
         this.handlePinSummaryEvent = this.handlePinSummaryEvent.bind(this);
@@ -151,9 +141,6 @@ export default class Sidebar extends React.Component {
             window.addEventListener('resize', this.syncResponsiveMode);
             this.syncResponsiveMode();
         }
-        if (isAuthenticated() && this.state.showAddFruitPopup) {
-            this.setState({ showAddFruitPopup: false });
-        }
         if (!this.state.guestAddAttempted && !isAuthenticated()) {
             sessionStorage.removeItem('ffa_guest_add_attempted');
         }
@@ -161,14 +148,16 @@ export default class Sidebar extends React.Component {
         window.addEventListener('ffa:shelf', this.handleShelfEvent);
         try { localStorage.setItem(GUEST_BAR_SEEN_KEY, '1'); } catch { /* private mode */ }
         window.addEventListener('ffa:add-find', this.handleAddFindRequest);
+        window.addEventListener('ffa:edit-find', this.handleEditFindRequest);
+        window.addEventListener('ffa:notice', this.handleNoticeEvent);
         window.addEventListener(SESSION_EXPIRED_EVENT, this.handleSessionExpired);
-        if (this.state.showAddFruitPopup) {
-            this.enableAddFruitPopupA11ySideEffects();
-        }
     }
 
     componentWillUnmount() {
         window.removeEventListener('ffa:add-find', this.handleAddFindRequest);
+        window.removeEventListener('ffa:edit-find', this.handleEditFindRequest);
+        window.removeEventListener('ffa:notice', this.handleNoticeEvent);
+        clearTimeout(this._noticeTimer);
         window.removeEventListener(SESSION_EXPIRED_EVENT, this.handleSessionExpired);
         this.setBottomBarRef(null);
         window.removeEventListener('ffa:pins-summary', this.handlePinSummaryEvent);
@@ -186,7 +175,6 @@ export default class Sidebar extends React.Component {
                 this._mobileMql.removeListener(this.syncResponsiveMode);
             }
         }
-        this.disableAddFruitPopupA11ySideEffects();
     }
 
     // Publishes the fixed bottom bar's height as --bottom-chrome so map controls,
@@ -280,207 +268,53 @@ export default class Sidebar extends React.Component {
 
     // "add the first find" on the map's empty-area card
     handleAddFindRequest = () => {
-        if (!this.state.showAddFruitPopup) this.toggleAddFruitPopup();
+        if (!this.state.addFind) this.startAddFind();
     };
 
-    flyTo = (coords) => {
-        if (!coords) return;
-        this.setState({ guestBarOpen: false, isMobileBarOpen: false });
-        window.dispatchEvent(new CustomEvent('ffa:fly-to', { detail: coords }));
+    // "edit" in a find's popup (map.jsx → PinPopup)
+    handleEditFindRequest = (e) => {
+        const pin = e && e.detail && e.detail.pin;
+        if (!pin || !this.state.authenticated) return;
+        this.setState({ addFind: { mode: 'edit', pin }, guestBarOpen: false, isMobileBarOpen: false, isCollapsed: this.state.isTinyScreen || this.state.isCollapsed });
     };
 
-    componentDidUpdate(prevProps, prevState) {
-        if (!prevState.showAddFruitPopup && this.state.showAddFruitPopup) {
-            this.enableAddFruitPopupA11ySideEffects();
-        }
-        if (prevState.showAddFruitPopup && !this.state.showAddFruitPopup) {
-            this.disableAddFruitPopupA11ySideEffects();
-        }
-    }
-
-    getFocusableElementsInPopup = () => {
-        if (!this.addFruitPopupRef.current) return [];
-        return [...this.addFruitPopupRef.current.querySelectorAll(
-            'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        )];
-    };
-
-    focusFirstPopupElement = () => {
-        const focusable = this.getFocusableElementsInPopup();
-        if (focusable.length > 0) {
-            focusable[0].focus();
+    // Add a find: signed out, it opens sign-in first (and resumes after); signed in,
+    // AddFind takes over the screen (locate → place the pin → details).
+    startAddFind = () => {
+        if (!isAuthenticated()) {
+            sessionStorage.setItem('ffa_guest_add_attempted', '1');
+            this.setState({ guestAddAttempted: true, isLoginMode: true, showAbout: false, isForgotMode: false, isCollapsed: false, isMobileBarOpen: true });
             return;
         }
-        this.addFruitPopupRef.current?.focus();
-    };
-
-    handleAddFruitPopupKeyDown = (e) => {
-        if (!this.state.showAddFruitPopup) return;
-
-        if (e.key === 'Escape') {
-            e.preventDefault();
-            if (!this.state.submitting) {
-                this.toggleAddFruitPopup();
-            }
-            return;
-        }
-
-        if (e.key !== 'Tab') return;
-
-        const focusable = this.getFocusableElementsInPopup();
-        if (focusable.length === 0) {
-            e.preventDefault();
-            return;
-        }
-
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        const active = document.activeElement;
-
-        if (e.shiftKey && active === first) {
-            e.preventDefault();
-            last.focus();
-        } else if (!e.shiftKey && active === last) {
-            e.preventDefault();
-            first.focus();
-        }
-    };
-
-    enableAddFruitPopupA11ySideEffects = () => {
-        this.lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-        this.previousBodyOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-        document.addEventListener('keydown', this.handleAddFruitPopupKeyDown);
-        window.setTimeout(this.focusFirstPopupElement, 0);
-    };
-
-    disableAddFruitPopupA11ySideEffects = () => {
-        document.removeEventListener('keydown', this.handleAddFruitPopupKeyDown);
-        document.body.style.overflow = this.previousBodyOverflow || '';
-        if (this.lastFocusedElement && document.contains(this.lastFocusedElement)) {
-            this.lastFocusedElement.focus();
-        }
-        this.lastFocusedElement = null;
-    }
-
-    getCurrentLocation = () => {
-        if (!navigator.geolocation) {
-            this.setState({ locationError: 'geolocation is not supported by this browser.' });
-            return;
-        }
-        this.setState({ locationLoading: true, locationError: '' });
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const loc = { lat: position.coords.latitude, lng: position.coords.longitude };
-                try { sessionStorage.setItem('ffa_last_location', JSON.stringify(loc)); } catch (e) {}
-                this.setState({ locationLoading: false, currentLocation: loc });
-            },
-            (error) => {
-                console.error('Error getting location:', error);
-                const msg = error.code === 1
-                    ? 'location permission denied. please allow location access in your browser settings.'
-                    : error.code === 2
-                    ? 'location unavailable. try moving to a better signal area.'
-                    : 'location request timed out. please try again.';
-                this.setState({ locationLoading: false, locationError: msg });
-            },
-            { timeout: 10000, maximumAge: 60000, enableHighAccuracy: false }
-        );
+        if (this.state.addFind) return;
+        if (this.props.onSidebarOpen) this.props.onSidebarOpen(); // closes any open popup
+        this.setState({ addFind: { mode: 'add' }, guestBarOpen: false, isMobileBarOpen: false, isCollapsed: this.state.isTinyScreen || this.state.isCollapsed });
     };
 
     handleInputChange = (field, value) => {
         this.setState({ [field]: value });
     };
 
-    toggleAddFruitPopup = () => {
-        if (!isAuthenticated()) {
-            sessionStorage.setItem('ffa_guest_add_attempted', '1');
-            this.setState({ guestAddAttempted: true });
-            return;
-        }
-        this.setState(prevState => {
-            const opening = !prevState.showAddFruitPopup;
-            let currentLocation = opening ? null : prevState.currentLocation;
-            return {
-                showAddFruitPopup: !prevState.showAddFruitPopup,
-                currentLocation,
-                fruitType: opening ? '' : prevState.fruitType,
-                notes: opening ? '' : prevState.notes,
-            };
-        });
+    closeAddFind = (notice) => {
+        this.setState({ addFind: null });
+        if (notice) this.showNotice(notice);
     };
 
-    submitPin = async () => {
-        const { currentLocation, fruitType, notes } = this.state;
+    handleNoticeEvent = (e) => {
+        const text = e && e.detail && e.detail.text;
+        if (text) this.showNotice(text);
+    };
 
-        if (!currentLocation) {
-            alert('please get your current location first');
-            return;
-        }
+    showNotice = (text) => {
+        clearTimeout(this._noticeTimer);
+        this.setState({ notice: text });
+        this._noticeTimer = setTimeout(() => this.setState({ notice: '' }), 4000);
+    };
 
-        if (!fruitType.trim()) {
-            alert('please select a fruit type');
-            return;
-        }
-
-        if (!FRUIT_LIST.includes(fruitType.trim().toLowerCase())) {
-            alert('please select a fruit from the list');
-            return;
-        }
-
-        if (containsProfanity(notes)) {
-            alert('please keep notes family-friendly.');
-            return;
-        }
-
-        this.setState({ submitting: true });
-        const controller = this.startRequest();
-
-        try {
-            const response = await fetchWithRetry(`${API_BASE}/api/pins`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...getAuthHeader()
-                },
-                signal: controller.signal,
-                body: JSON.stringify({
-                    coordinates: currentLocation,
-                    fruitType: fruitType.trim(),
-                    notes: notes.trim()
-                })
-            }, {
-                timeoutMs: 12000,
-                retries: 0, // POSTs are not idempotent: never auto-retry
-            });
-            if (handleUnauthorized(response)) return;
-
-            const result = await response.json();
-
-            if (result.success) {
-                alert('pin submitted successfully!');
-                // Reset form and close popup
-                this.setState({
-                    currentLocation: null,
-                    fruitType: '',
-                    notes: '',
-                    showAddFruitPopup: false
-                });
-                // Notify parent component to refresh map if callback provided
-                if (this.props.onPinSubmitted) {
-                    this.props.onPinSubmitted(result.pin);
-                }
-            } else {
-                alert('error submitting pin: ' + result.message);
-            }
-        } catch (error) {
-            if (controller.signal.aborted) return;
-            console.error('Error submitting pin:', error);
-            alert('error submitting pin. please try again.');
-        } finally {
-            this.finishRequest(controller);
-            this.setState({ submitting: false });
-        }
+    flyTo = (coords) => {
+        if (!coords) return;
+        this.setState({ guestBarOpen: false, isMobileBarOpen: false });
+        window.dispatchEvent(new CustomEvent('ffa:fly-to', { detail: coords }));
     };
 
     // The server rejected the stored token (handleUnauthorized already cleared it).
@@ -506,6 +340,7 @@ export default class Sidebar extends React.Component {
         if (this.props.onLogout) this.props.onLogout();
         this.setState({ 
             authenticated: false,
+            addFind: null,
             isMobileBarOpen: false,
             myPinsActive: false,
             selectedFruitFilter: 'all',
@@ -527,18 +362,6 @@ export default class Sidebar extends React.Component {
             authPassword: '',
             authEmail: ''
         }));
-    };
-
-    handleFruitTypeInput = (e) => {
-        const val = e.target.value;
-        const suggestions = val.trim().length > 0
-            ? FRUIT_LIST.filter(f => f.toLowerCase().startsWith(val.toLowerCase())).slice(0, 8)
-            : FRUIT_LIST.slice(0, 8);
-        this.setState({ fruitType: val, fruitTypeSuggestions: suggestions, showFruitSuggestions: true });
-    };
-
-    selectFruitType = (fruit) => {
-        this.setState({ fruitType: fruit, showFruitSuggestions: false, fruitTypeSuggestions: [] });
     };
 
     handleForgotPassword = async (e) => {
@@ -604,7 +427,7 @@ export default class Sidebar extends React.Component {
             const result = await response.json();
 
             if (result.success) {
-                // Always clear guest add flag on login
+                const wasGuestAddAttempted = sessionStorage.getItem('ffa_guest_add_attempted') === '1';
                 sessionStorage.removeItem('ffa_guest_add_attempted');
                 saveAuth(result.token, result.user);
                 this.setState({ 
@@ -614,7 +437,8 @@ export default class Sidebar extends React.Component {
                     authPassword: '',
                     authError: '',
                     isCollapsed: this.state.isTinyScreen,
-                    showAddFruitPopup: false,
+                    // Tapped "add a find" while signed out: carry on with it now.
+                    addFind: wasGuestAddAttempted ? { mode: 'add' } : null,
                 });
                 // Notify parent to refresh pins
                 if (this.props.onAuthSuccess) {
@@ -703,7 +527,7 @@ export default class Sidebar extends React.Component {
                     authEmail: '',
                     authError: '',
                     isCollapsed: this.state.isTinyScreen,
-                    showAddFruitPopup: !!wasGuestAddAttempted,
+                    addFind: wasGuestAddAttempted ? { mode: 'add' } : null,
                 });
                 // Notify parent to refresh pins
                 if (this.props.onAuthSuccess) {
@@ -712,7 +536,6 @@ export default class Sidebar extends React.Component {
             } else {
                 // Always clear guest add flag and modal on failed registration
                 sessionStorage.removeItem('ffa_guest_add_attempted');
-                this.setState({ showAddFruitPopup: false });
                 this.setState({ authError: result.message || 'registration failed' });
             }
         } catch (error) {
@@ -1013,7 +836,7 @@ export default class Sidebar extends React.Component {
                 {this.renderBarHandle(isMobileBarOpen, this.toggleMobileBar, 'nearby finds and menu')}
                 {this.renderBarHeader(() => {
                     this.setState({ isMobileBarOpen: false });
-                    this.toggleAddFruitPopup();
+                    this.startAddFind();
                 })}
 
                 {isMobileBarOpen && (
@@ -1126,7 +949,7 @@ export default class Sidebar extends React.Component {
                         <button type="button" className="shelf-head__name" onClick={showAbout}>fruit for all</button>
                         {this.renderShelfHeadSub()}
                     </div>
-                    <button type="button" className="btn shelf-head__add" onClick={startSignIn}>add a find</button>
+                    <button type="button" className="btn shelf-head__add" onClick={this.startAddFind}>add a find</button>
                 </div>
 
                 {open && shelfView === 'almanac' && (
@@ -1202,7 +1025,10 @@ export default class Sidebar extends React.Component {
         const i = shelfIndex >= 0 ? shelfIndex : 0;
         const e = entries[i];
         const openPanel = () => this.setState({ isCollapsed: false });
-        const addFind = () => this.setState({ isCollapsed: false, ...getTinyScreenGuestAuthState('login') });
+        const addFind = () => {
+            sessionStorage.setItem('ffa_guest_add_attempted', '1');
+            this.setState({ isCollapsed: false, ...getTinyScreenGuestAuthState('login') });
+        };
         return (
             <>
             <div ref={this.setBottomBarRef} className={`shelf-strip${shelfFolded ? ' shelf--folded' : ''}`}>
@@ -1255,7 +1081,7 @@ export default class Sidebar extends React.Component {
                 {!guestAddAttempted ? (
                     <>
                     {this.renderBarHandle(guestBarOpen, this.toggleGuestBar, 'nearby finds')}
-                    {this.renderBarHeader(startSignIn)}
+                    {this.renderBarHeader(this.startAddFind)}
                     {guestBarOpen && (
                         <div className="guest-bar-landing">
                             {this.renderBarPanel()}
@@ -1324,115 +1150,32 @@ export default class Sidebar extends React.Component {
             onToggleMode: this.toggleAuthMode,
             onShowForgot: () => this.setState({ isForgotMode: true, authError: '' }),
             onBackToSignIn: () => this.setState({ isForgotMode: false, forgotSuccess: false, forgotError: '', forgotEmail: '' }),
-            onLeave: () => this.setState({ guestAddAttempted: false, authError: '', isForgotMode: false }),
+            onLeave: () => {
+                try { sessionStorage.removeItem('ffa_guest_add_attempted'); } catch (e) { /* private mode */ }
+                this.setState({ guestAddAttempted: false, authError: '', isForgotMode: false });
+            },
+            // Came from "add a find": the form says why an account (AuthForm's Why)
+            forAdd: (() => { try { return sessionStorage.getItem('ffa_guest_add_attempted') === '1'; } catch (e) { return false; } })(),
         };
     }
 
+    // Rendered by every layout: the add/edit flow (while it's open) and the notice line.
     renderAddFruitPopup() {
-        if (!this.state.showAddFruitPopup) return null;
+        const { addFind, notice } = this.state;
         return (
-            <div className="add-fruit-popup-overlay">
-                <div
-                    className="add-fruit-popup"
-                    role="dialog"
-                    aria-modal="true"
-                    aria-labelledby={this.addFruitPopupTitleId}
-                    ref={this.addFruitPopupRef}
-                    tabIndex="-1"
-                >
-                    <div className="popup-header">
-                        <h4 id={this.addFruitPopupTitleId}>add a find</h4>
-                    </div>
-                    <div className="popup-content">
-                        <div className="popup-section">
-                            <label>location:</label>
-                            <button
-                                type="button"
-                                onClick={this.getCurrentLocation}
-                                className="btn location-btn"
-                                disabled={this.state.submitting || this.state.locationLoading}
-                            >
-                                {this.state.locationLoading ? 'getting location...' : this.state.currentLocation ? 'update location' : 'get current location'}
-                            </button>
-                            {this.state.locationError && (
-                                <p className="error-message" style={{marginTop: '4px'}}>{this.state.locationError}</p>
-                            )}
-                            {this.state.currentLocation && (
-                                <div className="location-display">
-                                    <small>{this.state.currentLocation.lat.toFixed(6)}, {this.state.currentLocation.lng.toFixed(6)}</small>
-                                </div>
-                            )}
-                        </div>
-                        <div className="popup-section fruit-autocomplete-wrapper">
-                            <label htmlFor="popup-fruit-type">forage type:</label>
-                            <input
-                                type="text"
-                                id="popup-fruit-type"
-                                value={this.state.fruitType}
-                                onChange={this.handleFruitTypeInput}
-                                onFocus={this.handleFruitTypeInput}
-                                onBlur={() => setTimeout(() => this.setState({ showFruitSuggestions: false }), 150)}
-                                placeholder="type to search..."
-                                autoComplete="off"
-                                disabled={this.state.submitting}
-                            />
-                            {this.state.showFruitSuggestions && this.state.fruitTypeSuggestions.length > 0 && (
-                                <ul className="fruit-suggestions">
-                                    {this.state.fruitTypeSuggestions.map(fruit => (
-                                        <li key={fruit}>
-                                            <button
-                                                type="button"
-                                                onClick={() => this.selectFruitType(fruit)}
-                                                onMouseDown={(e) => e.preventDefault()}
-                                                className={`fruit-suggestion-btn${this.state.fruitType === fruit ? ' fruit-suggestion-active' : ''}`}
-                                            >
-                                                {fruit}
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                            {this.state.fruitType && !FRUIT_LIST.includes(this.state.fruitType.toLowerCase()) && (
-                                <p className="fruit-not-found">no match &mdash; keep typing or select from the list</p>
-                            )}
-                        </div>
-                        {familyOf((this.state.fruitType || '').trim()) === 'medicinal' && (
-                            <p className="add-find-caution">
-                                know the plant for certain before you pick it, take only a little from each plant,
-                                and check with a clinician before using it as medicine.
-                            </p>
-                        )}
-                        <div className="popup-section">
-                            <label htmlFor="popup-notes">notes (optional):</label>
-                            <textarea
-                                id="popup-notes"
-                                value={this.state.notes}
-                                onChange={(e) => this.handleInputChange('notes', e.target.value)}
-                                placeholder="add details about this location... (up to 500 words)"
-                                rows="4"
-                                maxLength="3000"
-                                disabled={this.state.submitting}
-                            />
-                        </div>
-                    </div>
-                    <div className="popup-footer">
-                        <button
-                            type="submit"
-                            onClick={this.submitPin}
-                            disabled={this.state.submitting || !this.state.currentLocation || !FRUIT_LIST.includes((this.state.fruitType || '').trim().toLowerCase())}
-                            className="btn submit-btn"
-                        >
-                            {this.state.submitting ? 'submitting...' : 'submit pin'}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={this.toggleAddFruitPopup}
-                            disabled={this.state.submitting}
-                            className="btn cancel-btn"
-                        >cancel</button>
-                    </div>
-                </div>
-            </div>
+            <>
+                {addFind && (
+                    <AddFind
+                        key={addFind.mode === 'edit' ? `edit-${addFind.pin.pinId}` : 'add'}
+                        mode={addFind.mode}
+                        pin={addFind.pin || null}
+                        isAdmin={isAdmin()}
+                        isTiny={this.state.isTinyScreen}
+                        onClose={this.closeAddFind}
+                    />
+                )}
+                {notice && <p className="ffa-notice" role="status">{notice}</p>}
+            </>
         );
     }
 
@@ -1506,7 +1249,7 @@ export default class Sidebar extends React.Component {
                     ) : (
                         /* Default panel actions */
                         <div className="mobile-panel-actions">
-                            <button type="button" onClick={this.toggleAddFruitPopup} className="mobile-panel-btn">
+                            <button type="button" onClick={this.startAddFind} className="mobile-panel-btn">
                                 add a find
                             </button>
                             {authenticated && (
@@ -1641,7 +1384,7 @@ export default class Sidebar extends React.Component {
                     <div className="action-buttons">
                         <button
                             type="button"
-                            onClick={this.toggleAddFruitPopup}
+                            onClick={this.startAddFind}
                             className="btn action-btn add-fruit-btn"
                         >add a find</button>
                     </div>
@@ -1752,7 +1495,7 @@ export default class Sidebar extends React.Component {
                     <div className="action-buttons">
                         <button
                             type="button"
-                            onClick={this.toggleAddFruitPopup}
+                            onClick={this.startAddFind}
                             className="btn action-btn add-fruit-btn"
                         >add a find</button>
 
@@ -1786,8 +1529,6 @@ export default class Sidebar extends React.Component {
                         </select>
                     </div>
 
-                    {this.renderAddFruitPopup()}
-
                     <div className="bottom-section">
                         <button
                             type="button"
@@ -1800,6 +1541,7 @@ export default class Sidebar extends React.Component {
             </>
             )}
         </div>
+        {this.renderAddFruitPopup()}
         </>
         )
     };

@@ -1325,3 +1325,112 @@
         transform: translate(3px, 3px);
     }
 }
+
+/* ── Add a find: placing the pin (AddFind.jsx ↔ map.jsx) ──────────────────────
+   The new find's pin is fixed in the middle of the map; you move the map under it.
+   The dashed circle is how far it can go from you (or from where it was). */
+.place-crosshair {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 38px;
+    height: 46px;
+    margin: -46px 0 0 -19px; /* the tail's tip is the centre */
+    z-index: 650; /* over markers (600), under controls */
+    pointer-events: none;
+}
+.place-crosshair .ffa-pin { animation: none; }
+.place-crosshair::after {
+    /* a small shadow where the tip touches the map */
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -3px;
+    width: 10px;
+    height: 4px;
+    margin-left: -5px;
+    border-radius: 50%;
+    background: rgba(42, 36, 32, 0.45);
+}
+.ffa-pin--new .ffa-pin__disk { box-shadow: 3px 3px 0 var(--persimmon); }
+
+.place-range {
+    stroke: var(--text);
+    stroke-width: 1.5px;
+    stroke-dasharray: 2 6;
+    fill: var(--paper);
+    fill-opacity: 0.22;
+}
+.place-you {
+    position: relative;
+    width: 14px;
+    height: 14px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    background: var(--text);
+    border: 3px solid var(--paper);
+    box-shadow: 0 0 0 1px var(--text);
+}
+.place-you--was { background: var(--paper); border-color: var(--text-muted); }
+.place-you span {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0 3px;
+    background: var(--paper);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    line-height: 1.3;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+/* While adding, other finds are context only: visible, not tappable */
+.map-area.is-adding .leaflet-marker-icon:not(.place-keep) {
+    pointer-events: none;
+    opacity: 0.7;
+}
+.map-area.is-adding .locate-me-btn { display: none; }
+
+/* Your own find's popup: edit and delete (delete asks first, in the popup) */
+.pin-popup.pin-entry .pin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+}
+.btn.pin-edit-btn {
+    width: auto;
+    margin: 0;
+    background-color: transparent;
+    color: var(--text);
+    border: 1.5px solid var(--text);
+    border-radius: 2px;
+    padding: 6px 14px;
+    font-family: inherit;
+    font-size: 0.8rem;
+    box-shadow: none;
+}
+.btn.pin-edit-btn:hover { background-color: var(--card-hover); box-shadow: none; }
+.btn.pin-edit-btn:active { transform: none; }
+.pin-popup.pin-entry .btn.delete-pin-btn { width: auto; margin: 0; }
+.pin-delete-ask {
+    flex: 1 0 100%;
+    margin: 0 0 2px;
+    text-align: left;
+    font-family: var(--font);
+    font-style: italic;
+    font-size: 15px;
+}
+.btn.delete-pin-btn.delete-pin-btn--confirm { border-width: 2px; font-weight: 600; }
+.pin-delete-error {
+    flex: 1 0 100%;
+    margin: 4px 0 0;
+    padding-left: 8px;
+    border-left: 4px solid var(--persimmon);
+    text-align: left;
+    font-family: var(--font-sans);
+    font-size: 13px;
+}

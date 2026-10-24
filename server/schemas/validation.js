@@ -118,3 +118,39 @@ export function validateEmail(email) {
   }
   return { valid: true };
 }
+
+/**
+ * Validates the body of PATCH /api/pins/:id before any string methods run. Each field
+ * is optional, but at least one must be there. `allowedFruit` is a Set of lowercase
+ * fruit names. Whether a move is within range is checked by the handler (it needs
+ * the pin's current spot).
+ */
+export function validatePinUpdate(body, allowedFruit) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return { valid: false, message: 'Request body must be JSON' };
+  }
+  const { coordinates, fruitType, notes } = body;
+  if (coordinates === undefined && fruitType === undefined && notes === undefined) {
+    return { valid: false, message: 'Nothing to update' };
+  }
+  if (coordinates !== undefined) {
+    if (!coordinates || typeof coordinates !== 'object') {
+      return { valid: false, message: 'Coordinates must be numbers' };
+    }
+    const { lat, lng } = coordinates;
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      return { valid: false, message: 'Coordinates must be numbers' };
+    }
+    const coordCheck = validateCoordinates(lat, lng);
+    if (!coordCheck.valid) return coordCheck;
+  }
+  if (fruitType !== undefined) {
+    if (typeof fruitType !== 'string' || !fruitType.trim()) {
+      return { valid: false, message: 'Invalid fruit type. Please select from the approved list.' };
+    }
+    if (allowedFruit && !allowedFruit.has(fruitType.trim().toLowerCase())) {
+      return { valid: false, message: 'Invalid fruit type. Please select from the approved list.' };
+    }
+  }
+  return validateNotes(notes);
+}

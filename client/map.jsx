@@ -1,19 +1,19 @@
 import React, { Component } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, ZoomControl } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap, useMapEvents, ZoomControl } from 'react-leaflet';
 import { getAuthHeader, isAuthenticated, getUser, isAdmin, handleUnauthorized } from './utils/auth.js';
 import { getCache, setCache, clearCache, clearCachesByPrefix, buildPinsCacheKey } from './utils/cache.js';
 import { clusterPins } from './utils/clustering.js';
 import { API_BASE } from './utils/config.js';
-import { containsProfanity } from './utils/profanity.js';
 import { fetchWithRetry } from './utils/network.js';
 import { isOlderThanMonths } from './utils/timeAgo.js';
-import { TINY_MAX, getBottomChromePx } from './utils/breakpoints.js';
+import { TINY_MAX, MOBILE_MAX, getBottomChromePx } from './utils/breakpoints.js';
 import { familyOf, markSvg } from './utils/fruitFamilies.js';
 import { ripenessOf, buildViewSummary, lookForHints, MONTH_NAMES, distanceMiles } from './utils/pinSummary.js';
 import { buildShelf, shelfEnabled, SEARCH_AREA_MI } from './utils/seasonShelf.js';
 import { detectZoneFallback } from './utils/zoneFallback.js';
 import { popupPanDelta } from './utils/popupFit.js';
 import { LOCATE_OPTIONS, isAppleMobile, locateErrorMessage, parseLastLocation } from './utils/geolocation.js';
+import { clampToRange, distanceMeters } from './utils/findPlacement.js';
 import L from 'leaflet';
 
 import './stylesheets/map.css';
@@ -73,6 +73,53 @@ const SHELF_MARK_ICON = new L.DivIcon({
     iconSize: [38, 46],
     iconAnchor: [19, 46],
 });
+
+// Add a find: the pin being placed (fixed in the middle of the map) and the chosen spot.
+// A solid fig disk like your own finds, with the kind's mark once it's chosen.
+function newFindPinHtml(family) {
+    return `<div class="ffa-pin ffa-pin--mine ffa-pin--new">`
+        + `<span class="ffa-pin__disk">${markSvg(family || 'seed', { size: 22, color: 'var(--paper)' })}</span>`
+        + `<span class="ffa-pin__tail"></span></div>`;
+}
+const _newFindIconCache = new globalThis.Map();
+function newFindIcon(family) {
+    let icon = _newFindIconCache.get(family);
+    if (!icon) {
+        icon = new L.DivIcon({ className: 'place-keep', html: newFindPinHtml(family), iconSize: [38, 46], iconAnchor: [19, 46] });
+        _newFindIconCache.set(family, icon);
+    }
+    return icon;
+}
+// Where you're standing (adding) or where the find was (editing): a small ink dot.
+const PLACE_YOU_ICON = new L.DivIcon({
+    className: 'place-keep',
+    html: '<div class="place-you" aria-hidden="true"><span>you</span></div>',
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+});
+const PLACE_WAS_ICON = new L.DivIcon({
+    className: 'place-keep',
+    html: '<div class="place-you place-you--was" aria-hidden="true"><span>was here</span></div>',
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+});
+// While placing, finds within this distance of the pin go to AddFind (same-tree check).
+const PLACE_NEARBY_M = 30;
+
+// Reports the map centre while a find is being placed: on every move (light) and
+// when a move ends (pulls the pin back inside its range).
+function PlacementEvents({ onMove }) {
+    const frame = React.useRef(0);
+    useMapEvents({
+        move: () => {
+            if (frame.current) return;
+            frame.current = requestAnimationFrame(() => { frame.current = 0; onMove(false); });
+        },
+        moveend: () => onMove(true),
+    });
+    React.useEffect(() => () => cancelAnimationFrame(frame.current), []);
+    return null;
+}
 
 // "search this area": a stamp on the map that re-anchors the season shelf. Taps
 // must not reach the map underneath (same as the locate button).
@@ -352,8 +399,6 @@ class Map extends Component {
             etag: null, // Store ETag for conditional requests
             zoom: 13, // Current zoom level
             fruitFilter: 'all', // Filter for fruit types
-            editingPinId: null, // Pin currently being edited
-            editingNotes: '', // Temp storage for edited notes
             userLocation: null, // User's geolocation once resolved
             closePopupsSignal: 0, // Increment to close all open popups
             pinFlyTarget: null,  // Set to {lat, lng} to pan map to that pin
@@ -365,6 +410,9 @@ class Map extends Component {
             shelfAnchor: null,
             showSearchArea: false,
             shelfMark: null,     // {lat, lng} of the shelf's current entry
+            // Add / edit a find (components/AddFind.jsx drives these with ffa:place-* events)
+            placing: null,       // { origin, limitM, family, from, pinId }: the pin is fixed mid-map
+            newSpot: null,       // { lat, lng, family, pinId }: the spot chosen, shown while the form is open
         };
         this._shelfOn = shelfEnabled();
         this._personAnchor = null; // the person's own anchor, for "back to near me"
@@ -393,6 +441,10 @@ class Map extends Component {
         this.requestIpLocation();
         window.addEventListener('ffa:nearest-good-bet', this.handleNearestGoodBet);
         window.addEventListener('ffa:fly-to', this.handleFlyTo);
+        window.addEventListener('ffa:place-start', this.handlePlaceStart);
+        window.addEventListener('ffa:place-spot', this.handlePlaceSpot);
+        window.addEventListener('ffa:place-end', this.handlePlaceEnd);
+        window.addEventListener('ffa:find-saved', this.handleFindSaved);
         if (this._shelfOn) {
             window.addEventListener('ffa:shelf-select', this.handleShelfSelect);
             window.addEventListener('ffa:shelf-search-area', this.searchThisArea);
@@ -428,10 +480,114 @@ class Map extends Component {
         this.cancelRequest('viewportPins');
         window.removeEventListener('ffa:nearest-good-bet', this.handleNearestGoodBet);
         window.removeEventListener('ffa:fly-to', this.handleFlyTo);
+        window.removeEventListener('ffa:place-start', this.handlePlaceStart);
+        window.removeEventListener('ffa:place-spot', this.handlePlaceSpot);
+        window.removeEventListener('ffa:place-end', this.handlePlaceEnd);
+        window.removeEventListener('ffa:find-saved', this.handleFindSaved);
         window.removeEventListener('ffa:shelf-select', this.handleShelfSelect);
         window.removeEventListener('ffa:shelf-search-area', this.searchThisArea);
         window.removeEventListener('ffa:shelf-near-me', this.backToNearMe);
     }
+
+    // ── Add / edit a find ─────────────────────────────────────────────────────
+
+    handlePlaceStart = (e) => {
+        const d = (e && e.detail) || {};
+        const map = this._leafletMap;
+        this.closePopups();
+        const placing = {
+            origin: d.origin || null,
+            limitM: d.origin ? (d.limitM || null) : null,
+            family: d.family || 'seed',
+            from: d.from || 'you',
+            pinId: d.pinId || null,
+        };
+        this.setState({ placing, newSpot: null }, () => {
+            if (!map) return;
+            const start = d.start || map.getCenter();
+            // Close enough to see the tree, with the whole range in view on a phone
+            // (100 m is ~100 px at z17). Pinch in for more.
+            const zoom = Math.max(map.getZoom(), map.getSize().x <= MOBILE_MAX ? 17 : 18);
+            map.setView([start.lat, start.lng], zoom, { animate: true });
+            this.reportPlacement(false);
+        });
+    };
+
+    // Where the pin is now. On a move's end, a pin outside its range is pulled back in.
+    reportPlacement = (final) => {
+        const map = this._leafletMap;
+        const p = this.state.placing;
+        if (!map || !p) return;
+        const c = map.getCenter();
+        let pt = { lat: c.lat, lng: c.lng };
+        let atLimit = false;
+        if (p.origin && p.limitM) {
+            const d = distanceMeters(p.origin, pt);
+            if (d > p.limitM + 0.5) {
+                const cl = clampToRange(p.origin, pt, p.limitM);
+                pt = { lat: cl.lat, lng: cl.lng };
+                atLimit = true;
+                if (final) map.panTo([cl.lat, cl.lng], { animate: true, duration: 0.25 });
+            } else if (d > p.limitM - 1) {
+                atLimit = true;
+            }
+        }
+        const nearby = [];
+        for (const pin of this.state.pins) {
+            if (!pin.coordinates || pin.pinId === p.pinId) continue;
+            const dist = distanceMeters(pt, pin.coordinates);
+            if (dist !== null && dist <= PLACE_NEARBY_M) {
+                nearby.push({ pinId: pin.pinId, fruitType: pin.fruitType, coordinates: pin.coordinates });
+            }
+        }
+        window.dispatchEvent(new CustomEvent('ffa:place-move', {
+            detail: { lat: pt.lat, lng: pt.lng, distanceM: p.origin ? distanceMeters(p.origin, pt) : null, atLimit, nearby },
+        }));
+    };
+
+    // The spot is chosen: show it, clear of the sheet that now covers the bottom.
+    handlePlaceSpot = (e) => {
+        const d = (e && e.detail) || {};
+        if (!Number.isFinite(d.lat) || !Number.isFinite(d.lng)) return;
+        this.closePopups();
+        this.setState({ placing: null, newSpot: { lat: d.lat, lng: d.lng, family: d.family || 'seed', pinId: d.pinId || null } });
+        const map = this._leafletMap;
+        if (!map || d.pan === false) return;
+        const size = map.getSize();
+        const zoom = Math.max(map.getZoom(), 16);
+        const sheet = Math.min(Math.max(d.sheetPx || 0, 0), size.y - 90);
+        // Put the pin's tip in the middle of what's left above the sheet (its body is above the tip).
+        const tipY = Math.max(70, (size.y - sheet) / 2 + 23);
+        const pt = map.project([d.lat, d.lng], zoom);
+        map.setView(map.unproject(pt.add([0, size.y / 2 - tipY]), zoom), zoom, { animate: true });
+    };
+
+    handlePlaceEnd = () => {
+        if (this.state.placing || this.state.newSpot) this.setState({ placing: null, newSpot: null });
+    };
+
+    // A find was added or edited: put it on the map (no reload), go there, open it.
+    handleFindSaved = (e) => {
+        const pin = e && e.detail && e.detail.pin;
+        if (!pin || !pin.pinId || !pin.coordinates) return;
+        this.invalidatePinCaches();
+        const exists = this.state.pins.some(p => p.pinId === pin.pinId);
+        const nextPins = exists
+            ? this.state.pins.map(p => (p.pinId === pin.pinId ? { ...p, ...pin } : p))
+            : [...this.state.pins, pin];
+        const target = { lat: pin.coordinates.lat, lng: pin.coordinates.lng };
+        this.updatePinsState(nextPins, {
+            placing: null,
+            newSpot: null,
+            spotlightPin: target,
+            spotlightSeq: this.state.spotlightSeq + 1,
+        });
+        // After OpenPopupOnPin has registered for the move's end.
+        setTimeout(() => {
+            const map = this._leafletMap;
+            if (map) map.setView([target.lat, target.lng], Math.max(map.getZoom(), 17), { animate: true });
+        }, 60);
+    };
 
     // ── Season shelf ──────────────────────────────────────────────────────────
 
@@ -891,7 +1047,7 @@ class Map extends Component {
 
     // After sign-out: clear user-specific state and reload public pins (no usernames)
     resetAfterLogout = () => {
-        this.setState({ showMyPinsOnly: false, editingPinId: null, editingNotes: '' });
+        this.setState({ showMyPinsOnly: false, placing: null, newSpot: null });
         this.refreshPins();
     };
 
@@ -962,97 +1118,42 @@ class Map extends Component {
         this.setState({ zoom });
     };
 
-    // Delete a pin
+    // Delete a find (the popup asks first and shows any error). Resolves { ok, message }.
     deletePin = async (pinId) => {
-        if (!confirm('Are you sure you want to delete this pin?')) {
-            return;
-        }
-
         try {
-            const response = await fetch(`${API_BASE}/api/pins/${pinId}`, {
+            const response = await fetch(`${API_BASE}/api/pins/${encodeURIComponent(pinId)}`, {
                 method: 'DELETE',
                 headers: getAuthHeader()
             });
-            if (handleUnauthorized(response)) return;
-
-            const result = await response.json();
-
-            if (result.success) {
-                // Optimistic update: remove from state immediately, clear cache
+            if (handleUnauthorized(response)) return { ok: false, message: 'your session expired. sign in again.' };
+            const result = await response.json().catch(() => ({}));
+            if (response.ok && result.success) {
                 const updatedPins = this.state.pins.filter(pin => pin.pinId !== pinId);
                 this.invalidatePinCaches();
                 this.updatePinsState(updatedPins);
-            } else {
-                alert('Error deleting pin: ' + result.message);
+                window.dispatchEvent(new CustomEvent('ffa:notice', { detail: { text: 'deleted.' } }));
+                return { ok: true };
             }
+            if (response.status === 403) return { ok: false, message: 'only the person who added this find can delete it.' };
+            if (response.status === 404) return { ok: false, message: 'this find was already deleted.' };
+            return { ok: false, message: 'couldn’t delete it. try again in a moment.' };
         } catch (error) {
             console.error('Error deleting pin:', error);
-            alert('Error deleting pin. Please try again.');
+            return { ok: false, message: 'couldn’t reach fruit for all. check your connection and try again.' };
         }
     };
 
-    // Start editing notes for a pin
-    // Both of these swap the popup's contents. Doing that inside the click handler
-    // detaches the clicked button before Leaflet sees the click, so Leaflet treats
-    // it as a click on the bare map and closes the popup. Waiting one tick lets
-    // Leaflet handle the click first.
-    startEditingNotes = (pinId, currentNotes) => {
-        setTimeout(() => this.setState({
-            editingPinId: pinId,
-            editingNotes: currentNotes || ''
-        }), 0);
-    };
-
-    // Cancel editing notes
-    cancelEditingNotes = () => {
-        setTimeout(() => this.setState({
-            editingPinId: null,
-            editingNotes: ''
-        }), 0);
-    };
-
-    // Save edited notes
-    saveEditedNotes = async (pinId) => {
-        if (containsProfanity(this.state.editingNotes)) {
-            alert('Please keep notes family-friendly.');
-            return;
-        }
-        try {
-            const response = await fetch(`${API_BASE}/api/pins/${pinId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...getAuthHeader()
-                },
-                body: JSON.stringify({ notes: this.state.editingNotes })
-            });
-            if (handleUnauthorized(response)) return;
-
-            const result = await response.json();
-
-            if (result.success) {
-                // Update the pin in state
-                const updatedPins = this.state.pins.map(pin => 
-                    pin.pinId === pinId ? { ...pin, notes: this.state.editingNotes } : pin
-                );
-                this.setState({
-                    pins: updatedPins,
-                    editingPinId: null,
-                    editingNotes: ''
-                }, () => this.publishPinSummary(updatedPins));
-                // Every cached view that holds this pin now has the old notes
-                this.invalidatePinCaches();
-            } else {
-                alert('Error saving notes: ' + result.message);
-            }
-        } catch (error) {
-            console.error('[EDIT] Error saving notes:', error);
-            alert('Error saving notes. Please try again.');
-        }
+    // "edit" in a popup: AddFind (in the sidebar) takes over.
+    editPin = (pin) => {
+        this.closePopups();
+        window.dispatchEvent(new CustomEvent('ffa:edit-find', { detail: { pin } }));
     };
 
     render() {
-        const { pins, loading, error, showMyPinsOnly, zoom, fruitFilter, editingPinId, editingNotes } = this.state;
+        const { pins, loading, error, showMyPinsOnly, zoom, fruitFilter, placing, newSpot } = this.state;
+        const adding = !!(placing || newSpot);
+        // While a find is being edited, its old marker steps aside for the new spot.
+        const hiddenPinId = (placing && placing.pinId) || (newSpot && newSpot.pinId) || null;
         const currentUser = getUser();
         const currentUsername = currentUser ? currentUser.userName : null;
         
@@ -1073,6 +1174,7 @@ class Map extends Component {
         if (showMyPinsOnly && currentUsername) {
             filteredPins = filteredPins.filter(pin => pin.submittedBy === currentUsername);
         }
+        if (hiddenPinId) filteredPins = filteredPins.filter(pin => pin.pinId !== hiddenPinId);
         
         // Apply clustering based on zoom level
         const bounds = { minLat: -90, maxLat: 90, minLng: -180, maxLng: 180 };
@@ -1083,7 +1185,7 @@ class Map extends Component {
             && p.coordinates.lat >= vb.minLat && p.coordinates.lat <= vb.maxLat
             && p.coordinates.lng >= vb.minLng && p.coordinates.lng <= vb.maxLng).length : filteredPins.length;
         const shelfMode = this._shelfOn && !currentUsername;
-        const showEmpty = !shelfMode && !loading && !error && !showMyPinsOnly && vb && inViewCount === 0 && fruitFilter === 'all';
+        const showEmpty = !adding && !shelfMode && !loading && !error && !showMyPinsOnly && vb && inViewCount === 0 && fruitFilter === 'all';
         let emptyHints = [];
         if (showEmpty) {
             const c = this._leafletMap ? this._leafletMap.getCenter() : null;
@@ -1091,7 +1193,7 @@ class Map extends Component {
         }
 
         return (
-            <div className='map-area'>
+            <div className={`map-area${adding ? ' is-adding' : ''}${placing ? ' is-placing' : ''}`}>
                     <MapContainer center={DEFAULT_CENTER} zoom={13} scrollWheelZoom={true} zoomControl={false}>
                         <ZoomControl position="topright" />
                         <MapRefCapture onMap={(map) => { this._leafletMap = map; }} />
@@ -1111,12 +1213,26 @@ class Map extends Component {
                             onViewportChange={this.handleViewportChange} 
                             onZoomChange={this.handleZoomChange}
                         />
+                        {placing && <PlacementEvents onMove={this.reportPlacement} />}
+                        {placing && placing.origin && placing.limitM && (
+                            <Circle center={[placing.origin.lat, placing.origin.lng]} radius={placing.limitM}
+                                interactive={false} className="place-range" />
+                        )}
+                        {placing && placing.origin && (
+                            <Marker position={[placing.origin.lat, placing.origin.lng]}
+                                icon={placing.from === 'pin' ? PLACE_WAS_ICON : PLACE_YOU_ICON}
+                                interactive={false} keyboard={false} />
+                        )}
+                        {newSpot && (
+                            <Marker position={[newSpot.lat, newSpot.lng]} icon={newFindIcon(newSpot.family)}
+                                interactive={false} keyboard={false} zIndexOffset={2000} />
+                        )}
                         <TileLayer
                             attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://stamen.com">Stamen Design</a> &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
                             url='https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}.png'
                             detectRetina={false}
                         />
-                        {(loading || filteredPins.length > 0) && (
+                        {!adding && (loading || filteredPins.length > 0) && (
                             <div className={`pin-count-badge${loading ? ' pin-count-badge--loading' : ''}`}>
                                 {loading ? 'loading…' : `${filteredPins.length} pin${filteredPins.length !== 1 ? 's' : ''}`}
                             </div>
@@ -1147,10 +1263,10 @@ class Map extends Component {
                                 </button>
                             </div>
                         )}
-                        {shelfMode && this.state.showSearchArea && (
+                        {!adding && shelfMode && this.state.showSearchArea && (
                             <SearchAreaStamp onClick={this.searchThisArea} />
                         )}
-                        {shelfMode && this.state.shelfMark && (
+                        {!adding && shelfMode && this.state.shelfMark && (
                             <Marker
                                 position={[this.state.shelfMark.lat, this.state.shelfMark.lng]}
                                 icon={SHELF_MARK_ICON}
@@ -1159,7 +1275,7 @@ class Map extends Component {
                                 zIndexOffset={1000}
                             />
                         )}
-                        {showMyPinsOnly && !loading && filteredPins.length === 0 && (
+                        {!adding && showMyPinsOnly && !loading && filteredPins.length === 0 && (
                             <div className="my-pins-empty">
                                 <strong>no pins yet</strong>
                                 add your first fruit pin using the menu
@@ -1201,13 +1317,8 @@ class Map extends Component {
                                                 pin={pin}
                                                 isMyPin={isMyPin}
                                                 isAdmin={isAdmin()}
-                                                editingPinId={editingPinId}
-                                                editingNotes={editingNotes}
-                                                startEditingNotes={this.startEditingNotes}
-                                                cancelEditingNotes={this.cancelEditingNotes}
-                                                saveEditedNotes={this.saveEditedNotes}
+                                                onEdit={this.editPin}
                                                 deletePin={this.deletePin}
-                                                setEditingNotes={val => this.setState({ editingNotes: val })}
                                             />
                                         </Popup>
                                     </Marker>
@@ -1215,6 +1326,10 @@ class Map extends Component {
                             })
                         }
                     </MapContainer>
+                    {placing && (
+                        <div className="place-crosshair" aria-hidden="true"
+                            dangerouslySetInnerHTML={{ __html: newFindPinHtml(placing.family) }} />
+                    )}
             </div>
         );
     }
