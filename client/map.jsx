@@ -9,7 +9,8 @@ import { fetchWithRetry } from './utils/network.js';
 import { isOlderThanMonths } from './utils/timeAgo.js';
 import { TINY_MAX, getBottomChromePx } from './utils/breakpoints.js';
 import { familyOf, markSvg } from './utils/fruitFamilies.js';
-import { ripenessOf, buildViewSummary, lookForHints, MONTH_NAMES } from './utils/pinSummary.js';
+import { ripenessOf, buildViewSummary, lookForHints, MONTH_NAMES, distanceMiles } from './utils/pinSummary.js';
+import { buildShelf, shelfEnabled, SEARCH_AREA_MI } from './utils/seasonShelf.js';
 import { detectZoneFallback } from './utils/zoneFallback.js';
 import { popupPanDelta } from './utils/popupFit.js';
 import { LOCATE_OPTIONS, isAppleMobile, locateErrorMessage, parseLastLocation } from './utils/geolocation.js';
@@ -62,6 +63,32 @@ function clusterIcon(count) {
         _clusterIconCache.set(label, icon);
     }
     return icon;
+}
+
+// The season shelf's current entry: a fig number stamped on its pin (only that one).
+// Drawn as its own non-interactive marker on top of the pin, same anchor.
+const SHELF_MARK_ICON = new L.DivIcon({
+    className: '',
+    html: '<div class="ffa-shelf-mark" aria-hidden="true"><span>1</span></div>',
+    iconSize: [38, 46],
+    iconAnchor: [19, 46],
+});
+
+// "search this area": a stamp on the map that re-anchors the season shelf. Taps
+// must not reach the map underneath (same as the locate button).
+function SearchAreaStamp({ onClick }) {
+    const ref = React.useRef(null);
+    React.useEffect(() => {
+        if (ref.current) {
+            L.DomEvent.disableClickPropagation(ref.current);
+            L.DomEvent.disableScrollPropagation(ref.current);
+        }
+    }, []);
+    return (
+        <button ref={ref} type="button" className="search-area-stamp" onClick={onClick}>
+            search this area
+        </button>
+    );
 }
 
 // Merge two pin arrays by pinId, keeping existing pins and adding new ones
@@ -133,6 +160,14 @@ function LocateMeButton({ onLocate, onPreciseLocation, fallbackLocation }) {
         return () => clearTimeout(msgTimer.current);
     }, []);
 
+    // The season shelf's "use my location" link asks this button to locate.
+    const locateRef = React.useRef(null);
+    React.useEffect(() => {
+        const onRequest = () => locateRef.current && locateRef.current();
+        window.addEventListener('ffa:locate-me', onRequest);
+        return () => window.removeEventListener('ffa:locate-me', onRequest);
+    }, []);
+
     if (typeof navigator === 'undefined' || !navigator.geolocation) return null;
 
     const showMessage = (text) => {
@@ -151,7 +186,7 @@ function LocateMeButton({ onLocate, onPreciseLocation, fallbackLocation }) {
                 setFinding(false);
                 const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                 try { sessionStorage.setItem('ffa_last_location', JSON.stringify(loc)); } catch (e) {}
-                if (onPreciseLocation) onPreciseLocation(loc);
+                if (onPreciseLocation) onPreciseLocation(loc, true);
             },
             (err) => {
                 setFinding(false);
@@ -159,7 +194,7 @@ function LocateMeButton({ onLocate, onPreciseLocation, fallbackLocation }) {
                 try { last = parseLastLocation(sessionStorage.getItem('ffa_last_location')); } catch (e) {}
                 const fallback = last || fallbackLocation || null;
                 // A fresh object so MapFlyTo flies even if it's the same place.
-                if (fallback && onPreciseLocation) onPreciseLocation({ lat: fallback.lat, lng: fallback.lng });
+                if (fallback && onPreciseLocation) onPreciseLocation({ lat: fallback.lat, lng: fallback.lng }, false);
                 showMessage(locateErrorMessage(err && err.code, {
                     apple: isAppleMobile(navigator.userAgent, navigator.maxTouchPoints || 0),
                     hasFallback: !!fallback,
@@ -168,6 +203,7 @@ function LocateMeButton({ onLocate, onPreciseLocation, fallbackLocation }) {
             LOCATE_OPTIONS
         );
     };
+    locateRef.current = locate;
 
     return (
         <div ref={ref} className={`locate-me-btn${finding ? ' locate-me-btn--finding' : ''}`}
@@ -324,7 +360,14 @@ class Map extends Component {
             pinFlySeq: 0,        // Increments on each pin click to reliably trigger pan
             spotlightPin: null,  // Coords of pin whose popup should open after pan
             spotlightSeq: 0,     // Increments to trigger OpenPopupOnPin
+            // Season shelf (?landing=shelf, signed out): where it's measured from.
+            // { lat, lng, kind: 'approx' | 'precise' | 'area', city }
+            shelfAnchor: null,
+            showSearchArea: false,
+            shelfMark: null,     // {lat, lng} of the shelf's current entry
         };
+        this._shelfOn = shelfEnabled();
+        this._personAnchor = null; // the person's own anchor, for "back to near me"
         this.mapRef = null; // Reference to map instance
         this._leafletMap = null; // Live Leaflet map instance (set by MapRefCapture)
         this._betVisited = new Set(); // Pins already shown in the current nearest-bet cycle
@@ -350,6 +393,12 @@ class Map extends Component {
         this.requestIpLocation();
         window.addEventListener('ffa:nearest-good-bet', this.handleNearestGoodBet);
         window.addEventListener('ffa:fly-to', this.handleFlyTo);
+        if (this._shelfOn) {
+            window.addEventListener('ffa:shelf-select', this.handleShelfSelect);
+            window.addEventListener('ffa:shelf-search-area', this.searchThisArea);
+            window.addEventListener('ffa:shelf-near-me', this.backToNearMe);
+            this.locateIfAlreadyAllowed();
+        }
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -379,7 +428,89 @@ class Map extends Component {
         this.cancelRequest('viewportPins');
         window.removeEventListener('ffa:nearest-good-bet', this.handleNearestGoodBet);
         window.removeEventListener('ffa:fly-to', this.handleFlyTo);
+        window.removeEventListener('ffa:shelf-select', this.handleShelfSelect);
+        window.removeEventListener('ffa:shelf-search-area', this.searchThisArea);
+        window.removeEventListener('ffa:shelf-near-me', this.backToNearMe);
     }
+
+    // ── Season shelf ──────────────────────────────────────────────────────────
+
+    // Where the person is: a precise location replaces the network guess, never the reverse.
+    setPersonAnchor = (anchor) => {
+        if (!anchor) return;
+        if (anchor.kind !== 'precise' && this._personAnchor && this._personAnchor.kind === 'precise') return;
+        this._personAnchor = anchor;
+        this.setState(prev => (prev.shelfAnchor && prev.shelfAnchor.kind === 'area' ? null : { shelfAnchor: anchor }),
+            () => this.publishPinSummary(this.state.pins));
+    };
+
+    // If the browser already has permission, use the precise location without a prompt.
+    locateIfAlreadyAllowed = () => {
+        try {
+            if (!navigator.permissions || !navigator.geolocation) return;
+            navigator.permissions.query({ name: 'geolocation' }).then((status) => {
+                if (status.state !== 'granted') return;
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    try { sessionStorage.setItem('ffa_last_location', JSON.stringify(loc)); } catch (e) {}
+                    this._blockViewportFetchUntil = Date.now() + 4000;
+                    this.setState({ userLocation: loc });
+                    this.fetchPins(false, this.getLocationBounds(loc.lat, loc.lng));
+                    this.setPersonAnchor({ ...loc, kind: 'precise', city: null });
+                }, () => {}, LOCATE_OPTIONS);
+            }).catch(() => {});
+        } catch (e) { /* no permissions API */ }
+    };
+
+    searchThisArea = () => {
+        const map = this._leafletMap;
+        if (!map) return;
+        const c = map.getCenter();
+        this.setState({ shelfAnchor: { lat: c.lat, lng: c.lng, kind: 'area', city: null }, showSearchArea: false, shelfMark: null },
+            () => this.publishPinSummary(this.state.pins));
+    };
+
+    backToNearMe = () => {
+        const a = this._personAnchor;
+        this.setState({ shelfAnchor: a, shelfMark: null }, () => this.publishPinSummary(this.state.pins));
+        if (a && this._leafletMap) this._leafletMap.flyTo([a.lat, a.lng], Math.max(this._leafletMap.getZoom(), 14), { duration: 0.8 });
+    };
+
+    // A shelf entry was chosen: bring its find into the visible map (above the shelf)
+    // and number its pin. No popup: the pin is one tap away.
+    handleShelfSelect = (event) => {
+        const c = event?.detail;
+        const map = this._leafletMap;
+        if (!map || !c || !Number.isFinite(c.lat) || !Number.isFinite(c.lng)) return;
+        const zoom = Math.max(map.getZoom(), 15); // clusters break up at 14
+        const size = map.getSize();
+        const visibleH = Math.max(size.y - getBottomChromePx(), size.y * 0.4);
+        const pt = map.project([c.lat, c.lng], zoom);
+        // Put the pin in the middle of the strip of map above the shelf.
+        const centre = map.unproject(pt.add([0, size.y / 2 - visibleH / 2]), zoom);
+        map.setView(centre, zoom, { animate: true, duration: 0.5 });
+        this.setState({ shelfMark: { lat: c.lat, lng: c.lng } });
+    };
+
+    publishShelf = (center) => {
+        if (!this._shelfOn || typeof window === 'undefined') return;
+        const anchor = this.state.shelfAnchor;
+        const shelf = buildShelf(this.state.pins, anchor, new Date().getMonth() + 1);
+        // The stamp appears once the map is beyond the shelf's reach from its anchor.
+        let showSearchArea = false;
+        if (anchor && center && !isAuthenticated()) {
+            const reach = shelf.entries.reduce((m, e) => (e.distanceMi < 50 ? Math.max(m, e.distanceMi) : m), 0);
+            showSearchArea = distanceMiles(anchor, center) > Math.max(SEARCH_AREA_MI, reach + 0.5);
+        }
+        if (showSearchArea !== this.state.showSearchArea) this.setState({ showSearchArea });
+        window.dispatchEvent(new CustomEvent('ffa:shelf', {
+            detail: {
+                anchor: anchor ? { kind: anchor.kind, city: anchor.city || null } : { kind: 'none', city: null },
+                shelf,
+                loading: this.state.loading,
+            },
+        }));
+    };
 
     // Bar entries ("in season", "nearest") pan to a find and open its popup.
     handleFlyTo = (event) => {
@@ -502,6 +633,7 @@ class Map extends Component {
         const drawn = visible.filter(p => (fruitFilter === 'all' || p.fruitType === fruitFilter)
             && (!me || p.submittedBy === me));
         const summary = buildViewSummary(drawn, center, new Date().getMonth() + 1);
+        this.publishShelf(center);
         window.dispatchEvent(new CustomEvent('ffa:pins-summary', {
             detail: {
                 pinCount: drawn.length,
@@ -536,7 +668,13 @@ class Map extends Component {
                 if (data.lat && data.lng) {
                     const userLocation = { lat: data.lat, lng: data.lng };
                     this._blockViewportFetchUntil = Date.now() + 4000;
+                    if (this._personAnchor && this._personAnchor.kind === 'precise') {
+                        // A precise location arrived first; don't fly back to the guess.
+                        this.fetchPins(false, this.getLocationBounds(data.lat, data.lng));
+                        return;
+                    }
                     this.setState({ userLocation });
+                    if (this._shelfOn) this.setPersonAnchor({ ...userLocation, kind: 'approx', city: data.city || null });
                     this.fetchPins(false, this.getLocationBounds(data.lat, data.lng));
                     return;
                 }
@@ -944,7 +1082,8 @@ class Map extends Component {
         const inViewCount = vb ? filteredPins.filter(p => p.coordinates
             && p.coordinates.lat >= vb.minLat && p.coordinates.lat <= vb.maxLat
             && p.coordinates.lng >= vb.minLng && p.coordinates.lng <= vb.maxLng).length : filteredPins.length;
-        const showEmpty = !loading && !error && !showMyPinsOnly && vb && inViewCount === 0 && fruitFilter === 'all';
+        const shelfMode = this._shelfOn && !currentUsername;
+        const showEmpty = !shelfMode && !loading && !error && !showMyPinsOnly && vb && inViewCount === 0 && fruitFilter === 'all';
         let emptyHints = [];
         if (showEmpty) {
             const c = this._leafletMap ? this._leafletMap.getCenter() : null;
@@ -962,7 +1101,10 @@ class Map extends Component {
                         <ClosePopupsOnCommand signal={this.state.closePopupsSignal} />
                         <LocateMeButton
                             onLocate={() => { this._blockViewportFetchUntil = Date.now() + 4000; }}
-                            onPreciseLocation={(loc) => { this.setState({ userLocation: loc }); }}
+                            onPreciseLocation={(loc, precise) => {
+                                this.setState({ userLocation: loc });
+                                if (this._shelfOn && precise) this.setPersonAnchor({ ...loc, kind: 'precise', city: null });
+                            }}
                             fallbackLocation={this.state.userLocation}
                         />
                         <MapEvents 
@@ -1004,6 +1146,18 @@ class Map extends Component {
                                     zoom out to look nearby →
                                 </button>
                             </div>
+                        )}
+                        {shelfMode && this.state.showSearchArea && (
+                            <SearchAreaStamp onClick={this.searchThisArea} />
+                        )}
+                        {shelfMode && this.state.shelfMark && (
+                            <Marker
+                                position={[this.state.shelfMark.lat, this.state.shelfMark.lng]}
+                                icon={SHELF_MARK_ICON}
+                                interactive={false}
+                                keyboard={false}
+                                zIndexOffset={1000}
+                            />
                         )}
                         {showMyPinsOnly && !loading && filteredPins.length === 0 && (
                             <div className="my-pins-empty">

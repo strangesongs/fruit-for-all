@@ -1250,3 +1250,78 @@
     .entry-actions { padding: 0 12px; gap: 6px; }
     .pin-popup.pin-entry .still-good-btn, .entry-directions, .entry-thanks { font-size: 14px; min-height: 40px; }
 }
+
+/* ── Season shelf (?landing=shelf) on the map ─────────────────────────────── */
+
+/* "search this area": a printed stamp, top centre, that re-anchors the shelf */
+.search-area-stamp {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    min-height: 40px;
+    padding: 0 14px;
+    background: var(--paper);
+    border: 1.5px solid var(--text);
+    border-radius: 20px;
+    box-shadow: 3px 3px 0 var(--citron);
+    font-family: var(--font);
+    font-size: 15px;
+    color: var(--text);
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.search-area-stamp:active {
+    box-shadow: 0 0 0 var(--citron);
+    transform: translateX(-50%) translate(3px, 3px);
+}
+
+/* The shelf's current entry: a fig number stamped on its pin */
+.ffa-shelf-mark {
+    position: relative;
+    width: 38px;
+    height: 46px;
+    pointer-events: none;
+}
+
+.ffa-shelf-mark span {
+    position: absolute;
+    top: -7px;
+    right: -6px;
+    width: 18px;
+    height: 18px;
+    box-sizing: border-box;
+    border-radius: 9px;
+    background: var(--fig);
+    color: var(--paper);
+    font-family: 'Vollkorn', serif;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Jelly: keep the attribution above the shelf strip, and give the strip room */
+@media (max-width: 360px) {
+    body:has(.shelf-strip) .leaflet-container .leaflet-bottom {
+        bottom: var(--bottom-chrome, 0px);
+    }
+
+    body:has(.shelf-strip) .pin-popup {
+        max-height: min(72dvh, calc(var(--app-viewport-height, 100vh) - var(--bottom-chrome, 0px) - 72px));
+    }
+
+    .search-area-stamp {
+        top: 12px;
+        left: 12px;
+        transform: none;
+        font-size: 14px;
+    }
+
+    .search-area-stamp:active {
+        transform: translate(3px, 3px);
+    }
+}
