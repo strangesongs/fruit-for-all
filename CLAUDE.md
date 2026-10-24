@@ -61,7 +61,7 @@ The JS decides which tree renders (`Sidebar.render()`), and CSS styles each tree
 Rules:
 - JS breakpoints live in `client/utils/breakpoints.js` (used by sidebar.jsx, index.js and `PanToPin`). CSS repeats them as `@media` blocks: **change both together.**
 - Never let a fix for one mode leak into another. Tiny-mode CSS lives under `@media (max-width: 360px)`; standard-mobile selectors are `.guest-bar*` / `.auth-bar*`.
-- The `@media (max-width: 768px)` and `480px` blocks in sidebar.css mostly target `.sidebar`, which phones never render, but the global `button:not(...)` rule inside them **does** shrink popup and pin buttons on phones.
+- The `@media (max-width: 768px)` and `480px` blocks in sidebar.css mostly target `.sidebar`, which phones never render, but the `.btn` rules inside them **do** shrink popup and pin buttons on phones.
 - The standard-mobile bar is `position: fixed` and sits above the map. Sidebar publishes its live height as the CSS variable `--bottom-chrome` (ResizeObserver via `setBottomBarRef`). Anything near the bottom of the map must use it: `.leaflet-bottom`, popup max-height and `PanToPin` already do. Phones and the Jelly (≤ 768) have no + / − buttons (pinch and double-tap zoom; the corner is kept clear for a busy map): locate-me is the only map control, a round printed stamp in the top-right corner. Desktop keeps zoom (top right, printed card) and locate (bottom right).
 - The bar has two states, toggled by the grab handle (`renderBarHandle`). Collapsed: month + "N in season · M finds in view" + add a find (`renderBarHeader`). Open: tabs **in season / almanac / nearest** (`renderBarPanel`), then filter + links (guest) or my pins + filter + sign out (signed in). Open by default on a first visit only (key `ffa_guest_bar_seen`). `Sidebar.collapse()` (called when a pin opens) folds both.
 - The bar's data comes from the map: `publishPinSummary` sends `detail.summary` = `buildViewSummary()` (client/utils/pinSummary.js, pure + tested) on every viewport change. Bar entries call `ffa:fly-to` to pan to a find; the map's empty-area card fires `ffa:add-find`.
@@ -79,10 +79,10 @@ Rules:
 - User-facing copy says **"in season"**, never "ripe" (flowers and leaves aren't ripe). Code identifiers (`ripeCount`, `ripenessOf`) still say ripe.
 - Seasons follow the **find's location**: `zoneOf(pin)` = the zone saved at creation (phzmapi.com), else `detectZoneFallback` on the pin's coordinates. An empty view uses the map centre. Never fall back to "any zone" or a fixed zone.
 - Lowercase copy and labels. Restrained shadows (≤ `5px 6px 10px rgba(0,0,0,.22)`), tactile outset/inset borders, no slick gradients.
-- Printed surfaces: buttons filled with fig sit on a persimmon block printed off register (`box-shadow: 3px 3px 0 var(--persimmon)`, no border, 3px radius; pressed = `translate(3px, 3px)` onto the block). That covers every primary action ("add a find", sign in, "take me there", "directions", my pins, save, use my location); a toggle that is on (`.btn-active`) stays pressed onto the block. Secondary and destructive actions (cancel, delete, "still good?") are an ink outline on paper with no fill or block, and are excluded from the global `button:not(...)` rule. Cards (popup, Jelly panel, reset page) are paper with a 1px ink keyline, 2px radius and a fig offset shadow. A season is always a row of persimmon dots (popup band, almanac). Signed-out form fields are paper, a muted keyline, Vollkorn, left-aligned with italic placeholders.
+- Printed surfaces: buttons filled with fig sit on a persimmon block printed off register (`box-shadow: 3px 3px 0 var(--persimmon)`, no border, 3px radius; pressed = `translate(3px, 3px)` onto the block). That covers every primary action ("add a find", sign in, "take me there", "directions", my pins, save, use my location); a toggle that is on (`.btn-active`) stays pressed onto the block. Secondary and destructive actions (cancel, delete, "still good?") are an ink outline on paper with no fill or block, and override `.btn` with a more specific selector (`.btn.cancel-notes-btn`, `.btn.delete-pin-btn`, `.popup-footer .btn.cancel-btn`). Cards (popup, Jelly panel, reset page) are paper with a 1px ink keyline, 2px radius and a fig offset shadow. A season is always a row of persimmon dots (popup band, almanac). Signed-out form fields are paper, a muted keyline, Vollkorn, left-aligned with italic placeholders.
 - Map tiles are re-inked by `#ffa-duotone`, an inline SVG filter in `client/map-index.html` (tile lightness → key ink … paper), applied per tile in map.css. Keep the SVG in the HTML: Firefox hides an element whose filter points at a missing id.
 - Map controls are printed like the rest: the desktop zoom is a paper card with an ink keyline and a fig offset; locate-me is a round stamp like the clusters (paper, ink ring, citron offset).
-- A huge global `button:not(.a):not(.b)…` rule in sidebar.css gives every button the red style. A new button class that should look different must be added to **every** copy of that selector (base, :hover, :active, and the 768/360 media blocks). They have already drifted, so check all of them.
+- Buttons are unstyled unless they opt in: `className="btn …"` gives the filled fig button (`.btn`, `:hover`, `:active` and the 768/480 media blocks in sidebar.css; `.btn-active` for a pressed toggle). `.btn` is a single class, so a component rule that sets the same property *after* it in the cascade wins; the old global `button:not(…)` rule (removed Oct 2026) used to override everything.
 
 ## Conventions
 
@@ -91,6 +91,7 @@ Rules:
 - Sidebar ↔ Map communicate via refs from `App` **and** window CustomEvents (`ffa:pins-summary`, `ffa:nearest-good-bet`).
 - Server handlers: validate input types **before** using string methods, and wrap the whole body in try/catch. An exception thrown in an async Express 4 handler is an unhandled rejection that kills the Node process.
 - Dynamo pin-list failures throw `PinsQueryError` → handlers return 503 via `sendPinsError` (never an empty map).
+- Users-table failures throw `UsersQueryError` (never `null`/`false`, which read as "no such user"). Messages meant for people are `UserError`; auth handlers send those as-is and answer anything else with a generic 500 (`sendAuthError`).
 - Public responses must never include `submittedBy` (stripped in `getPublicPins`).
 - New third-party hosts the browser talks to must be added to the helmet CSP in server.js (`connectSrc`/`imgSrc`).
 - Production builds content-hash every file, including the entry (`--entry-names`); `scripts/build-html.mjs` rewrites `dist/index.html` to point at them. The SW serves `.js`/`.css` cache-first, which is only safe because names change. Bump `CACHE_VERSION` in `client/sw.js` when the caching strategy or precache list changes.
@@ -100,7 +101,7 @@ Rules:
 
 ## Environment
 
-`.env` (never commit): `NODE_ENV`, `JWT_SECRET` (required when NODE_ENV=production), `AWS_REGION`, `DYNAMODB_USERS_TABLE`, `PINS_TABLE`, `ALLOWED_ORIGINS`, `PORT`, `STADIA_API_KEY`. Optional: `REDIS_URL`, `RESEND_API_KEY`, `APP_URL`, `ADMIN_EMAIL`, `PIN_NOTIFICATIONS=true`.
+`.env` (never commit): `NODE_ENV`, `JWT_SECRET` (required when NODE_ENV=production), `AWS_REGION`, `DYNAMODB_USERS_TABLE`, `PINS_TABLE`, `ALLOWED_ORIGINS`, `PORT`, `STADIA_API_KEY`. Optional: `REDIS_URL`, `RESEND_API_KEY`, `APP_URL` (base for links in emails; `server/utils/appUrl.js` defaults it to https://fruitforall.app in production, localhost otherwise), `ADMIN_EMAIL`, `PIN_NOTIFICATIONS=true`.
 Never print or paste `.env` values. AWS creds come from env or `~/.aws`.
 
 ## Known issues / open review items

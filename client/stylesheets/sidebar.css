@@ -127,7 +127,7 @@ html, body {
     width: 100%;
 }
 
-button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):not(.toggle-link):not(.secondary-link):not(.fruit-suggestion-btn):not(.guest-bar-bet-btn):not(.still-good-btn):not(.bar-handle):not(.auth-bar-action-btn):not(.bar-tab):not(.map-empty-card__link):not(.ripe-entry):not(.pin-notes-btn):not(.cancel-btn):not(.cancel-notes-btn):not(.delete-pin-btn), .action-btn {
+.btn {
     background-color: var(--red);
     color: white;
     padding: 10px 14px;
@@ -149,12 +149,12 @@ button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-sub
     transition: background 0.15s, box-shadow 0.1s, transform 0.1s;
 }
 
-button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):not(.toggle-link):not(.secondary-link):not(.fruit-suggestion-btn):not(.guest-bar-bet-btn):not(.still-good-btn):not(.bar-handle):not(.auth-bar-action-btn):not(.bar-tab):not(.map-empty-card__link):not(.ripe-entry):not(.pin-notes-btn):not(.cancel-btn):not(.cancel-notes-btn):not(.delete-pin-btn):hover, .action-btn:hover {
+.btn:hover {
     background-color: var(--red-dark);
     box-shadow: 3px 3px 0 var(--persimmon);
 }
 
-button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):not(.toggle-link):not(.secondary-link):not(.fruit-suggestion-btn):not(.guest-bar-bet-btn):not(.still-good-btn):not(.bar-handle):not(.auth-bar-action-btn):not(.bar-tab):not(.map-empty-card__link):not(.ripe-entry):not(.pin-notes-btn):not(.cancel-btn):not(.cancel-notes-btn):not(.delete-pin-btn):active, .action-btn:active {
+.btn:active {
     box-shadow: 0 0 0 var(--persimmon);
     transform: translate(3px, 3px); /* pressed onto the block */
 }
@@ -165,15 +165,6 @@ button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-sub
     box-shadow: 0 0 0 var(--persimmon) !important;
     transform: translate(3px, 3px) !important;
 }
-
-.add-fruit-btn {
-    background-color: var(--red);
-    border-color: var(--red);
-    font-size: 0.9rem;
-    padding: 10px 14px;
-}
-
-
 
 .saved-pins, .ready-fruit {
     margin-bottom: 12px;
@@ -208,8 +199,6 @@ li {
     color: #333;
     font-size: 0.75rem;
 }
-
-
 
 .header-section {
     font-size: 0.6rem;
@@ -549,17 +538,6 @@ button.toggle-link {
     justify-content: center;
 }
 
-.logout-btn {
-    background-color: var(--red);
-    border-color: var(--red);
-}
-
-.logout-btn:hover {
-    background-color: var(--red-dark);
-}
-
-
-
 /* The block-print loquat (utils/logo.js, rendered by Sidebar.renderLogo). Each use's
    class sets the box; the svg fills it. */
 .ffa-logo {
@@ -627,8 +605,6 @@ button.toggle-link {
     font-size: 0.9rem;
 }
 
-
-
 .notes-popup-overlay {
     position: fixed;
     top: 0;
@@ -680,8 +656,6 @@ button.toggle-link {
     width: auto;
     min-width: 60px;
 }
-
-
 
 /* Add Fruit Popup Styles */
 .add-fruit-popup-overlay {
@@ -786,28 +760,9 @@ button.close-btn:hover {
 }
 
 .location-btn {
-    background-color: var(--fig);
-    border: none;
-    box-shadow: 3px 3px 0 var(--persimmon);
-    color: white;
-    padding: 8px 10px;
-    font-size: 0.8rem;
-    font-weight: normal;
     display: block;
     width: 100% !important;
     margin: 0 0 6px !important;
-    border-radius: 3px;
-    cursor: pointer;
-    box-sizing: border-box;
-}
-
-.location-btn:hover {
-    background-color: var(--red-dark);
-}
-
-.location-btn:active {
-    box-shadow: 0 0 0 var(--persimmon);
-    transform: translate(3px, 3px);
 }
 
 .location-display {
@@ -834,15 +789,8 @@ button.close-btn:hover {
     justify-content: flex-end;
 }
 
-.popup-footer button {
-    width: auto;
-    min-width: 80px;
-    margin: 0;
-    font-weight: normal;
-}
-
 /* Secondary actions: ink outline on paper, like "still good?" (no fill, no block) */
-.popup-footer button.cancel-btn {
+.popup-footer .btn.cancel-btn {
     background: transparent;
     color: var(--text);
     border: 1.5px solid var(--text);
@@ -854,29 +802,16 @@ button.close-btn:hover {
     cursor: pointer;
 }
 
-.popup-footer button.cancel-btn:hover {
+.popup-footer .btn.cancel-btn:hover {
     background: var(--card-hover);
+    color: var(--text);
     box-shadow: none;
 }
 
-.popup-footer button.cancel-btn:active {
+.popup-footer .btn.cancel-btn:active {
     background: var(--card-press);
     box-shadow: none;
     transform: none;
-}
-
-.submit-btn {
-    background-color: var(--red);
-    border-color: var(--red);
-}
-
-.submit-btn:hover {
-    background-color: var(--red-dark);
-}
-
-.submit-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
 }
 
 /* Hamburger menu button */
@@ -1015,7 +950,7 @@ button.close-btn:hover {
         font-size: 0.8rem;
     }
     
-    button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):not(.toggle-link):not(.secondary-link):not(.fruit-suggestion-btn):not(.guest-bar-bet-btn):not(.still-good-btn):not(.bar-handle):not(.auth-bar-action-btn):not(.bar-tab):not(.map-empty-card__link):not(.ripe-entry):not(.pin-notes-btn):not(.cancel-btn):not(.cancel-notes-btn):not(.delete-pin-btn), .action-btn {
+    .btn {
         font-size: 0.8rem;
         padding: 6px 10px;
     }
@@ -1187,7 +1122,7 @@ button.close-btn:hover {
         padding: 7px 10px;
     }
 
-    button:not(.hamburger-btn):not(.mobile-fab):not(.mobile-panel-btn):not(.auth-submit-btn):not(.toggle-link):not(.secondary-link):not(.fruit-suggestion-btn):not(.guest-bar-bet-btn):not(.still-good-btn):not(.bar-handle):not(.auth-bar-action-btn):not(.bar-tab):not(.map-empty-card__link):not(.ripe-entry):not(.pin-notes-btn):not(.cancel-btn):not(.cancel-notes-btn):not(.delete-pin-btn), .action-btn {
+    .btn {
         font-size: 0.75rem;
         padding: 6px 8px;
     }

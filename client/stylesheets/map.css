@@ -340,7 +340,7 @@
     justify-content: center;
 }
 
-.save-notes-btn, .cancel-notes-btn {
+.btn.save-notes-btn, .btn.cancel-notes-btn {
     padding: 6px 12px;
     font-family: inherit;
     font-size: 0.8rem;
@@ -350,7 +350,7 @@
 }
 
 /* Printed fig button, like "add a find" */
-.save-notes-btn {
+.btn.save-notes-btn {
     background-color: var(--fig);
     color: white;
     border: none;
@@ -358,29 +358,32 @@
     box-shadow: 3px 3px 0 var(--persimmon);
 }
 
-.save-notes-btn:hover {
+.btn.save-notes-btn:hover {
     background-color: var(--fig-dark);
 }
 
-.save-notes-btn:active {
+.btn.save-notes-btn:active {
     box-shadow: 0 0 0 var(--persimmon);
     transform: translate(3px, 3px);
 }
 
 /* Secondary: ink outline, like "still good?" */
-.cancel-notes-btn {
+.btn.cancel-notes-btn {
     background-color: transparent;
     color: var(--text);
     border: 1.5px solid var(--text);
     border-radius: 2px;
+    box-shadow: none;
 }
 
-.cancel-notes-btn:hover {
+.btn.cancel-notes-btn:hover {
     background-color: var(--card-hover);
+    box-shadow: none;
 }
 
-.cancel-notes-btn:active {
+.btn.cancel-notes-btn:active {
     background-color: var(--card-press);
+    transform: none;
 }
 
 .metadata-grid {
@@ -540,7 +543,7 @@
 }
 
 /* Secondary (and destructive): an ink outline, never a fill that reads as "go" */
-.delete-pin-btn {
+.btn.delete-pin-btn {
     background-color: transparent;
     color: var(--text);
     border: 1.5px solid var(--text);
@@ -550,11 +553,13 @@
     font-size: 0.8rem;
     font-weight: normal;
     cursor: pointer;
+    box-shadow: none;
     transition: background-color 0.2s ease;
 }
 
-.delete-pin-btn:hover {
+.btn.delete-pin-btn:hover {
     background-color: var(--card-hover);
+    box-shadow: none;
 }
 
 /* Locate-me: a round printed stamp, like the map clusters (ink ring over an offset
@@ -693,8 +698,9 @@
     margin-bottom: 6px;
 }
 
-.delete-pin-btn:active {
+.btn.delete-pin-btn:active {
     background-color: var(--card-press);
+    transform: none;
 }
 
 /* Attribution — keep legally required credit but render it unobtrusively */
@@ -1213,10 +1219,7 @@
 .map-empty-card__title { margin: 0; font-weight: 700; font-size: 21px; line-height: 1.15; }
 .map-empty-card__hint { margin: 0; font-style: italic; font-size: 15px; line-height: 1.4; color: var(--ink-soft); }
 .map-empty-card button.map-empty-card__primary {
-    width: 100%;
     min-height: 44px;
-    margin: 4px 0 0;
-    font-size: 16px;
 }
 .map-empty-card button.map-empty-card__link {
     background: none;

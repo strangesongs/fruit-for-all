@@ -151,8 +151,8 @@ export default function PinPopup({
               maxLength={1000}
             />
             <div className="edit-notes-actions">
-              <button onClick={() => saveEditedNotes(pin.pinId)} className="save-notes-btn">save</button>
-              <button onClick={cancelEditingNotes} className="cancel-notes-btn">cancel</button>
+              <button onClick={() => saveEditedNotes(pin.pinId)} className="btn save-notes-btn">save</button>
+              <button onClick={cancelEditingNotes} className="btn cancel-notes-btn">cancel</button>
             </div>
           </div>
         ) : pin.notes ? (
@@ -231,7 +231,7 @@ export default function PinPopup({
 
       {canEdit && (
         <div className="pin-actions">
-          <button className="delete-pin-btn" onClick={() => deletePin(pin.pinId)}>delete this find</button>
+          <button className="btn delete-pin-btn" onClick={() => deletePin(pin.pinId)}>delete this find</button>
         </div>
       )}
     </div>
