@@ -8,6 +8,7 @@ import { Resend } from 'resend';
 import { logEmailResult } from '../utils/email.js';
 import { createIpLocator, EMPTY_LOCATION } from '../utils/ipLocate.js';
 import { FRUIT_LIST } from '../../client/utils/fruitList.js';
+import { appUrl as emailBaseUrl } from '../utils/appUrl.js';
 
 const FRUIT_SET = new Set(FRUIT_LIST);
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
@@ -57,21 +58,21 @@ export const createPin = async (req, res) => {
     res.json({ success: true, pin });
     const adminEmail = process.env.ADMIN_EMAIL;
     if (resend && adminEmail && process.env.PIN_NOTIFICATIONS === 'true') {
-      const appUrl = process.env.APP_URL || 'http://localhost:3000';
+      const appUrl = emailBaseUrl();
       resend
         .emails.send({
           from: 'fruit for all <noreply@fruitforall.app>',
           to: adminEmail,
           subject: `new pin: ${pin.fruitTypeDisplay || fruitType} by ${submittedBy}`,
           html: `
-            <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 32px; color: #333;">
-              <h2 style="color: #C23939;">new pin submitted</h2>
+            <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 32px; color: #2a2420;">
+              <h2 style="color: #5b3a5e;">new pin submitted</h2>
               <p><strong>fruit:</strong> ${pin.fruitTypeDisplay || fruitType}</p>
               <p><strong>submitted by:</strong> ${escapeHtml(submittedBy)}</p>
               <p><strong>coordinates:</strong> ${coordinates.lat}, ${coordinates.lng}</p>
               ${pin.notes ? `<p><strong>notes:</strong> ${escapeHtml(pin.notes)}</p>` : ''}
               <p><strong>time:</strong> ${new Date().toUTCString()}</p>
-              <p style="margin-top: 24px;"><a href="${appUrl}" style="color: #D84747;">fruitforall.app</a></p>
+              <p style="margin-top: 24px;"><a href="${appUrl}" style="color: #5b3a5e;">fruitforall.app</a></p>
             </div>
           `,
         })
