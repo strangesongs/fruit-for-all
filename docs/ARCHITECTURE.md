@@ -34,6 +34,9 @@ This document describes how **fruit for all** is structured at runtime. For how 
 ## Public vs authenticated map reads
 
 - **`GET /api/pins/public`** — No JWT. Returns pins with `submittedBy` stripped. Supports bounds and pagination. Rate-limited; intended for guest map loads and panning.
+- **`GET /api/pins/:pinId`** — No JWT. One find for a shared link (`submittedBy` and reports stripped by `toPublicPin`). 404 when it's gone, 503 when the database is down.
+- **`POST /api/pins/:pinId/report`** — No JWT. `{ reason, note? }` (`validateReport` in `client/utils/findLinks.js`). One per find per IP per day (same dedup store as "still good?") plus the `report` rate limit. Stored on the pin (`reports` list capped at 100, `reportCount`) and emailed to `ADMIN_EMAIL`; the find stays up.
+- **`GET /find/:pinId`** — The app's `index.html` with that find's `<title>` and Open Graph tags (`server/utils/findPage.js` swaps the `share:start…share:end` block in `client/map-index.html`), so a pasted link previews as "fig · fruit for all". 404 (plain app) when the find is gone.
 - **`GET /api/pins`** — Requires JWT. Same data access patterns, plus ETag/304 for cached clients, and can filter by user.
 
 ## Frontend structure

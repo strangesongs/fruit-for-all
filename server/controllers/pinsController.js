@@ -2,7 +2,7 @@ import * as db from '../schemas/schemas.js';
 import { PinsQueryError } from '../schemas/errors.js';
 import { escapeHtml } from '../utils/html.js';
 import { containsProfanity } from '../utils/profanity.js';
-import { isDuplicateConfirm, markConfirmed } from '../utils/confirmDedup.js';
+import { isDuplicateConfirm, markConfirmed, isDuplicateReport, markReported } from '../utils/confirmDedup.js';
 import crypto from 'crypto';
 import { Resend } from 'resend';
 import { logEmailResult } from '../utils/email.js';
@@ -10,6 +10,8 @@ import { createIpLocator, EMPTY_LOCATION } from '../utils/ipLocate.js';
 import { FRUIT_LIST } from '../../client/utils/fruitList.js';
 import { appUrl as emailBaseUrl } from '../utils/appUrl.js';
 import { NUDGE_LIMIT_M, withinNudge } from '../../client/utils/findPlacement.js';
+import { isPinId, findUrl, validateReport, reportReasonLabel, plainText } from '../../client/utils/findLinks.js';
+import { findPageHtml } from '../utils/findPage.js';
 
 const FRUIT_SET = new Set(FRUIT_LIST);
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
@@ -98,6 +100,124 @@ export const getIpLocation = async (req, res) => {
   }
 };
 
+// What anyone may see of a find: never who added it, never its reports.
+export function toPublicPin(pin) {
+  if (!pin) return null;
+  // eslint-disable-next-line no-unused-vars
+  const { submittedBy, reports, reportCount, ...rest } = pin;
+  return rest;
+}
+
+// GET /api/pins/:pinId (public): one find, for a shared link.
+export const getPublicPin = async (req, res) => {
+  try {
+    const { pinId } = req.params;
+    if (!isPinId(pinId)) {
+      return res.status(404).json({ success: false, message: 'No such find' });
+    }
+    const pin = await db.getPinById(pinId.toLowerCase());
+    if (!pin) {
+      return res.status(404).json({ success: false, message: 'No such find' });
+    }
+    res.setHeader('Cache-Control', 'no-cache');
+    return res.json({ success: true, pin: toPublicPin(pin) });
+  } catch (error) {
+    if (sendPinsError(res, error, 'getPublicPin')) return;
+    console.error('Error in getPublicPin controller:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+/**
+ * GET /find/:pinId: the app, with this find's title and link-preview tags.
+ * `readIndex()` returns dist/index.html. A find that's gone still gets the app
+ * (it says so) with a 404, so link previews and crawlers don't keep it.
+ */
+export function makeFindPage(readIndex) {
+  return async (req, res) => {
+    let template;
+    try {
+      template = readIndex();
+    } catch (e) {
+      console.error('[find-page] no dist/index.html:', e.message);
+      return res.status(503).send('fruit for all is starting up. try again in a moment.');
+    }
+    res.setHeader('Cache-Control', 'no-cache');
+    res.type('html');
+    const { pinId } = req.params;
+    if (!isPinId(pinId)) return res.status(404).send(template);
+    try {
+      const pin = await db.getPinById(pinId.toLowerCase());
+      if (!pin) return res.status(404).send(template);
+      return res.send(findPageHtml(template, toPublicPin(pin), { baseUrl: emailBaseUrl() }));
+    } catch (error) {
+      // The database is down: serve the plain app; it fetches the find itself.
+      console.error('[find-page] could not read the find:', error.cause || error);
+      return res.send(template);
+    }
+  };
+}
+
+// POST /api/pins/:pinId/report (public): { reason, note? }. One per find per IP per
+// day. Stored on the pin and emailed to the admin; the find stays up.
+export const reportPin = async (req, res) => {
+  try {
+    const { pinId } = req.params;
+    if (!isPinId(pinId)) {
+      return res.status(404).json({ success: false, message: 'No such find' });
+    }
+    const check = validateReport(req.body);
+    if (!check.valid) {
+      return res.status(400).json({ success: false, message: check.message });
+    }
+    const { reason, note } = check.report;
+    const ip = req.ip ?? '127.0.0.1';
+    const store = req.redisClient ?? null;
+    const id = pinId.toLowerCase();
+    if (await isDuplicateReport(store, id, ip)) {
+      return res.status(409).json({ success: false, message: 'You already reported this find today. Thank you.' });
+    }
+    const pin = await db.getPinById(id, { withReports: true });
+    if (!pin) {
+      return res.status(404).json({ success: false, message: 'No such find' });
+    }
+    const { stored } = await db.reportPin(pin, { reason, note });
+    await markReported(store, id, ip);
+    res.json({ success: true });
+
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (resend && adminEmail) {
+      const kind = plainText(pin.fruitTypeDisplay || pin.fruitType || 'find').toLowerCase();
+      const link = findUrl(emailBaseUrl(), pin.pinId);
+      resend.emails
+        .send({
+          from: 'fruit for all <noreply@fruitforall.app>',
+          to: adminEmail,
+          subject: `report: ${kind}, ${reportReasonLabel(reason)}`,
+          html: `
+            <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 32px; color: #2a2420;">
+              <h2 style="color: #5b3a5e;">a find was reported</h2>
+              <p><strong>find:</strong> ${escapeHtml(kind)}</p>
+              <p><strong>what's wrong:</strong> ${escapeHtml(reportReasonLabel(reason))}</p>
+              ${note ? `<p><strong>note:</strong> ${escapeHtml(note)}</p>` : ''}
+              <p><strong>added by:</strong> ${escapeHtml(pin.submittedBy || 'unknown')}</p>
+              <p><strong>reports so far:</strong> ${(pin.reportCount || 0) + (stored ? 1 : 0)}${stored ? '' : ' (list full: this one was not stored)'}</p>
+              <p>the find is still on the map. to remove it, open it and delete it.</p>
+              <p style="margin-top: 24px;"><a href="${escapeHtml(link)}" style="color: #5b3a5e;">open the find</a></p>
+            </div>
+          `,
+        })
+        .then(logEmailResult('Report notification'))
+        .catch((err) => console.error('[EMAIL] Report notification failed:', err.message));
+    }
+  } catch (error) {
+    if (res.headersSent) return;
+    if (sendPinsError(res, error, 'reportPin')) return;
+    console.error('Error in reportPin controller:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
 export const getPublicPins = async (req, res) => {
   try {
     const { minLat, maxLat, minLng, maxLng, limit, cursor } = req.query;
@@ -112,7 +232,7 @@ export const getPublicPins = async (req, res) => {
           }
         : null;
     const result = await db.getAllPins({ limit: parsedLimit, cursor, bounds });
-    const publicPins = result.pins.map(({ submittedBy, ...pin }) => pin);
+    const publicPins = result.pins.map(toPublicPin);
     if (bounds) {
       res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=60');
     } else {

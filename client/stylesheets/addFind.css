@@ -403,7 +403,8 @@ body.ffa-adding .mobile-panel {
 }
 @media (max-width: 360px) {
     /* clear of the Jelly's FAB in the bottom-left corner */
-    .ffa-notice { left: auto; right: 8px; transform: none; animation: none; font-size: 15px; }
+    .ffa-notice { left: auto; right: 8px; transform: none; animation: none; font-size: 15px;
+        white-space: normal; max-width: calc(100vw - 72px); }
 }
 @keyframes ffa-notice-in { from { opacity: 0; transform: translate(-50%, -6px); } to { opacity: 1; transform: translate(-50%, 0); } }
 

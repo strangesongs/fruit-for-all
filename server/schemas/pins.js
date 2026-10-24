@@ -179,7 +179,12 @@ export async function getAllPins(options = {}) {
   }
 }
 
-export async function getPinById(pinId) {
+/**
+ * One pin, or null when there's no such pin.
+ * `withReports` adds `reportCount` (admin email only; never sent to browsers).
+ * @throws {PinsQueryError} on a database failure
+ */
+export async function getPinById(pinId, { withReports = false } = {}) {
   if (!pinId || typeof pinId !== 'string') return null;
   const params = {
     TableName: PINS_TABLE,
@@ -187,13 +192,59 @@ export async function getPinById(pinId) {
     ExpressionAttributeValues: { ':pid': { S: pinId } },
     Limit: 1,
   };
+  let data;
   try {
-    const data = await dynamoClient.send(new QueryCommand(params));
-    if (!data.Items || data.Items.length === 0) return null;
-    return convertDynamoDBItem(data.Items[0]);
+    data = await dynamoClient.send(new QueryCommand(params));
   } catch (err) {
-    console.error('Error getting pin:', err);
-    return null;
+    // A database failure is not "no such find": a shared link would say the tree is gone.
+    throw new PinsQueryError('Failed to read the pin from the database', err);
+  }
+  if (!data.Items || data.Items.length === 0) return null;
+  const pin = convertDynamoDBItem(data.Items[0]);
+  if (withReports) pin.reportCount = data.Items[0].reportCount?.N ? parseInt(data.Items[0].reportCount.N, 10) : 0;
+  return pin;
+}
+
+// Reports are kept on the pin until the Postgres move (a reports table there).
+// Capped so a flood can't grow the item towards DynamoDB's 400 KB limit; the admin
+// email still goes out when the list is full.
+export const MAX_STORED_REPORTS = 100;
+
+/**
+ * Adds { reason, note, at } to the pin's `reports` and bumps `reportCount`.
+ * Not returned by convertDynamoDBItem: reports never reach public responses.
+ * @returns {Promise<{ stored: boolean }>} stored=false when the list is full
+ * @throws {PinsQueryError} on a database failure
+ */
+export async function reportPin(pin, report) {
+  if (!pin || !pin.pinId || !pin.createdAt) throw new Error('A pin is required');
+  const entry = {
+    M: {
+      reason: { S: String(report.reason) },
+      note: { S: String(report.note || '') },
+      at: { S: new Date().toISOString() },
+    },
+  };
+  try {
+    await dynamoClient.send(
+      new UpdateItemCommand({
+        TableName: PINS_TABLE,
+        Key: { pinId: { S: pin.pinId }, createdAt: { S: pin.createdAt } },
+        UpdateExpression:
+          'SET reports = list_append(if_not_exists(reports, :empty), :new) ADD reportCount :one',
+        ConditionExpression: 'attribute_exists(pinId) AND (attribute_not_exists(reports) OR size(reports) < :max)',
+        ExpressionAttributeValues: {
+          ':empty': { L: [] },
+          ':new': { L: [entry] },
+          ':one': { N: '1' },
+          ':max': { N: String(MAX_STORED_REPORTS) },
+        },
+      }),
+    );
+    return { stored: true };
+  } catch (err) {
+    if (err && err.name === 'ConditionalCheckFailedException') return { stored: false };
+    throw new PinsQueryError('Failed to store the report', err);
   }
 }
 

@@ -33,6 +33,12 @@ export const RATE_LIMITS = {
     max: 10,
     message: 'Too many confirmations, please slow down.',
   },
+  // "report a problem" on a find (also deduped: one per find per IP per day).
+  report: {
+    windowMs: 15 * MINUTE,
+    max: 5,
+    message: 'too many reports from here. please try again later.',
+  },
   // IP → location lookups (ipapi.co). The client calls this once per visit.
   locate: {
     windowMs: 15 * MINUTE,

@@ -11,6 +11,7 @@ import { REGION, USERS_TABLE, PINS_TABLE } from './server/db/dynamo.js';
 import { createMemoryDedupStore } from './server/utils/confirmDedup.js';
 import { wrap } from './server/utils/wrap.js';
 import { RATE_LIMITS } from './server/utils/rateLimits.js';
+import fs from 'fs';
 
 const app = express();
 const PORT = Number.parseInt(process.env.PORT || '8080', 10);
@@ -125,6 +126,7 @@ async function createAppWithRateLimiters() {
   const confirmLimiter = limiter('confirm');
   const publicPinsLimiter = limiter('publicPins');
   const locateLimiter = limiter('locate');
+  const reportLimiter = limiter('report');
 
   // Serve static files from dist/ at the root FIRST
   app.use(
@@ -159,6 +161,15 @@ async function createAppWithRateLimiters() {
     res.redirect(301, '/');
   });
 
+  // A link to one find: the app, with that find's title and link-preview tags.
+  // dist/index.html only changes on a deploy (a restart), so it's read once.
+  let indexHtml = null;
+  const readIndex = () => {
+    if (indexHtml === null) indexHtml = fs.readFileSync(path.join(__dirname, 'dist/index.html'), 'utf8');
+    return indexHtml;
+  };
+  app.get('/find/:pinId', publicPinsLimiter, wrap(controllers.makeFindPage(readIndex)));
+
   // Catch-all for client-side routing (SPA) — exclude api, health, legacy paths
   app.get(
     /^\/((?!api|user|save|dist|health).)*$/,
@@ -192,6 +203,14 @@ async function createAppWithRateLimiters() {
     (req, _res, next) => { req.redisClient = redisClient ?? memoryDedupStore; next(); },
     confirmLimiter,
     wrap(controllers.confirmPin),
+  );
+  // Public: one find (for a shared link), and "report a problem" (deduped like confirm).
+  app.get('/api/pins/:pinId', publicPinsLimiter, wrap(controllers.getPublicPin));
+  app.post(
+    '/api/pins/:pinId/report',
+    (req, _res, next) => { req.redisClient = redisClient ?? memoryDedupStore; next(); },
+    reportLimiter,
+    wrap(controllers.reportPin),
   );
 
   // Unknown API routes → JSON 404 (instead of Express's HTML page)

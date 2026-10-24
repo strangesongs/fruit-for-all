@@ -17,6 +17,8 @@ export {
   getPinById,
   deletePin,
   updatePin,
+  confirmPin,
+  reportPin,
 } from './pins.js';
 export {
   validatePassword,
