@@ -30,4 +30,4 @@ export {
 } from './validation.js';
 export { detectZone, detectZoneFallback } from './zone.js';
 export { escapeHtml } from '../utils/html.js';
-export { PinsQueryError } from './errors.js';
+export { PinsQueryError, UserError } from './errors.js';

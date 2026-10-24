@@ -2,6 +2,7 @@ import { GetItemCommand, PutItemCommand, ScanCommand } from '@aws-sdk/client-dyn
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { dynamoClient, USERS_TABLE } from '../db/dynamo.js';
+import { UserError } from './errors.js';
 import {
   validateEmail,
   validatePassword,
@@ -86,25 +87,25 @@ export async function getUserByEmail(email) {
 export async function createUser(userData) {
   const { userName, password, email } = userData;
   const userNameValidation = validateUserName(userName);
-  if (!userNameValidation.valid) throw new Error(userNameValidation.message);
+  if (!userNameValidation.valid) throw new UserError(userNameValidation.message);
   if (!email || typeof email !== 'string') {
-    throw new Error('Email is required');
+    throw new UserError('Email is required');
   }
   if (!password || typeof password !== 'string') {
-    throw new Error('Password is required');
+    throw new UserError('Password is required');
   }
   const emailValidation = validateEmail(email);
-  if (!emailValidation.valid) throw new Error(emailValidation.message);
+  if (!emailValidation.valid) throw new UserError(emailValidation.message);
   const passwordValidation = validatePassword(password);
-  if (!passwordValidation.valid) throw new Error(passwordValidation.message);
+  if (!passwordValidation.valid) throw new UserError(passwordValidation.message);
 
   const existingUser = await getUser(userName.trim());
   if (existingUser && existingUser.passwordHash) {
-    throw new Error('Username already registered');
+    throw new UserError('Username already registered');
   }
   const existingEmail = await getUserByEmail(email.trim().toLowerCase());
   if (existingEmail) {
-    throw new Error('Email already registered');
+    throw new UserError('Email already registered');
   }
   const saltRounds = 12;
   const passwordHash = await bcrypt.hash(password, saltRounds);
@@ -120,7 +121,7 @@ export async function createUser(userData) {
     savedPins: [],
   };
   if (!(await saveUser(user))) {
-    throw new Error('Failed to create user');
+    throw new UserError('Failed to create user');
   }
   const { passwordHash: _, ...safeUser } = user;
   return safeUser;
@@ -128,15 +129,15 @@ export async function createUser(userData) {
 
 export async function verifyUser(userName, password) {
   if (!userName || !password) {
-    throw new Error('Username and password are required');
+    throw new UserError('Username and password are required');
   }
   const user = await getUser(userName);
   if (!user || !user.passwordHash) {
-    throw new Error('Invalid username or password');
+    throw new UserError('Invalid username or password');
   }
   const isValid = await bcrypt.compare(password, user.passwordHash);
   if (!isValid) {
-    throw new Error('Invalid username or password');
+    throw new UserError('Invalid username or password');
   }
   user.lastLogin = new Date().toISOString();
   await saveUser(user);
@@ -146,7 +147,7 @@ export async function verifyUser(userName, password) {
 
 export async function requestPasswordReset(email) {
   const user = await getUserByEmail(email);
-  if (!user) throw new Error('No account found with that email address');
+  if (!user) throw new UserError('No account found with that email address');
   const token = crypto.randomBytes(32).toString('hex');
   const expiry = new Date(Date.now() + 60 * 60 * 1000).toISOString();
   user.resetToken = token;
@@ -156,7 +157,7 @@ export async function requestPasswordReset(email) {
 }
 
 export async function resetPassword(token, newPassword) {
-  if (!token) throw new Error('Reset token is required');
+  if (!token) throw new UserError('Reset token is required');
   const params = {
     TableName: USERS_TABLE,
     FilterExpression: 'resetToken = :token',
@@ -164,15 +165,15 @@ export async function resetPassword(token, newPassword) {
   };
   const data = await dynamoClient.send(new ScanCommand(params));
   if (!data.Items || data.Items.length === 0) {
-    throw new Error('Invalid or expired reset link');
+    throw new UserError('Invalid or expired reset link');
   }
   const item = data.Items[0];
   const expiry = item.resetTokenExpiry?.S;
   if (!expiry || new Date(expiry) < new Date()) {
-    throw new Error('Reset link has expired');
+    throw new UserError('Reset link has expired');
   }
   const passwordValidation = validatePassword(newPassword);
-  if (!passwordValidation.valid) throw new Error(passwordValidation.message);
+  if (!passwordValidation.valid) throw new UserError(passwordValidation.message);
   const passwordHash = await bcrypt.hash(newPassword, 12);
   const user = {
     userName: item.userName.S,

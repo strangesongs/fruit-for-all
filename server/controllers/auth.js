@@ -3,6 +3,7 @@ import { escapeHtml } from '../utils/html.js';
 import jwt from 'jsonwebtoken';
 import { Resend } from 'resend';
 import { logEmailResult } from '../utils/email.js';
+import { UserError, publicMessage } from '../schemas/errors.js';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -45,6 +46,17 @@ export function verifyToken(req, res, next) {
   } catch {
     return res.status(401).json({ success: false, message: 'Invalid or expired token.' });
   }
+}
+
+// User-facing errors keep their status and message. Anything else (a database
+// or network failure) is logged and answered with a generic 500, so internal
+// details like "connect ECONNREFUSED" never reach the browser.
+function sendAuthError(res, error, status, fallback, label) {
+  if (error instanceof UserError) {
+    return res.status(status).json({ success: false, message: error.message });
+  }
+  console.error(`[AUTH] ${label} error:`, error);
+  return res.status(500).json({ success: false, message: publicMessage(error, fallback) });
 }
 
 export const registerUser = async (req, res) => {
@@ -105,7 +117,7 @@ export const registerUser = async (req, res) => {
       token,
     });
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    sendAuthError(res, error, 400, 'Could not create your account. Please try again.', 'register');
   }
 };
 
@@ -126,7 +138,7 @@ export const loginUser = async (req, res) => {
       token,
     });
   } catch (error) {
-    res.status(401).json({ success: false, message: error.message });
+    sendAuthError(res, error, 401, 'Could not sign you in. Please try again.', 'login');
   }
 };
 
@@ -201,6 +213,6 @@ export const resetPassword = async (req, res) => {
     const { userName } = await db.resetPassword(token, password);
     res.json({ success: true, message: 'Password updated successfully', userName });
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    sendAuthError(res, error, 400, 'Could not reset your password. Please try again.', 'resetPassword');
   }
 };
