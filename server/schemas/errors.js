@@ -15,6 +15,23 @@ export class PinsQueryError extends Error {
 }
 
 /**
+ * Thrown when a read or write on the users table fails (network, throttling,
+ * misconfiguration). It is not a UserError, so auth handlers log it and answer
+ * a generic 500 instead of "Invalid username or password" or "User not found".
+ */
+export class UsersQueryError extends Error {
+  /**
+   * @param {string} message
+   * @param {unknown} [cause]
+   */
+  constructor(message = 'Failed to reach the users table', cause) {
+    super(message);
+    this.name = 'UsersQueryError';
+    this.cause = cause;
+  }
+}
+
+/**
  * An error whose message is written for the person using the app
  * ("Invalid username or password"). Anything else (a database or network
  * failure) is logged and replaced with a generic message; see publicMessage.

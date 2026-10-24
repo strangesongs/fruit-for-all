@@ -995,7 +995,7 @@ class Map extends Component {
                                         in {MONTH_NAMES[month - 1]}, look up at parkway trees and alley fences: {emptyHints.join(' and ')} {emptyHints.length > 1 ? 'are' : 'is'} in season around here.
                                     </p>
                                 )}
-                                <button type="button" className="map-empty-card__primary"
+                                <button type="button" className="btn map-empty-card__primary"
                                     onClick={() => window.dispatchEvent(new CustomEvent('ffa:add-find'))}>
                                     add the first find
                                 </button>

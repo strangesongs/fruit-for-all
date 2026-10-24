@@ -61,7 +61,7 @@ The JS decides which tree renders (`Sidebar.render()`), and CSS styles each tree
 Rules:
 - JS breakpoints live in `client/utils/breakpoints.js` (used by sidebar.jsx, index.js and `PanToPin`). CSS repeats them as `@media` blocks: **change both together.**
 - Never let a fix for one mode leak into another. Tiny-mode CSS lives under `@media (max-width: 360px)`; standard-mobile selectors are `.guest-bar*` / `.auth-bar*`.
-- The `@media (max-width: 768px)` and `480px` blocks in sidebar.css mostly target `.sidebar`, which phones never render, but the global `button:not(...)` rule inside them **does** shrink popup and pin buttons on phones.
+- The `@media (max-width: 768px)` and `480px` blocks in sidebar.css mostly target `.sidebar`, which phones never render, but the `.btn` rules inside them **do** shrink popup and pin buttons on phones.
 - The standard-mobile bar is `position: fixed` and sits above the map. Sidebar publishes its live height as the CSS variable `--bottom-chrome` (ResizeObserver via `setBottomBarRef`). Anything near the bottom of the map must use it: `.leaflet-bottom`, popup max-height and `PanToPin` already do. Locate-me stacks under zoom (top-right) at 361–768, as on Jelly.
 - The bar has two states, toggled by the grab handle (`renderBarHandle`). Collapsed: month + "N in season · M finds in view" + add a find (`renderBarHeader`). Open: tabs **in season / almanac / nearest** (`renderBarPanel`), then filter + links (guest) or my pins + filter + sign out (signed in). Open by default on a first visit only (key `ffa_guest_bar_seen`). `Sidebar.collapse()` (called when a pin opens) folds both.
 - The bar's data comes from the map: `publishPinSummary` sends `detail.summary` = `buildViewSummary()` (client/utils/pinSummary.js, pure + tested) on every viewport change. Bar entries call `ffa:fly-to` to pan to a find; the map's empty-area card fires `ffa:add-find`.
@@ -80,7 +80,7 @@ Rules:
 - Lowercase copy and labels. Restrained shadows (≤ `5px 6px 10px rgba(0,0,0,.22)`), tactile outset/inset borders, no slick gradients.
 - Map tiles are re-inked by `#ffa-duotone`, an inline SVG filter in `client/map-index.html` (tile lightness → key ink … paper), applied per tile in map.css. Keep the SVG in the HTML: Firefox hides an element whose filter points at a missing id.
 - Map controls must match the card style (same border, background and radius as the sidebar/bar).
-- A huge global `button:not(.a):not(.b)…` rule in sidebar.css gives every button the red style. A new button class that should look different must be added to **every** copy of that selector (base, :hover, :active, and the 768/360 media blocks). They have already drifted, so check all of them.
+- Buttons are unstyled unless they opt in: `className="btn …"` gives the filled fig button (`.btn`, `:hover`, `:active` and the 768/480 media blocks in sidebar.css; `.btn-active` for a pressed toggle). `.btn` is a single class, so a component rule that sets the same property *after* it in the cascade wins; the old global `button:not(…)` rule (removed Oct 2026) used to override everything.
 
 ## Conventions
 
@@ -89,6 +89,7 @@ Rules:
 - Sidebar ↔ Map communicate via refs from `App` **and** window CustomEvents (`ffa:pins-summary`, `ffa:nearest-good-bet`).
 - Server handlers: validate input types **before** using string methods, and wrap the whole body in try/catch. An exception thrown in an async Express 4 handler is an unhandled rejection that kills the Node process.
 - Dynamo pin-list failures throw `PinsQueryError` → handlers return 503 via `sendPinsError` (never an empty map).
+- Users-table failures throw `UsersQueryError` (never `null`/`false`, which read as "no such user"). Messages meant for people are `UserError`; auth handlers send those as-is and answer anything else with a generic 500 (`sendAuthError`).
 - Public responses must never include `submittedBy` (stripped in `getPublicPins`).
 - New third-party hosts the browser talks to must be added to the helmet CSP in server.js (`connectSrc`/`imgSrc`).
 - Production builds content-hash every file, including the entry (`--entry-names`); `scripts/build-html.mjs` rewrites `dist/index.html` to point at them. The SW serves `.js`/`.css` cache-first, which is only safe because names change. Bump `CACHE_VERSION` in `client/sw.js` when the caching strategy or precache list changes.
