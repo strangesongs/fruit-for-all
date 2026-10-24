@@ -37,9 +37,10 @@
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
     will-change: transform;
-    border: 2px solid var(--border) !important;
-    border-radius: 6px !important;
-    box-shadow: 3px 4px 8px rgba(0,0,0,0.18) !important;
+    /* printed like the cards: paper, an ink keyline, a fig block off register */
+    border: 1px solid var(--text) !important;
+    border-radius: 2px !important;
+    box-shadow: 3px 3px 0 rgba(91, 58, 94, 0.3) !important;
     overflow: hidden;
 }
 
@@ -53,9 +54,9 @@
     font-size: 20px !important;
     font-weight: 400 !important;
     font-family: 'Vollkorn', serif !important;
-    color: var(--red) !important;
-    background: var(--card) !important;
-    border-bottom: 1px solid var(--border) !important;
+    color: var(--text) !important;
+    background: var(--paper) !important;
+    border-bottom: 1px solid var(--text) !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -69,7 +70,7 @@
 .leaflet-control-zoom-in:hover,
 .leaflet-control-zoom-out:hover {
     background: var(--card-hover) !important;
-    color: var(--red-dark) !important;
+    color: var(--text) !important;
 }
 
 .leaflet-control-zoom-in:active,
@@ -339,6 +340,52 @@
     justify-content: center;
 }
 
+.btn.save-notes-btn, .btn.cancel-notes-btn {
+    padding: 6px 12px;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: normal;
+    cursor: pointer;
+    transition: background 0.15s, box-shadow 0.1s, transform 0.1s;
+}
+
+/* Printed fig button, like "add a find" */
+.btn.save-notes-btn {
+    background-color: var(--fig);
+    color: white;
+    border: none;
+    border-radius: 3px;
+    box-shadow: 3px 3px 0 var(--persimmon);
+}
+
+.btn.save-notes-btn:hover {
+    background-color: var(--fig-dark);
+}
+
+.btn.save-notes-btn:active {
+    box-shadow: 0 0 0 var(--persimmon);
+    transform: translate(3px, 3px);
+}
+
+/* Secondary: ink outline, like "still good?" */
+.btn.cancel-notes-btn {
+    background-color: transparent;
+    color: var(--text);
+    border: 1.5px solid var(--text);
+    border-radius: 2px;
+    box-shadow: none;
+}
+
+.btn.cancel-notes-btn:hover {
+    background-color: var(--card-hover);
+    box-shadow: none;
+}
+
+.btn.cancel-notes-btn:active {
+    background-color: var(--card-press);
+    transform: none;
+}
+
 .metadata-grid {
     display: grid;
     gap: 3px;
@@ -495,35 +542,57 @@
     text-align: center;
 }
 
-/* Locate-me button — matches zoom control style, sits below them */
+/* Secondary (and destructive): an ink outline, never a fill that reads as "go" */
+.btn.delete-pin-btn {
+    background-color: transparent;
+    color: var(--text);
+    border: 1.5px solid var(--text);
+    border-radius: 2px;
+    padding: 6px 12px;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: normal;
+    cursor: pointer;
+    box-shadow: none;
+    transition: background-color 0.2s ease;
+}
+
+.btn.delete-pin-btn:hover {
+    background-color: var(--card-hover);
+    box-shadow: none;
+}
+
+/* Locate-me: a round printed stamp, like the map clusters (ink ring over an offset
+   citron disk). Desktop: bottom right. Phones: the only map control, top right. */
 .locate-me-btn {
     position: absolute;
     bottom: 90px;
     right: 12px;
     z-index: 1000;
-    min-width: 44px;
-    min-height: 44px;
-    width: 44px;
-    height: 44px;
-    background: var(--card);
-    border: 2px solid var(--border);
-    border-radius: 6px;
-    box-shadow: 3px 4px 8px rgba(0,0,0,0.18);
+    min-width: 48px;
+    min-height: 48px;
+    width: 48px;
+    height: 48px;
+    box-sizing: border-box;
+    background: var(--paper);
+    border: 1.5px solid var(--text);
+    border-radius: 50%;
+    box-shadow: 3px 3px 0 var(--citron);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: var(--red);
-    transition: background 0.15s, color 0.15s;
+    color: var(--text);
+    transition: background 0.15s, box-shadow 0.1s, transform 0.1s;
 }
 
 .locate-me-btn:hover {
     background: var(--card-hover);
-    color: var(--red-dark);
 }
 
 .locate-me-btn:active {
-    background: var(--card-press);
+    box-shadow: 0 0 0 var(--citron);
+    transform: translate(3px, 3px);
 }
 
 /* While the browser looks up the position */
@@ -544,11 +613,11 @@
     right: calc(100% + 8px);
     width: min(230px, calc(100vw - 84px));
     padding: 8px 10px;
-    background: var(--card);
+    background: var(--paper);
     color: var(--text);
-    border: 2px solid var(--border);
-    border-radius: 6px;
-    box-shadow: 3px 4px 8px rgba(0,0,0,0.18);
+    border: 1px solid var(--text);
+    border-radius: 2px;
+    box-shadow: 3px 3px 0 rgba(91, 58, 94, 0.22);
     font-family: var(--font-sans, sans-serif);
     font-size: 0.8rem;
     line-height: 1.35;
@@ -629,6 +698,11 @@
     margin-bottom: 6px;
 }
 
+.btn.delete-pin-btn:active {
+    background-color: var(--card-press);
+    transform: none;
+}
+
 /* Attribution — keep legally required credit but render it unobtrusively */
 .leaflet-control-attribution {
     font-size: 0.55rem !important;
@@ -658,8 +732,13 @@
     pointer-events: auto;
 }
 
-/* Mobile zoom controls positioning - avoid sidebar overlap */
+/* Phones and the Jelly: no + / − buttons. Pinch and double-tap zoom, and a map with
+   many finds needs the corner more than the buttons. Locate is the only control. */
 @media (max-width: 768px) {
+    .leaflet-control-zoom {
+        display: none;
+    }
+
     .leaflet-top.leaflet-left {
         top: 10px;
         left: auto;
@@ -757,10 +836,9 @@
     }
 
     .locate-me-btn {
-        /* 12px offset + two 44px zoom buttons + 8px gap = 108px */
-        top: 108px;
+        top: 12px;
         bottom: auto;
-        right: 10px;
+        right: 12px;
     }
 
     /* Hide pin count badge on tiny screens — too little room and it overlaps popups */
@@ -788,9 +866,9 @@
         border-radius: 0 !important;
     }
 
-    /* Locate-me stacks under the zoom buttons (top-right), clear of the bar */
+    /* Locate-me takes the top-right corner, clear of the bar */
     .locate-me-btn {
-        top: 116px;   /* 12px margin + 93px zoom control + gap */
+        top: 12px;
         bottom: auto;
         right: 12px;
     }
@@ -828,6 +906,12 @@
        keep the old overlap. */
     .leaflet-container:has(.leaflet-popup-pane .leaflet-popup) .leaflet-control-zoom,
     .leaflet-container:has(.leaflet-popup-pane .leaflet-popup) .locate-me-btn {
+        visibility: hidden;
+    }
+
+    /* Same for the open FAB panel, which reaches the top of the screen */
+    body:has(.mobile-panel) .leaflet-control-zoom,
+    body:has(.mobile-panel) .locate-me-btn {
         visibility: hidden;
     }
 }
@@ -1103,8 +1187,10 @@
     background: var(--fig);
     color: var(--paper) !important;
     text-decoration: none;
+    box-shadow: 3px 3px 0 var(--persimmon); /* same printed button as "add a find" */
 }
 .entry-directions:hover { background: var(--fig-dark); }
+.entry-directions:active { box-shadow: 0 0 0 var(--persimmon); transform: translate(3px, 3px); }
 
 .pin-popup.pin-entry .confirm-error { padding: 6px 16px 0; margin: 0; }
 .pin-popup.pin-entry .pin-actions { margin-top: 10px; padding: 0 16px; text-align: right; }

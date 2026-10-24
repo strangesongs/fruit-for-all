@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import loquatIcon from '../loquat-48.png';
+import { logoSvg } from './utils/logo.js';
 import { getAuthHeader, getUser, clearAuth, saveAuth, isAuthenticated, handleUnauthorized, SESSION_EXPIRED_EVENT } from './utils/auth.js';
 import { FRUIT_SEASONS, getSeasonStatus } from './utils/fruitSeasons.js';
 import { FRUIT_LIST } from './utils/fruitList.js';
@@ -765,6 +765,18 @@ export default class Sidebar extends React.Component {
 
     // ── Standard-mobile bar: month header + "in season / almanac / nearest" tabs ──
 
+    // The block-print loquat (utils/logo.js): a cluster when size >= 40, one fruit when smaller.
+    // CSS on `className` sets the box; the svg fills it.
+    renderLogo(size, className, label) {
+        return (
+            <span
+                className={`ffa-logo ${className}`}
+                {...(label ? {} : { 'aria-hidden': 'true' })}
+                dangerouslySetInnerHTML={{ __html: logoSvg({ size, label }) }}
+            />
+        );
+    }
+
     renderMark(family, size = 22, block = true) {
         return (
             <span
@@ -784,7 +796,7 @@ export default class Sidebar extends React.Component {
             : 'nothing logged in view yet';
         return (
             <div className="guest-bar-body">
-                <img src={loquatIcon} className="guest-bar-icon" alt="fruit for all" />
+                {this.renderLogo(32, 'guest-bar-icon', 'fruit for all')}
                 <div className="guest-bar-text">
                     <p className="bar-month">{month}</p>
                     <p className="bar-sub">{sub}</p>
@@ -1016,7 +1028,7 @@ export default class Sidebar extends React.Component {
                 ) : (
                     <div className="guest-bar-expanded-content">
                         <div className="guest-bar-expanded-header">
-                            <img src={loquatIcon} className="guest-bar-icon" alt="" />
+                            {this.renderLogo(28, 'guest-bar-icon')}
                             <div>
                                 <p className="guest-bar-title">fruit for all</p>
                                 <p className="guest-bar-expanded-kicker">open source orchard</p>
@@ -1192,7 +1204,7 @@ export default class Sidebar extends React.Component {
                 aria-label={isCollapsed ? 'open menu' : 'close menu'}
             >
                 {isCollapsed
-                    ? <img src={loquatIcon} className="hamburger-icon" alt="open menu" />
+                    ? this.renderLogo(42, 'hamburger-icon')
                     : <span className="mobile-fab-close" aria-hidden="true">×</span>
                 }
             </button>
@@ -1201,7 +1213,7 @@ export default class Sidebar extends React.Component {
             {!isCollapsed && (
                 <div className="mobile-panel">
                     <div className="mobile-panel-header">
-                        <img src={loquatIcon} className="mobile-panel-logo" alt="fruit for all" />
+                        {this.renderLogo(36, 'mobile-panel-logo', 'fruit for all')}
                         <div>
                             <div className="mobile-panel-title">fruit for all</div>
                             <div className="mobile-panel-subtitle">open source orchard</div>
@@ -1212,10 +1224,15 @@ export default class Sidebar extends React.Component {
                         <p className="mobile-panel-welcome">welcome, {currentUser.userName}!</p>
                     )}
 
-                    {!authenticated && !guestAddAttempted && !showAbout && pinCount > 0 && (
-                        <p className="mobile-panel-count">
-                            {pinCount} {pinCount === 1 ? 'find' : 'finds'} in view
-                        </p>
+                    {!guestAddAttempted && !showAbout && (
+                        <div className="mobile-panel-season">
+                            <p className="mobile-panel-month">{MONTH_NAMES[new Date().getMonth()]}</p>
+                            <p className="mobile-panel-count">
+                                {pinCount > 0
+                                    ? `${this.state.summary ? this.state.summary.ripeCount : 0} in season · ${pinCount} ${pinCount === 1 ? 'find' : 'finds'} in view`
+                                    : 'nothing logged in view yet'}
+                            </p>
+                        </div>
                     )}
 
                     {/* Guest: about panel */}
@@ -1345,7 +1362,7 @@ export default class Sidebar extends React.Component {
             {/* Hamburger menu button */}
             <button className="hamburger-btn" onClick={this.toggleSidebar} aria-label="Toggle menu">
                 {this.state.isCollapsed ? (
-                    <img src={loquatIcon} alt="open menu" className="hamburger-icon" />
+                    this.renderLogo(58, 'hamburger-icon')
                 ) : (
                     <>
                         <span></span>
@@ -1362,7 +1379,7 @@ export default class Sidebar extends React.Component {
             <div className="header-section">
                 <p>fruit for all</p>
                 <p>open source orchard</p>
-                <img className="lil-fruit" src={loquatIcon} alt={"fruit for all"}/>
+                {this.renderLogo(24, 'lil-fruit')}
             </div>
 
             {/* Guest browsing: map + filter visible, sign-in offered as CTA */}
