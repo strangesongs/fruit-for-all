@@ -1212,10 +1212,15 @@ export default class Sidebar extends React.Component {
                         <p className="mobile-panel-welcome">welcome, {currentUser.userName}!</p>
                     )}
 
-                    {!authenticated && !guestAddAttempted && !showAbout && pinCount > 0 && (
-                        <p className="mobile-panel-count">
-                            {pinCount} {pinCount === 1 ? 'find' : 'finds'} in view
-                        </p>
+                    {!guestAddAttempted && !showAbout && (
+                        <div className="mobile-panel-season">
+                            <p className="mobile-panel-month">{MONTH_NAMES[new Date().getMonth()]}</p>
+                            <p className="mobile-panel-count">
+                                {pinCount > 0
+                                    ? `${this.state.summary ? this.state.summary.ripeCount : 0} in season · ${pinCount} ${pinCount === 1 ? 'find' : 'finds'} in view`
+                                    : 'nothing logged in view yet'}
+                            </p>
+                        </div>
                     )}
 
                     {/* Guest: about panel */}

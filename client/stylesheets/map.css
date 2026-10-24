@@ -890,6 +890,12 @@
     .leaflet-container:has(.leaflet-popup-pane .leaflet-popup) .locate-me-btn {
         visibility: hidden;
     }
+
+    /* Same for the open FAB panel, which reaches the top of the screen */
+    body:has(.mobile-panel) .leaflet-control-zoom,
+    body:has(.mobile-panel) .locate-me-btn {
+        visibility: hidden;
+    }
 }
 
 /* ══ WEC redesign (Oct 2026): pins, clusters, catalog-entry popup, empty card ══ */
@@ -1163,8 +1169,10 @@
     background: var(--fig);
     color: var(--paper) !important;
     text-decoration: none;
+    box-shadow: 3px 3px 0 var(--persimmon); /* same printed button as "add a find" */
 }
 .entry-directions:hover { background: var(--fig-dark); }
+.entry-directions:active { box-shadow: 0 0 0 var(--persimmon); transform: translate(3px, 3px); }
 
 .pin-popup.pin-entry .confirm-error { padding: 6px 16px 0; margin: 0; }
 .pin-popup.pin-entry .pin-actions { margin-top: 10px; padding: 0 16px; text-align: right; }
