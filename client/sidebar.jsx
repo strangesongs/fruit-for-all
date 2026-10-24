@@ -1088,7 +1088,7 @@ export default class Sidebar extends React.Component {
                             <button
                                 type="button"
                                 onClick={this.getCurrentLocation}
-                                className="location-btn"
+                                className="btn location-btn"
                                 disabled={this.state.submitting || this.state.locationLoading}
                             >
                                 {this.state.locationLoading ? 'getting location...' : this.state.currentLocation ? 'update location' : 'get current location'}
@@ -1159,7 +1159,7 @@ export default class Sidebar extends React.Component {
                             type="submit"
                             onClick={this.submitPin}
                             disabled={this.state.submitting || !this.state.currentLocation || !FRUIT_LIST.includes((this.state.fruitType || '').trim().toLowerCase())}
-                            className="submit-btn"
+                            className="btn submit-btn"
                         >
                             {this.state.submitting ? 'submitting...' : 'submit pin'}
                         </button>
@@ -1167,7 +1167,7 @@ export default class Sidebar extends React.Component {
                             type="button"
                             onClick={this.toggleAddFruitPopup}
                             disabled={this.state.submitting}
-                            className="cancel-btn"
+                            className="btn cancel-btn"
                         >cancel</button>
                     </div>
                 </div>
@@ -1372,7 +1372,7 @@ export default class Sidebar extends React.Component {
                         <button
                             type="button"
                             onClick={this.toggleAddFruitPopup}
-                            className="action-btn add-fruit-btn"
+                            className="btn action-btn add-fruit-btn"
                         >add a find</button>
                     </div>
 
@@ -1483,7 +1483,7 @@ export default class Sidebar extends React.Component {
                         <button
                             type="button"
                             onClick={this.toggleAddFruitPopup}
-                            className="action-btn add-fruit-btn"
+                            className="btn action-btn add-fruit-btn"
                         >add a find</button>
 
                         <button
@@ -1494,7 +1494,7 @@ export default class Sidebar extends React.Component {
                                 this.setState({ myPinsActive: next, isCollapsed: next ? true : this.state.isCollapsed });
                                 if (this.props.onToggleMyPins) this.props.onToggleMyPins();
                             }}
-                            className={`action-btn${this.state.myPinsActive ? ' btn-active' : ''}`}
+                            className={`btn action-btn${this.state.myPinsActive ? ' btn-active' : ''}`}
                         >my pins</button>
                     </div>
 
@@ -1521,7 +1521,7 @@ export default class Sidebar extends React.Component {
                     <div className="bottom-section">
                         <button
                             type="button"
-                            className="logout-btn"
+                            className="btn logout-btn"
                             onClick={this.handleLogout}
                         >logout</button>
                     </div>
