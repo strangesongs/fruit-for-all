@@ -12,9 +12,8 @@
 //
 // On an iPhone, Safari only shares your location over https, so open it through a
 // tunnel, e.g. `cloudflared tunnel --url http://localhost:4173` (brew install cloudflared).
-// Map tiles: Stadia only serves registered domains without a key. If STADIA_API_KEY
-// is set (npm run preview loads .env when it exists), tiles are fetched through this
-// server with the key, so they show on the tunnel's address too.
+// Map tiles go through this server: Stadia with STADIA_API_KEY (npm run preview loads
+// .env when it exists), falling back to OpenStreetMap's tiles if Stadia refuses.
 import express from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -199,27 +198,50 @@ app.post('/api/pins/:pinId/confirm', (req, res) => {
 
 app.all('/api/*', (req, res) => res.status(404).json({ success: false, message: 'Not in the preview API' }));
 
-// Map tiles through this server with the key, when there is one.
-if (STADIA_KEY) {
-  app.get('/__tiles/*', async (req, res) => {
-    try {
-      const r = await fetch(`${TILE_HOST}${req.params[0]}?api_key=${encodeURIComponent(STADIA_KEY)}`);
-      res.status(r.status).type(r.headers.get('content-type') || 'image/png');
-      res.setHeader('Cache-Control', 'public, max-age=86400');
-      res.send(Buffer.from(await r.arrayBuffer()));
-    } catch (e) {
-      res.status(502).end();
-    }
-  });
+// Map tiles, always through this server: Stadia with the key when there is one,
+// else (or when Stadia refuses, e.g. a 401 for an unregistered domain or a bad key)
+// OpenStreetMap's standard tiles, which need no key. The tunnel's domain isn't
+// registered with Stadia, so without this the map is a wall of 401 tiles.
+let stadiaNoted = false;
+async function fetchTile(url, headers = {}) {
+  const r = await fetch(url, { headers, signal: AbortSignal.timeout(8000) });
+  return { status: r.status, type: r.headers.get('content-type') || 'image/png', body: Buffer.from(await r.arrayBuffer()) };
 }
+app.get('/__tiles/*', async (req, res) => {
+  const rest = req.params[0]; // stamen_terrain/{z}/{x}/{y}.png
+  const m = /(\d+)\/(\d+)\/(\d+)(?:@2x)?\.png$/.exec(rest);
+  try {
+    if (STADIA_KEY) {
+      let status;
+      try {
+        const t = await fetchTile(`${TILE_HOST}${rest}?api_key=${encodeURIComponent(STADIA_KEY)}`);
+        if (t.status === 200) return res.type(t.type).set('Cache-Control', 'public, max-age=86400').send(t.body);
+        status = t.status;
+      } catch (e) {
+        status = 'no answer';
+      }
+      if (!stadiaNoted) {
+        stadiaNoted = true;
+        console.log(`[preview] Stadia answered ${status} with STADIA_API_KEY (check the key at client.stadiamaps.com); using OpenStreetMap tiles instead`);
+      }
+    }
+    if (!m) return res.status(404).end();
+    const t = await fetchTile(`https://tile.openstreetmap.org/${m[1]}/${m[2]}/${m[3]}.png`, {
+      'User-Agent': 'fruit-for-all-preview/1.0 (local development preview)',
+    });
+    return res.status(t.status).type(t.type).set('Cache-Control', 'public, max-age=86400').send(t.body);
+  } catch (e) {
+    return res.status(502).end();
+  }
+});
 
 // No service worker in preview: it would cache this build on localhost.
 app.get('/sw.js', (req, res) => res.status(404).end());
 
-// The app's JS, with the tile host pointed at the proxy above (when there's a key).
+// The app's JS, with the tile host pointed at the tile route above.
 app.get(/\.js$/, (req, res, next) => {
   const file = path.join(DIST, path.normalize(req.path).replace(/^(\.\.[/\\])+/, ''));
-  if (!STADIA_KEY || !file.startsWith(DIST) || !fs.existsSync(file)) return next();
+  if (!file.startsWith(DIST) || !fs.existsSync(file)) return next();
   const src = fs.readFileSync(file, 'utf8').split(TILE_HOST).join('/__tiles/');
   res.type('application/javascript').send(src);
 });
@@ -228,5 +250,5 @@ app.get('*', (req, res) => res.sendFile(path.join(DIST, 'index.html')));
 
 app.listen(PORT, () => {
   console.log(`[preview] fruit for all (fake API, in memory) → http://localhost:${PORT}`);
-  console.log(`[preview] map tiles: ${STADIA_KEY ? 'through this server (STADIA_API_KEY set)' : 'direct from Stadia (fine on localhost; blank through a tunnel without STADIA_API_KEY)'}`);
+  console.log(`[preview] map tiles: ${STADIA_KEY ? 'Stadia with STADIA_API_KEY, OpenStreetMap if Stadia refuses' : 'OpenStreetMap (no STADIA_API_KEY)'}`);
 });

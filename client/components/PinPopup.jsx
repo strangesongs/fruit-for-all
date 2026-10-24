@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 
 import { getSeasonDisplay } from '../utils/fruitSeasons.js';
 import { familyOf, familyLabel, markSvg } from '../utils/fruitFamilies.js';
@@ -57,6 +57,26 @@ export default function PinPopup({
   // Delete asks first, in the popup ('ask'), then shows any error ('busy' while it runs).
   const [deleteState, setDeleteState] = useState('idle');
   const [deleteError, setDeleteError] = useState(null);
+
+  // The card can grow after it opens (delete asks, "thanks for checking", an error).
+  // Leaflet grows a popup upwards from its pin, so tell the map to keep it on screen.
+  const rootRef = useRef(null);
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || typeof ResizeObserver !== 'function') return undefined;
+    let lastH = null;
+    let frame = 0;
+    const ro = new ResizeObserver(() => {
+      const h = el.getBoundingClientRect().height;
+      if (lastH !== null && Math.abs(h - lastH) > 1) {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => window.dispatchEvent(new CustomEvent('ffa:popup-resize')));
+      }
+      lastH = h;
+    });
+    ro.observe(el);
+    return () => { ro.disconnect(); cancelAnimationFrame(frame); };
+  }, []);
 
   const handleConfirm = useCallback(async () => {
     if (!pin || confirmed) return;
@@ -127,7 +147,7 @@ export default function PinPopup({
   const canEdit = isMyPin || isAdmin;
 
   return (
-    <div className="pin-popup pin-entry">
+    <div className="pin-popup pin-entry" ref={rootRef}>
       <div className="entry-head">
         <span className="entry-kind">{familyLabel(family)}</span>
         <div className="entry-title">

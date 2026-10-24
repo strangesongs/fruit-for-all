@@ -445,6 +445,7 @@ class Map extends Component {
         window.addEventListener('ffa:place-spot', this.handlePlaceSpot);
         window.addEventListener('ffa:place-end', this.handlePlaceEnd);
         window.addEventListener('ffa:find-saved', this.handleFindSaved);
+        window.addEventListener('ffa:popup-resize', this.keepPopupOnScreen);
         if (this._shelfOn) {
             window.addEventListener('ffa:shelf-select', this.handleShelfSelect);
             window.addEventListener('ffa:shelf-search-area', this.searchThisArea);
@@ -484,10 +485,27 @@ class Map extends Component {
         window.removeEventListener('ffa:place-spot', this.handlePlaceSpot);
         window.removeEventListener('ffa:place-end', this.handlePlaceEnd);
         window.removeEventListener('ffa:find-saved', this.handleFindSaved);
+        window.removeEventListener('ffa:popup-resize', this.keepPopupOnScreen);
+        clearTimeout(this._popupFitTimer);
         window.removeEventListener('ffa:shelf-select', this.handleShelfSelect);
         window.removeEventListener('ffa:shelf-search-area', this.searchThisArea);
         window.removeEventListener('ffa:shelf-near-me', this.backToNearMe);
     }
+
+    // An open popup grew (PinPopup's ResizeObserver), or one just opened and PanToPin's
+    // fixed offset (Jelly, desktop) wasn't enough for a tall card: if its top is above the map,
+    // pan just enough to bring it back, with a small margin. It grows upwards from the
+    // pin, so the bottom (and the phone bar under it) doesn't move.
+    keepPopupOnScreen = () => {
+        const map = this._leafletMap;
+        if (!map) return;
+        const wrap = map.getContainer().querySelector('.leaflet-popup-content-wrapper');
+        if (!wrap) return;
+        const r = wrap.getBoundingClientRect();
+        const cont = map.getContainer().getBoundingClientRect();
+        const over = (cont.top + 12) - r.top;
+        if (over > 1) map.panBy([0, -Math.round(over)], { animate: true, duration: 0.3 });
+    };
 
     // ── Add / edit a find ─────────────────────────────────────────────────────
 
@@ -1312,7 +1330,7 @@ class Map extends Component {
                                         key={pin.pinId}
                                         icon={markerIcon}
                                     >
-                                        <Popup autoPan={false} eventHandlers={{ add: () => { this.setState(prev => ({ pinFlyTarget: { lat: pin.coordinates.lat, lng: pin.coordinates.lng }, pinFlySeq: prev.pinFlySeq + 1 })); this.props.onPinOpen && this.props.onPinOpen(); } }}>
+                                        <Popup autoPan={false} eventHandlers={{ add: () => { this.setState(prev => ({ pinFlyTarget: { lat: pin.coordinates.lat, lng: pin.coordinates.lng }, pinFlySeq: prev.pinFlySeq + 1 })); this.props.onPinOpen && this.props.onPinOpen(); clearTimeout(this._popupFitTimer); this._popupFitTimer = setTimeout(this.keepPopupOnScreen, 700); } }}>
                                             <PinPopup
                                                 pin={pin}
                                                 isMyPin={isMyPin}
