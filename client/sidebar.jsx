@@ -7,7 +7,8 @@ import { API_BASE } from './utils/config.js';
 import { containsProfanity } from './utils/profanity.js';
 import { getTinyScreenGuestAuthState } from './utils/sidebarState.js';
 import { familyLabel, markSvg, familyOf } from './utils/fruitFamilies.js';
-import { formatMiles, MONTH_NAMES } from './utils/pinSummary.js';
+import { formatMiles, MONTH_NAMES, lookForHints } from './utils/pinSummary.js';
+import { shelfEnabled, shelfHeadText, shelfReachText } from './utils/seasonShelf.js';
 import { fetchWithRetry } from './utils/network.js';
 import AuthForm from './components/AuthForm.jsx';
 
@@ -89,7 +90,18 @@ export default class Sidebar extends React.Component {
             summary: null,
             // Standard-mobile bar tab: 'ripe' | 'almanac' | 'nearest'
             barTab: 'ripe',
+
+            // Season shelf (landing b2, behind ?landing=shelf, signed out only).
+            // The map sends it (ffa:shelf): see utils/seasonShelf.js.
+            shelf: null,
+            shelfAnchor: { kind: 'none', city: null },
+            shelfLoading: true,
+            shelfIndex: -1,      // the entry you're on (-1: none chosen yet)
+            shelfView: 'shelf',  // 'shelf' | 'almanac'
+            shelfFolded: false,  // folded to the running head while a pin is open
+            shelfIntro: readFirstVisit(),
         }
+        this._shelfOn = shelfEnabled();
         this.addFruitPopupRef = React.createRef();
         this.addFruitPopupTitleId = 'add-fruit-popup-title';
         this.lastFocusedElement = null;
@@ -146,6 +158,7 @@ export default class Sidebar extends React.Component {
             sessionStorage.removeItem('ffa_guest_add_attempted');
         }
         window.addEventListener('ffa:pins-summary', this.handlePinSummaryEvent);
+        window.addEventListener('ffa:shelf', this.handleShelfEvent);
         try { localStorage.setItem(GUEST_BAR_SEEN_KEY, '1'); } catch { /* private mode */ }
         window.addEventListener('ffa:add-find', this.handleAddFindRequest);
         window.addEventListener(SESSION_EXPIRED_EVENT, this.handleSessionExpired);
@@ -159,6 +172,7 @@ export default class Sidebar extends React.Component {
         window.removeEventListener(SESSION_EXPIRED_EVENT, this.handleSessionExpired);
         this.setBottomBarRef(null);
         window.removeEventListener('ffa:pins-summary', this.handlePinSummaryEvent);
+        window.removeEventListener('ffa:shelf', this.handleShelfEvent);
         this.abortAllRequests();
         if (typeof window !== 'undefined') {
             window.removeEventListener('resize', this.syncResponsiveMode);
@@ -220,6 +234,48 @@ export default class Sidebar extends React.Component {
             pinCount: Number.isFinite(detail.pinCount) ? detail.pinCount : 0,
             summary: detail.summary || null,
         });
+    };
+
+    handleShelfEvent = (event) => {
+        const detail = event?.detail || {};
+        const shelf = detail.shelf || null;
+        this.setState(prev => {
+            // Keep the chosen entry if the same kind is still on the shelf (the shelf is
+            // anchored, so it only changes when finds load or the anchor moves).
+            const prevKind = prev.shelf && prev.shelf.entries[prev.shelfIndex];
+            const idx = prevKind && shelf ? shelf.entries.findIndex(e => e.fruitType === prevKind.fruitType) : -1;
+            return {
+                shelf,
+                shelfAnchor: detail.anchor || { kind: 'none', city: null },
+                shelfLoading: !!detail.loading,
+                shelfIndex: idx,
+            };
+        });
+    };
+
+    // A shelf entry: the first tap brings its find into view and numbers its pin;
+    // tapping the entry you're already on opens the find.
+    chooseShelfEntry = (index) => {
+        const { shelf, shelfIndex } = this.state;
+        const entry = shelf && shelf.entries[index];
+        if (!entry || !entry.nearest) return;
+        if (index === shelfIndex) {
+            this.setState({ shelfFolded: true });
+            window.dispatchEvent(new CustomEvent('ffa:fly-to', { detail: entry.nearest }));
+            return;
+        }
+        this.setState({ shelfIndex: index, shelfFolded: false });
+        window.dispatchEvent(new CustomEvent('ffa:shelf-select', { detail: entry.nearest }));
+    };
+
+    // Jelly: ‹ › step through the same five.
+    stepShelf = (delta) => {
+        const { shelf, shelfIndex } = this.state;
+        const n = shelf ? shelf.entries.length : 0;
+        if (!n) return;
+        // Nothing chosen yet: the strip is showing entry 1, so step from there.
+        const from = shelfIndex < 0 ? 0 : shelfIndex;
+        this.chooseShelfEntry((from + delta + n) % n);
     };
 
     // "add the first find" on the map's empty-area card
@@ -686,7 +742,7 @@ export default class Sidebar extends React.Component {
     };
 
     collapse = () => {
-        this.setState({ isCollapsed: true, guestBarOpen: false, isMobileBarOpen: false });
+        this.setState({ isCollapsed: true, guestBarOpen: false, isMobileBarOpen: false, shelfFolded: true });
     };
 
     getSeasonLabel = () => {
@@ -983,6 +1039,199 @@ export default class Sidebar extends React.Component {
                         </p>
                     </div>
                 )}
+            </div>
+            {this.renderAddFruitPopup()}
+            </>
+        );
+    }
+
+    // ── Season shelf (landing b2) ────────────────────────────────────────────
+    // One strip of paper: a running head (name, where the shelf is measured from,
+    // add a find), then up to five kinds in season nearest first, divided by rules.
+
+    renderShelfHeadSub() {
+        const { shelfAnchor } = this.state;
+        const month = MONTH_NAMES[new Date().getMonth()];
+        const text = shelfHeadText(shelfAnchor, month);
+        const link = (label, event) => (
+            <>
+                <span aria-hidden="true"> · </span>
+                <button type="button" className="shelf-head__link"
+                    onClick={() => window.dispatchEvent(new CustomEvent(event))}>{label}</button>
+            </>
+        );
+        return (
+            <span className="shelf-head__sub">
+                {text}
+                {shelfAnchor.kind === 'approx' && link('use my location', 'ffa:locate-me')}
+                {shelfAnchor.kind === 'area' && link('back to near me', 'ffa:shelf-near-me')}
+            </span>
+        );
+    }
+
+    // What the shelf says when it has no entries to show.
+    renderShelfEmpty(addFind) {
+        const { shelf, shelfLoading, summary } = this.state;
+        const month = new Date().getMonth() + 1;
+        if (!shelf || shelf.tier === 'nowhere' || (shelfLoading && (!shelf.entries || !shelf.entries.length))) {
+            return <p className="shelf-empty">looking for what's in season near you…</p>;
+        }
+        const zone = summary && summary.zone;
+        const hints = zone ? lookForHints(zone, month) : [];
+        return (
+            <p className="shelf-empty">
+                nothing in season logged nearby yet.
+                {hints.length > 0 && ` look up at parkway trees and alley fences: ${hints.join(' and ')} ${hints.length > 1 ? 'are' : 'is'} in season around here.`}
+                {' '}<button type="button" className="shelf-head__link" onClick={addFind}>add the first one here</button>
+            </p>
+        );
+    }
+
+    renderShelfEntry(e, i) {
+        const on = i === this.state.shelfIndex;
+        const meta = `${formatMiles(e.distanceMi)} · ${e.count} ${e.count === 1 ? 'find' : 'finds'}`;
+        return (
+            <li key={e.fruitType} className={`shelf-entry${on ? ' is-current' : ''}`}>
+                <button type="button" className="shelf-entry__btn" onClick={() => this.chooseShelfEntry(i)}
+                    aria-current={on ? 'true' : undefined}
+                    aria-label={`${e.fruitType}, ${meta}${on ? ', open this find' : ''}`}>
+                    <span className="shelf-entry__top">
+                        {this.renderMark(e.family, 30)}
+                        <span className="shelf-entry__n">{i + 1}</span>
+                    </span>
+                    <span className="shelf-entry__name">{e.fruitType}</span>
+                    <span className="shelf-entry__meta">{meta}</span>
+                    {e.note && <span className="shelf-entry__note">{e.note}</span>}
+                    {on && <span className="shelf-entry__open">open this find →</span>}
+                </button>
+            </li>
+        );
+    }
+
+    renderShelfBar() {
+        const { shelf, shelfView, shelfFolded, shelfIntro, shelfAnchor, shelfIndex } = this.state;
+        const startSignIn = () => this.setState({ guestAddAttempted: true, isLoginMode: true, showAbout: false, authError: '' });
+        const showAbout = () => this.setState({ guestAddAttempted: true, showAbout: true });
+        const entries = shelf ? shelf.entries : [];
+        const reach = shelfReachText(shelf);
+        const open = !shelfFolded;
+
+        return (
+            <>
+            <div ref={this.setBottomBarRef} className={`guest-bar shelf${open ? '' : ' shelf--folded'}`}>
+                {this.renderBarHandle(open, () => this.setState(prev => ({ shelfFolded: !prev.shelfFolded })), 'what is in season nearby')}
+                <div className="shelf-head">
+                    {this.renderLogo(32, 'shelf-head__logo')}
+                    <div className="shelf-head__text">
+                        <button type="button" className="shelf-head__name" onClick={showAbout}>fruit for all</button>
+                        {this.renderShelfHeadSub()}
+                    </div>
+                    <button type="button" className="btn shelf-head__add" onClick={startSignIn}>add a find</button>
+                </div>
+
+                {open && shelfView === 'almanac' && (
+                    <div className="shelf-almanac">
+                        {this.renderAlmanacTab()}
+                        <button type="button" className="shelf-head__link" onClick={() => this.setState({ shelfView: 'shelf' })}>← back to the shelf</button>
+                    </div>
+                )}
+
+                {open && shelfView === 'shelf' && (
+                    <>
+                    {reach && shelf.tier !== 'walk' && (
+                        <p className="shelf-reach">
+                            {reach}
+                            {shelf.tier === 'anywhere' && (
+                                <>
+                                    <span aria-hidden="true"> · </span>
+                                    <button type="button" className="shelf-head__link" onClick={startSignIn}>add the first one here</button>
+                                </>
+                            )}
+                        </p>
+                    )}
+                    <ol className="shelf-entries" aria-label="in season nearby, nearest first">
+                        {shelfIntro && (
+                            <li className="shelf-entry shelf-entry--intro">
+                                <span className="shelf-intro__title">free fruit, growing in public.</span>
+                                <span className="shelf-intro__body">mapped by neighbours. what's ready near you →</span>
+                                {shelfAnchor.kind === 'none' && (
+                                    <button type="button" className="shelf-head__link"
+                                        onClick={() => window.dispatchEvent(new CustomEvent('ffa:locate-me'))}>use my location</button>
+                                )}
+                            </li>
+                        )}
+                        {entries.length > 0
+                            ? entries.map((e, i) => this.renderShelfEntry(e, i))
+                            : <li className="shelf-entry shelf-entry--empty">{this.renderShelfEmpty(startSignIn)}</li>}
+                        {entries.length > 0 && (
+                            <li className="shelf-entry shelf-entry--more">
+                                <button type="button" className="shelf-head__link" onClick={() => this.setState({ shelfView: 'almanac' })}>
+                                    see everything in season →
+                                </button>
+                            </li>
+                        )}
+                    </ol>
+                    </>
+                )}
+
+                {open && (
+                    <div className="shelf-foot">
+                        <button type="button" className="shelf-head__link" onClick={() => this.setState({ shelfView: 'almanac' })}>the almanac</button>
+                        <span aria-hidden="true">·</span>
+                        <button type="button" className="shelf-head__link" onClick={showAbout}>what is this?</button>
+                        <span aria-hidden="true">·</span>
+                        <button type="button" className="shelf-head__link" onClick={startSignIn}>sign in</button>
+                        {entries.length > 1 && (
+                            <span className="shelf-dots" aria-hidden="true">
+                                {entries.map((e, i) => <i key={e.fruitType} className={i === shelfIndex ? 'is-on' : ''} />)}
+                            </span>
+                        )}
+                    </div>
+                )}
+            </div>
+            {this.renderAddFruitPopup()}
+            </>
+        );
+    }
+
+    // Jelly (≤360px): the same five, one at a time with ‹ ›. "fruit for all" opens the
+    // panel (sign in, about, filter); the strip comes back when it closes.
+    renderShelfStrip() {
+        const { shelf, shelfIndex, shelfFolded } = this.state;
+        const entries = shelf ? shelf.entries : [];
+        const i = shelfIndex >= 0 ? shelfIndex : 0;
+        const e = entries[i];
+        const openPanel = () => this.setState({ isCollapsed: false });
+        const addFind = () => this.setState({ isCollapsed: false, ...getTinyScreenGuestAuthState('login') });
+        return (
+            <>
+            <div ref={this.setBottomBarRef} className={`shelf-strip${shelfFolded ? ' shelf--folded' : ''}`}>
+                <div className="shelf-head shelf-head--strip">
+                    <button type="button" className="shelf-head__name" onClick={openPanel} aria-label="fruit for all: menu">fruit for all</button>
+                    {shelfFolded && (
+                        <button type="button" className="shelf-head__link shelf-strip__show" onClick={() => this.setState({ shelfFolded: false })}>
+                            in season ›
+                        </button>
+                    )}
+                    <button type="button" className="btn shelf-head__add" onClick={addFind}>add a find</button>
+                </div>
+                {!shelfFolded && (e ? (
+                    <div className="shelf-strip__row">
+                        <button type="button" className="shelf-strip__step" aria-label="previous" onClick={() => this.stepShelf(-1)} disabled={entries.length < 2}>‹</button>
+                        <button type="button" className="shelf-strip__entry" onClick={() => this.chooseShelfEntry(i)}>
+                            <span className="shelf-strip__name">
+                                <span className="shelf-entry__n">{i + 1}</span> {e.fruitType}
+                            </span>
+                            <span className="shelf-strip__meta">
+                                {formatMiles(e.distanceMi)} · {i + 1} of {entries.length} in season
+                                {shelf.tier === 'anywhere' ? ' · nearest' : ''}
+                            </span>
+                        </button>
+                        <button type="button" className="shelf-strip__step" aria-label="next" onClick={() => this.stepShelf(1)} disabled={entries.length < 2}>›</button>
+                    </div>
+                ) : (
+                    <div className="shelf-strip__row shelf-strip__row--empty">{this.renderShelfEmpty(addFind)}</div>
+                ))}
             </div>
             {this.renderAddFruitPopup()}
             </>
@@ -1341,14 +1590,18 @@ export default class Sidebar extends React.Component {
         const { authenticated, guestAddAttempted, isLoginMode, authUserName, authPassword, authEmail, authLoading, authError, isTinyScreen, isStandardMobile } = this.state;
         const currentUser = getUser();
 
+        // Season shelf (?landing=shelf): the signed-out landing on phones and the Jelly.
+        const shelf = this._shelfOn && !authenticated;
+
         // Tiny screen (Jelly Star ≤360px): always use the mobile panel layout
+        // (with the shelf on, the strip stands in for the FAB while the panel is closed)
         if (isTinyScreen) {
-            return this.renderMobileLayout();
+            return shelf && this.state.isCollapsed ? this.renderShelfStrip() : this.renderMobileLayout();
         }
 
         // Standard mobile (361–768px) guest: living bar at bottom
         if (!authenticated && isStandardMobile) {
-            return this.renderGuestBar();
+            return shelf && !guestAddAttempted ? this.renderShelfBar() : this.renderGuestBar();
         }
 
         // Standard mobile (361–768px) authenticated: action bar at bottom
