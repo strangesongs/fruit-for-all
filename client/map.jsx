@@ -285,10 +285,32 @@ function LocateMeButton({ onLocate, onPreciseLocation, fallbackLocation }) {
 
 // Pan needed to fit an open popup above the bottom bar (standard phones). Reads the
 // popup's real position; the arithmetic lives in utils/popupFit.js (tested).
+// The open popup's card. When you tap from one find to another, Leaflet fades the old
+// card out for 200 ms and it is still first in the DOM, so measuring "the first card"
+// read the old, already-fitted one and the new card was never brought on screen.
+// Skip faded cards and take the newest.
+function openPopupCard(map) {
+    const all = map.getContainer().querySelectorAll('.leaflet-popup');
+    for (let i = all.length - 1; i >= 0; i--) {
+        if (all[i].style.opacity !== '0') return all[i].querySelector('.leaflet-popup-content-wrapper');
+    }
+    return null;
+}
+
+// Run `fn` once the map isn't mid-animation. Starting an animated pan stops the one in
+// progress where it is and drops the rest of its move (a sideways fit cut short left
+// the card half off-screen), so wait for the move to end and measure again then.
+function whenMapStill(map, fn) {
+    // (Not _flyToFrame: Leaflet never clears it after a flyTo, so it reads as always busy.)
+    const busy = (map._panAnim && map._panAnim._inProgress) || map._animatingZoom;
+    if (busy) map.once('moveend', () => setTimeout(() => whenMapStill(map, fn), 0));
+    else fn();
+}
+
 function popupFitBox(map, target, mapSize, bottomChrome) {
     const visibleH = Math.max(mapSize.y - bottomChrome, mapSize.y * 0.4);
     const pin = map.latLngToContainerPoint([target.lat, target.lng]);
-    const wrap = map.getContainer().querySelector('.leaflet-popup-content-wrapper');
+    const wrap = openPopupCard(map);
     const r = wrap ? wrap.getBoundingClientRect() : null;
     if (!r || !r.height) {
         // Popup not open yet (e.g. a bar entry flying to a find): bring the pin itself
@@ -329,11 +351,11 @@ function PanToPin({ target, seq }) {
             // of a tall card off-screen). So wait for layout, measure the card where it
             // actually is, and pan by exactly what's needed to fit it.
             let cancelled = false;
-            const fit = () => {
+            const fit = () => whenMapStill(map, () => {
                 if (cancelled) return;
-                const box = popupFitBox(map, target, mapSize, bottomChrome);
+                const box = popupFitBox(map, target, map.getSize(), getBottomChromePx());
                 if (box && (box.dx || box.dy)) map.panBy([box.dx, box.dy], { animate: true, duration: 0.4 });
-            };
+            });
             // Two frames: one for React's commit, one for Leaflet's popup layout.
             requestAnimationFrame(() => requestAnimationFrame(fit));
             // Fonts or the content settling can still change the height; check once more.
@@ -589,12 +611,23 @@ class Map extends Component {
     keepPopupOnScreen = () => {
         const map = this._leafletMap;
         if (!map) return;
-        const wrap = map.getContainer().querySelector('.leaflet-popup-content-wrapper');
-        if (!wrap) return;
-        const r = wrap.getBoundingClientRect();
-        const cont = map.getContainer().getBoundingClientRect();
-        const over = (cont.top + 12) - r.top;
-        if (over > 1) map.panBy([0, -Math.round(over)], { animate: true, duration: 0.3 });
+        whenMapStill(map, () => {
+            const wrap = openPopupCard(map);
+            if (!wrap) return;
+            const size = map.getSize();
+            const bottomChrome = size.x <= TINY_MAX ? 0 : getBottomChromePx();
+            const target = this.state.pinFlyTarget;
+            if (bottomChrome > 0 && target) {
+                // Standard phones: the whole fit (sideways too), so this never undoes one.
+                const box = popupFitBox(map, target, size, bottomChrome);
+                if (box && (box.dx || box.dy)) map.panBy([box.dx, box.dy], { animate: true, duration: 0.3 });
+                return;
+            }
+            const r = wrap.getBoundingClientRect();
+            const cont = map.getContainer().getBoundingClientRect();
+            const over = (cont.top + 12) - r.top;
+            if (over > 1) map.panBy([0, -Math.round(over)], { animate: true, duration: 0.3 });
+        });
     };
 
     // ── Add / edit a find ─────────────────────────────────────────────────────
