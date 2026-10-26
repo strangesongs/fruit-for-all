@@ -1,5 +1,7 @@
 # Postgres cutover runbook
 
+**Done Oct 25, 2026, ~6:30 pm PT.** Production runs on `ffa-production` (`DATA_STORE=postgres`). Sections 4 (rollback) and 5 (after) still apply.
+
 Moving fruit for all from DynamoDB to Postgres + PostGIS on Railway. Plan: the "Postgres migration plan" doc (approved Oct 25, 2026). Data at the Oct 25 check: 11 users (10 move; `testuser` stays behind), 15 finds, 0 confirmations, 0 reports. Dev rehearsal Oct 25: load + verify matched.
 
 DynamoDB is only ever **read** by these steps, until a rollback (the last section). Never paste a database URL or password into a chat or a commit.

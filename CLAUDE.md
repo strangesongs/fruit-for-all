@@ -26,7 +26,7 @@ npm test         # node --test tests/server/*.test.js tests/client/*.test.js
 |---|---|
 | Client | React 18 **class components**, react-leaflet 4 / Leaflet 1.9, bundled by esbuild (no framework, no router) |
 | Server | Express 4, helmet, compression, express-rate-limit (in-memory, or Redis via `REDIS_URL`) |
-| Data | AWS DynamoDB raw SDK (no ORM): `LoquatUsers` (PK `userName`), `LoquatPins` (PK `pinId`, SK `createdAt`; GSIs `status-index`, `submittedBy-index`, both sorted by `createdAt`) |
+| Data | **Postgres 18 + PostGIS on Railway** since Oct 25, 2026 (`ffa-production`; `ffa-dev` for local work), raw `pg` (no ORM), schema in `server/db/migrations/`. The old DynamoDB tables (`LoquatUsers`, `LoquatPins`) are an untouched backup until late Nov 2026; the DynamoDB code still runs with `DATA_STORE=dynamo` (rollback) until PR 5 removes it |
 | Auth | bcrypt (12 rounds) + stateless 7-day JWT stored in `localStorage` (`ffa_auth_token`, `ffa_user`) |
 | Email | Resend (optional; it's skipped if `RESEND_API_KEY` is unset) |
 | External | Stadia `stamen_terrain` tiles, ipapi.co (IP → approximate location, `/api/locate`), phzmapi.com (USDA zone on pin create) |
@@ -90,9 +90,9 @@ Rules:
 - Popup: "share" (system share sheet, else copy the link, else show it) for everyone; "report a problem" for anyone who can't edit the find. Reasons in `REPORT_REASONS` (gone, private property, unsafe, a different plant, something else + note). `POST /api/pins/:id/report`: once per find per IP per day, stored on the pin (`reports`, `reportCount`; never returned to browsers), emailed to `ADMIN_EMAIL`; the find stays up.
 - `getPinById` throws `PinsQueryError` on a database failure (it used to return null, i.e. "no such find").
 
-## Moving to Postgres (Oct 2026, in progress)
+## Postgres (live since Oct 25, 2026)
 
-The approved plan is the "Postgres migration plan" doc (owner approved every recommendation, Oct 25). Five PRs: `db/pg-foundation` (connection, schema, migration runner, read-only check) → `db/pg-users` → `db/pg-pins` → `db/pg-cutover` → `db/drop-dynamo`. Until the cutover, production runs on DynamoDB.
+The approved plan is the "Postgres migration plan" doc (owner approved every recommendation, Oct 25). PRs #41–#45 are merged; production switched on **Oct 25, 2026, ~6:30 pm PT** (`DATA_STORE=postgres`, `DATABASE_URL=${{ffa-production.DATABASE_URL}}` on the `loquat` service; 10 users and 15 finds copied and verified field by field; `testuser` left behind). DynamoDB backups `ffa-pre-postgres-users` / `-pins` were taken first. Left: PR 5 (`db/drop-dynamo`, late Nov 2026) removes the DynamoDB code; deleting the tables is the owner's call.
 
 - Schema: `server/db/migrations/001_init.sql` (users, password_resets, pins with `geography(point, 4326)` + GIST, pin_confirmations, pin_reports). Never edit a migration that has run; add `002_…`. `npm run db:migrate` applies pending ones to `DATABASE_URL` (prints host/db first; advisory-locked; one transaction per file).
 - Usernames keep their typed case but are unique ignoring case (`lower(user_name)`); emails are stored lower case and unique. Report reasons are a check constraint that must match `REPORT_REASONS` (a test compares them).
@@ -139,7 +139,7 @@ The approved plan is the "Postgres migration plan" doc (owner approved every rec
 
 ## Environment
 
-`.env` (never commit): `NODE_ENV`, `JWT_SECRET` (required when NODE_ENV=production), `AWS_REGION`, `DYNAMODB_USERS_TABLE`, `PINS_TABLE`, `ALLOWED_ORIGINS`, `PORT`, `STADIA_API_KEY`. Postgres (from the move): `DATA_STORE` (`dynamo` until cutover), `WRITES_PAUSED` (cutover only), `DATABASE_URL` (in `.env`: the **dev** database's public URL, never production), `PG_POOL_MAX` (default 10), `TEST_DATABASE_URL` (tests only). Optional: `REDIS_URL`, `RESEND_API_KEY`, `APP_URL` (base for links in emails; `server/utils/appUrl.js` defaults it to https://fruitforall.app in production, localhost otherwise), `ADMIN_EMAIL`, `PIN_NOTIFICATIONS=true`.
+`.env` (never commit): `NODE_ENV`, `JWT_SECRET` (required when NODE_ENV=production), `AWS_REGION`, `DYNAMODB_USERS_TABLE`, `PINS_TABLE`, `ALLOWED_ORIGINS`, `PORT`, `STADIA_API_KEY`. Postgres (from the move): `DATA_STORE` (`postgres` in production since Oct 25; set it in `.env` too), `WRITES_PAUSED` (cutover only), `DATABASE_URL` (in `.env`: the **dev** database's public URL, never production), `PG_POOL_MAX` (default 10), `TEST_DATABASE_URL` (tests only). Optional: `REDIS_URL`, `RESEND_API_KEY`, `APP_URL` (base for links in emails; `server/utils/appUrl.js` defaults it to https://fruitforall.app in production, localhost otherwise), `ADMIN_EMAIL`, `PIN_NOTIFICATIONS=true`.
 Never print or paste `.env` values. AWS creds come from env or `~/.aws`.
 
 ## Known issues / open review items
@@ -148,12 +148,11 @@ The working checklist for the next session is `docs/HANDOFF.md`.
 
 
 See the improvement review (Oct 2026). Still open:
-- **Moving off DynamoDB to Postgres (+ PostGIS on Railway)**: in progress, see "Moving to Postgres" above. Local `npm run dev` still writes to the production DynamoDB tables unless `.env` sets `DATA_STORE=postgres` with the dev `DATABASE_URL`.
-- Email lookups and password reset use an unpaginated `Scan`, which breaks past ~1 MB of users. Bounded pin queries read the whole `status-index` and filter in memory.
+- **Local dev:** set `DATA_STORE=postgres` in `.env` (with the dev `DATABASE_URL`). Without it, `npm run dev` still talks to the old DynamoDB tables, which production no longer reads.
 - The auth forms are one component (`client/components/AuthForm.jsx`). Each `variant` keeps the DOM its layout's CSS targets (e.g. `.auth-section form`, `.guest-bar-form`), so change a variant's structure only together with its CSS.
 
 Fixed on `fix/hotfixes` (keep these true):
-- Admin is never derived from the username; reserved names are blocked case-insensitively (`validateUserName`). Edit/delete re-check `isAdmin` in DynamoDB, not just the JWT.
+- Admin is never derived from the username; reserved names are blocked case-insensitively (`validateUserName`). Edit/delete re-check `isAdmin` in the database, not just the JWT.
 - Every route handler is wrapped with `wrap()` (server/utils/wrap.js); new routes must be too. Request bodies are type-checked (`validatePinInput`, `validateNotes`) before string methods run.
 - "still good?" dedup uses an in-memory store when `REDIS_URL` is unset.
 - Season helpers are imported in PinPopup (no `window.*` globals). Passwords are never trimmed. POSTs are never auto-retried.
