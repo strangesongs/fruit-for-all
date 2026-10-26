@@ -7,6 +7,13 @@
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 export const REPORT_REASON_IDS = ['gone', 'private', 'unsafe', 'wrong-kind', 'other'];
 
+/**
+ * Accounts left out of the move, by the owner's decision (they stay in DynamoDB).
+ * testuser: an old test account with no email or password (Oct 25, 2026).
+ * A skipped account that owns finds blocks the load: decide about those first.
+ */
+export const SKIPPED_USERS = ['testuser'];
+
 /** One DynamoDB AttributeValue → a plain JS value. */
 export function fromAttr(av) {
   if (av === undefined || av === null) return undefined;
@@ -120,12 +127,17 @@ function groupBy(items, key) {
  * @param {{ users: object[], pins: object[] }} rows from userRow / pinRow
  * @param {{ fruitSet: Set<string> }} opts the FRUIT_LIST names
  */
-export function checkData({ users, pins }, { fruitSet }) {
+export function checkData({ users: allUsers, pins }, { fruitSet, skipUsers = SKIPPED_USERS }) {
   const problems = {};
   const notes = {};
   const add = (bucket, key, value) => {
     (bucket[key] ||= []).push(value);
   };
+  const skip = new Set(skipUsers);
+  const users = allUsers.filter((u) => !skip.has(u.user_name));
+  for (const u of allUsers) {
+    if (skip.has(u.user_name)) add(notes, 'accounts left out of the move (SKIPPED_USERS)', u.user_name);
+  }
 
   for (const u of users) {
     if (typeof u.user_name !== 'string' || !u.user_name) add(problems, 'users without a name', '(blank)');
@@ -156,7 +168,8 @@ export function checkData({ users, pins }, { fruitSet }) {
     if (!Number.isFinite(p.lat) || !Number.isFinite(p.lng) || Math.abs(p.lat) > 90 || Math.abs(p.lng) > 180) {
       add(problems, 'finds with missing or out-of-range coordinates', id);
     }
-    if (!userNames.has(p.submitted_by)) add(problems, 'finds whose submittedBy has no account', `${id} (${p.submitted_by ?? 'none'})`);
+    if (skip.has(p.submitted_by)) add(problems, 'finds owned by a skipped account', `${id} (${p.submitted_by})`);
+    else if (!userNames.has(p.submitted_by)) add(problems, 'finds whose submittedBy has no account', `${id} (${p.submitted_by ?? 'none'})`);
     if (!p.fruit_type) add(problems, 'finds with no kind', id);
     else if (!fruitSet.has(p.fruit_type)) add(notes, 'kinds no longer in FRUIT_LIST (kept as they are)', `${p.fruit_type} (${id})`);
     if (p.status !== 'active' && p.status !== 'removed') add(problems, 'finds with an unknown status', `${id} (${p.status})`);

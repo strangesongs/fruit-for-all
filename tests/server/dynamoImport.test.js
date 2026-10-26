@@ -162,6 +162,16 @@ describe('checkData', () => {
     assert.deepEqual(r.notes['users with savedPins (dropped)'], ['alice (1)']);
   });
 
+  test('skipped accounts are left out, but not if they own finds', () => {
+    const legacy = rawUser({ userName: { S: 'testuser' }, email: undefined, passwordHash: undefined });
+    const clean = run([rawUser(), legacy], [rawPin()]);
+    assert.equal(clean.ok, true, JSON.stringify(clean.problems));
+    assert.equal(clean.counts.users, 1);
+    assert.deepEqual(clean.notes['accounts left out of the move (SKIPPED_USERS)'], ['testuser']);
+    const owned = run([rawUser(), legacy], [rawPin({ submittedBy: { S: 'testuser' } })]);
+    assert.deepEqual(owned.problems['finds owned by a skipped account'], [`${ID1} (testuser)`]);
+  });
+
   test('formatReport cuts long lists', () => {
     const users = Array.from({ length: 30 }, (_, i) => rawUser({ userName: { S: `u${i}` }, email: { S: `u${i}@x.org` }, passwordHash: undefined }));
     const lines = formatReport(run(users, []), { limit: 5 });
