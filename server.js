@@ -12,6 +12,7 @@ import { describeDatabaseUrl } from './server/db/postgres.js';
 import { DATA_STORE } from './server/db/store.js';
 import { createMemoryDedupStore } from './server/utils/confirmDedup.js';
 import { wrap } from './server/utils/wrap.js';
+import { writePause } from './server/utils/writePause.js';
 import { RATE_LIMITS } from './server/utils/rateLimits.js';
 import fs from 'fs';
 
@@ -83,6 +84,9 @@ app.use((req, res, next) => {
     next();
   }
 });
+
+// WRITES_PAUSED=true during the Postgres cutover: reads work, writes answer 503.
+app.use(writePause());
 
 /** One store per limiter (express-rate-limit disallows reusing a single store instance). */
 function createRedisRateLimitStore(redisClient, prefix) {
@@ -248,7 +252,8 @@ createAppWithRateLimiters()
         `[config] NODE_ENV=${process.env.NODE_ENV || '(unset)'} store=${DATA_STORE} region=${REGION} ` +
           `usersTable=${USERS_TABLE} pinsTable=${PINS_TABLE} ` +
           `postgres=${describeDatabaseUrl(process.env.DATABASE_URL)} ` +
-          `email=${process.env.RESEND_API_KEY ? 'resend' : 'off'} redis=${process.env.REDIS_URL ? 'on' : 'off'}`,
+          `email=${process.env.RESEND_API_KEY ? 'resend' : 'off'} redis=${process.env.REDIS_URL ? 'on' : 'off'}` +
+          (process.env.WRITES_PAUSED === 'true' ? ' writes=PAUSED' : ''),
       );
     });
   })
