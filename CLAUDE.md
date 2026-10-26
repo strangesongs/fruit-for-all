@@ -98,7 +98,8 @@ The approved plan is the "Postgres migration plan" doc (owner approved every rec
 - Usernames keep their typed case but are unique ignoring case (`lower(user_name)`); emails are stored lower case and unique. Report reasons are a check constraint that must match `REPORT_REASONS` (a test compares them).
 - `npm run db:check` = `scripts/dynamo-to-pg.mjs --check`: read-only paginated Scan of both tables, prints counts and anything that would block a load (case clashes, shared emails, finds with no account, bad coordinates…). It names users and pin ids, never emails.
 - `server/db/postgres.js` loads `pg` only on first use. SSL: off for localhost and `*.railway.internal`, unverified for Railway's public proxy; `sslmode` is stripped from the URL so `sslFor()` alone decides.
-- Tests: `tests/server/pgSchema.test.js` runs against `TEST_DATABASE_URL` (CI: a `postgis/postgis` service; locally a throwaway database, never dev or prod) in a schema it drops afterwards, and skips without it.
+- `DATA_STORE=dynamo|postgres` (`server/db/store.js`, default dynamo, read once at boot; the `[config]` line shows `store=`) picks the store in the barrel. **Users** have a Postgres twin (`server/schemas/pg/users.js`, PR 2): lookups ignore case and return the stored case; createUser leans on the unique indexes (`23505` → "Username/Email already registered"); reset tokens live hashed in `password_resets` (one live link per account, claimed atomically). Pins stay on DynamoDB until PR 3. Any new function in `users.js` needs its twin (a contract test checks).
+- Tests: `tests/server/pgTestDb.js` gives a suite a throwaway schema with migrations applied and `DATABASE_URL` pointed at it (`TEST_MIGRATIONS_DIR` can swap in a PostGIS-free copy on a machine without PostGIS). `tests/server/pgSchema.test.js` runs against `TEST_DATABASE_URL` (CI: a `postgis/postgis` service; locally a throwaway database, never dev or prod) in a schema it drops afterwards, and skips without it.
 
 ## Design system (non-negotiable aesthetic)
 
@@ -134,7 +135,7 @@ The approved plan is the "Postgres migration plan" doc (owner approved every rec
 
 ## Environment
 
-`.env` (never commit): `NODE_ENV`, `JWT_SECRET` (required when NODE_ENV=production), `AWS_REGION`, `DYNAMODB_USERS_TABLE`, `PINS_TABLE`, `ALLOWED_ORIGINS`, `PORT`, `STADIA_API_KEY`. Postgres (from the move): `DATABASE_URL` (in `.env`: the **dev** database's public URL, never production), `PG_POOL_MAX` (default 10), `TEST_DATABASE_URL` (tests only). Optional: `REDIS_URL`, `RESEND_API_KEY`, `APP_URL` (base for links in emails; `server/utils/appUrl.js` defaults it to https://fruitforall.app in production, localhost otherwise), `ADMIN_EMAIL`, `PIN_NOTIFICATIONS=true`.
+`.env` (never commit): `NODE_ENV`, `JWT_SECRET` (required when NODE_ENV=production), `AWS_REGION`, `DYNAMODB_USERS_TABLE`, `PINS_TABLE`, `ALLOWED_ORIGINS`, `PORT`, `STADIA_API_KEY`. Postgres (from the move): `DATA_STORE` (`dynamo` until cutover), `DATABASE_URL` (in `.env`: the **dev** database's public URL, never production), `PG_POOL_MAX` (default 10), `TEST_DATABASE_URL` (tests only). Optional: `REDIS_URL`, `RESEND_API_KEY`, `APP_URL` (base for links in emails; `server/utils/appUrl.js` defaults it to https://fruitforall.app in production, localhost otherwise), `ADMIN_EMAIL`, `PIN_NOTIFICATIONS=true`.
 Never print or paste `.env` values. AWS creds come from env or `~/.aws`.
 
 ## Known issues / open review items
