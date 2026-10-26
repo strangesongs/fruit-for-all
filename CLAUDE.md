@@ -37,6 +37,7 @@ npm test         # node --test tests/server/*.test.js tests/client/*.test.js
 ```
 server.js                     Helmet/CSP, CORS, rate limiters, static + SPA catch-all, ALL route wiring
 server/controllers/           auth.js (register/login/reset, verifyToken), pinsController.js, index.js (barrel)
+server/db/                    dynamo.js (client + table names), postgres.js (lazy pg pool), migrate.js + migrations/NNN_*.sql, dynamoImport.js (Dynamo item → row, pre-flight check)
 server/schemas/               users.js, pins.js (Dynamo access), validation.js, zone.js, errors.js, schemas.js (barrel)
 server/utils/                 html.js (escapeHtml), profanity.js, confirmDedup.js (Redis 24h per-IP dedup)
 client/index.js               entry: App wires Sidebar ↔ Map via refs; /reset-password renders ResetPassword
@@ -89,6 +90,16 @@ Rules:
 - Popup: "share" (system share sheet, else copy the link, else show it) for everyone; "report a problem" for anyone who can't edit the find. Reasons in `REPORT_REASONS` (gone, private property, unsafe, a different plant, something else + note). `POST /api/pins/:id/report`: once per find per IP per day, stored on the pin (`reports`, `reportCount`; never returned to browsers), emailed to `ADMIN_EMAIL`; the find stays up.
 - `getPinById` throws `PinsQueryError` on a database failure (it used to return null, i.e. "no such find").
 
+## Moving to Postgres (Oct 2026, in progress)
+
+The approved plan is the "Postgres migration plan" doc (owner approved every recommendation, Oct 25). Five PRs: `db/pg-foundation` (connection, schema, migration runner, read-only check) → `db/pg-users` → `db/pg-pins` → `db/pg-cutover` → `db/drop-dynamo`. Until the cutover, production runs on DynamoDB.
+
+- Schema: `server/db/migrations/001_init.sql` (users, password_resets, pins with `geography(point, 4326)` + GIST, pin_confirmations, pin_reports). Never edit a migration that has run; add `002_…`. `npm run db:migrate` applies pending ones to `DATABASE_URL` (prints host/db first; advisory-locked; one transaction per file).
+- Usernames keep their typed case but are unique ignoring case (`lower(user_name)`); emails are stored lower case and unique. Report reasons are a check constraint that must match `REPORT_REASONS` (a test compares them).
+- `npm run db:check` = `scripts/dynamo-to-pg.mjs --check`: read-only paginated Scan of both tables, prints counts and anything that would block a load (case clashes, shared emails, finds with no account, bad coordinates…). It names users and pin ids, never emails.
+- `server/db/postgres.js` loads `pg` only on first use. SSL: off for localhost and `*.railway.internal`, unverified for Railway's public proxy; `sslmode` is stripped from the URL so `sslFor()` alone decides.
+- Tests: `tests/server/pgSchema.test.js` runs against `TEST_DATABASE_URL` (CI: a `postgis/postgis` service; locally a throwaway database, never dev or prod) in a schema it drops afterwards, and skips without it.
+
 ## Design system (non-negotiable aesthetic)
 
 "Earthy, crunchy, Whole Earth Catalog."
@@ -123,7 +134,7 @@ Rules:
 
 ## Environment
 
-`.env` (never commit): `NODE_ENV`, `JWT_SECRET` (required when NODE_ENV=production), `AWS_REGION`, `DYNAMODB_USERS_TABLE`, `PINS_TABLE`, `ALLOWED_ORIGINS`, `PORT`, `STADIA_API_KEY`. Optional: `REDIS_URL`, `RESEND_API_KEY`, `APP_URL` (base for links in emails; `server/utils/appUrl.js` defaults it to https://fruitforall.app in production, localhost otherwise), `ADMIN_EMAIL`, `PIN_NOTIFICATIONS=true`.
+`.env` (never commit): `NODE_ENV`, `JWT_SECRET` (required when NODE_ENV=production), `AWS_REGION`, `DYNAMODB_USERS_TABLE`, `PINS_TABLE`, `ALLOWED_ORIGINS`, `PORT`, `STADIA_API_KEY`. Postgres (from the move): `DATABASE_URL` (in `.env`: the **dev** database's public URL, never production), `PG_POOL_MAX` (default 10), `TEST_DATABASE_URL` (tests only). Optional: `REDIS_URL`, `RESEND_API_KEY`, `APP_URL` (base for links in emails; `server/utils/appUrl.js` defaults it to https://fruitforall.app in production, localhost otherwise), `ADMIN_EMAIL`, `PIN_NOTIFICATIONS=true`.
 Never print or paste `.env` values. AWS creds come from env or `~/.aws`.
 
 ## Known issues / open review items
@@ -132,7 +143,7 @@ The working checklist for the next session is `docs/HANDOFF.md`.
 
 
 See the improvement review (Oct 2026). Still open:
-- **Decided Oct 2026: move off DynamoDB to Postgres (+ PostGIS on Railway)** for location queries, real constraints (unique email, case-insensitive usernames) and reporting. Until then, local `npm run dev` writes to the production tables.
+- **Moving off DynamoDB to Postgres (+ PostGIS on Railway)**: in progress, see "Moving to Postgres" above. Until PR 3 lands, local `npm run dev` writes to the production tables.
 - Email lookups and password reset use an unpaginated `Scan`, which breaks past ~1 MB of users. Bounded pin queries read the whole `status-index` and filter in memory.
 - The auth forms are one component (`client/components/AuthForm.jsx`). Each `variant` keeps the DOM its layout's CSS targets (e.g. `.auth-section form`, `.guest-bar-form`), so change a variant's structure only together with its CSS.
 

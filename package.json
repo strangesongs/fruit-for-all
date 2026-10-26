@@ -12,6 +12,8 @@
     "copy:html": "mkdir -p dist && cp client/map-index.html dist/index.html && cp client/manifest.json dist/manifest.json && cp client/sw.js dist/sw.js && cp favicon.svg dist/favicon.svg && cp loquat-48.png dist/loquat-48.png && cp loquat-192.png dist/loquat-192.png && cp loquat-512.png dist/loquat-512.png",
     "start": "node server.js",
     "preview": "node $(test -f .env && echo --env-file=.env) scripts/preview-server.mjs",
+    "db:migrate": "node $(test -f .env && echo --env-file=.env) scripts/migrate.mjs",
+    "db:check": "node $(test -f .env && echo --env-file=.env) scripts/dynamo-to-pg.mjs --check",
     "test": "node --test tests/server/*.test.js tests/client/*.test.js",
     "prepare": "husky"
   },
@@ -45,6 +47,7 @@
     "jsonwebtoken": "^9.0.2",
     "leaflet": "^1.9.4",
     "node-fetch": "^3.3.2",
+    "pg": "^8.23.1",
     "rate-limit-redis": "^4.3.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

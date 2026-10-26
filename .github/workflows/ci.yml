@@ -10,6 +10,26 @@ jobs:
     name: tests
     runs-on: ubuntu-latest
 
+    # A throwaway Postgres + PostGIS for tests/server/pgSchema.test.js (and the
+    # Postgres data layer as it lands). Never a real database.
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: ffa
+          POSTGRES_PASSWORD: ffa
+          POSTGRES_DB: ffa_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ffa -d ffa_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      TEST_DATABASE_URL: postgres://ffa:ffa@localhost:5432/ffa_test
+
     steps:
       - uses: actions/checkout@v4
 
@@ -24,6 +44,12 @@ jobs:
 
       - name: run tests
         run: npm test
+
+      # The migration CLI end to end, twice: the second run must find nothing to do.
+      - name: migrations apply cleanly
+        run: |
+          DATABASE_URL="$TEST_DATABASE_URL" npm run db:migrate
+          DATABASE_URL="$TEST_DATABASE_URL" npm run db:migrate | grep -q 'up to date'
 
       - name: production build
         run: npm run build
