@@ -42,8 +42,13 @@ jobs:
       - name: install dependencies
         run: npm ci
 
+      # Same files as npm test; failures also become annotations on the PR.
       - name: run tests
-        run: npm test
+        run: >-
+          node --test
+          --test-reporter=spec --test-reporter-destination=stdout
+          --test-reporter=./tests/reporters/annotate.mjs --test-reporter-destination=stdout
+          tests/server/*.test.js tests/client/*.test.js
 
       # The migration CLI end to end, twice: the second run must find nothing to do.
       - name: migrations apply cleanly
@@ -53,6 +58,11 @@ jobs:
 
       - name: production build
         run: npm run build
+
+      # The real server on Postgres, over HTTP: sign-up → find → box → share page →
+      # still good → report → edit → delete (needs the build for the share page).
+      - name: api smoke test on postgres
+        run: DATABASE_URL="$TEST_DATABASE_URL" node scripts/smoke-postgres.mjs
 
       # Fails the step but not the job — review output and address via PRs (including Dependabot).
       - name: npm audit (high)

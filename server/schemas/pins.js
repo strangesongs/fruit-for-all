@@ -5,7 +5,6 @@ import {
   UpdateItemCommand,
 } from '@aws-sdk/client-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
-import { escapeHtml } from '../utils/html.js';
 import { dynamoClient, PINS_TABLE } from '../db/dynamo.js';
 import { detectZone } from './zone.js';
 import { sanitizeString, validateCoordinates } from './validation.js';
@@ -56,8 +55,9 @@ export async function createPin(pinData) {
     pinId,
     createdAt: now,
     coordinates: { lat, lng },
-    fruitType: escapeHtml(sanitizeString(pinData.fruitType)).toLowerCase(),
-    fruitTypeDisplay: escapeHtml(sanitizeString(pinData.fruitType)),
+    // Stored as typed: React escapes on render, emails escape their own output.
+    fruitType: sanitizeString(pinData.fruitType).toLowerCase(),
+    fruitTypeDisplay: sanitizeString(pinData.fruitType),
     notes: sanitizeString(pinData.notes || ''),
     submittedBy: sanitizeString(pinData.submittedBy),
     geoHash: generateGeoHash(lat, lng),
@@ -321,7 +321,7 @@ export async function updatePin(pinId, updates) {
     attributeValues[':notes'] = { S: String(updates.notes || '') };
   }
   if (updates.fruitType !== undefined) {
-    const name = escapeHtml(sanitizeString(updates.fruitType));
+    const name = sanitizeString(updates.fruitType);
     updateExpressions.push('fruitType = :fruitType', 'fruitTypeDisplay = :fruitTypeDisplay');
     attributeValues[':fruitType'] = { S: name.toLowerCase() };
     attributeValues[':fruitTypeDisplay'] = { S: name };

@@ -4,13 +4,13 @@
 // at the end, so the database is left as it was (apart from the postgis extension).
 import { test, describe, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { migrate } from '../../server/db/migrate.js';
+import { migrate, listMigrationFiles } from '../../server/db/migrate.js';
 import { sslFor, withoutSslMode } from '../../server/db/postgres.js';
 
 const url = process.env.TEST_DATABASE_URL;
 const skip = url ? false : 'TEST_DATABASE_URL is not set';
 
-describe('postgres schema (001_init.sql)', { skip }, () => {
+describe('postgres schema (migrations)', { skip }, () => {
   let client;
   const schema = `ffa_test_${process.pid}_${Date.now()}`;
 
@@ -51,8 +51,10 @@ describe('postgres schema (001_init.sql)', { skip }, () => {
     await client.end();
   });
 
-  test('migrate applies 001 once', async () => {
-    assert.deepEqual(await migrate(client), ['001_init.sql']);
+  test('migrate applies every migration once, in order', async () => {
+    const files = await listMigrationFiles();
+    assert.equal(files[0], '001_init.sql');
+    assert.deepEqual(await migrate(client), files);
     assert.deepEqual(await migrate(client), []);
   });
 
