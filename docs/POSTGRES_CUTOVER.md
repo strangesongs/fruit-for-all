@@ -1,6 +1,6 @@
 # Postgres cutover runbook
 
-Moving fruit for all from DynamoDB to Postgres + PostGIS on Railway. Plan: the "Postgres migration plan" doc (approved Oct 25, 2026). Data at the Oct 25 check: 11 users (10 move; `testuser` stays behind), 15 finds, 0 confirmations, 0 reports.
+Moving fruit for all from DynamoDB to Postgres + PostGIS on Railway. Plan: the "Postgres migration plan" doc (approved Oct 25, 2026). Data at the Oct 25 check: 11 users (10 move; `testuser` stays behind), 15 finds, 0 confirmations, 0 reports. Dev rehearsal Oct 25: load + verify matched.
 
 DynamoDB is only ever **read** by these steps, until a rollback (the last section). Never paste a database URL or password into a chat or a commit.
 
@@ -17,6 +17,7 @@ DynamoDB is only ever **read** by these steps, until a rollback (the last sectio
 npm run db:check                                    # same report as Oct 25: ok
 node --env-file=.env scripts/dynamo-to-pg.mjs --load --to <host:port/db as it prints it>
 #  → [load] done: 10 users, 15 finds … then [verify] DynamoDB and Postgres match.
+npm run build                                       # the smoke test serves dist/ (share pages need a fresh build)
 node --env-file=.env scripts/smoke-postgres.mjs     # the whole API over HTTP; cleans up after itself
 ```
 
