@@ -59,6 +59,11 @@ jobs:
       - name: production build
         run: npm run build
 
+      # The real server on Postgres, over HTTP: sign-up → find → box → share page →
+      # still good → report → edit → delete (needs the build for the share page).
+      - name: api smoke test on postgres
+        run: DATABASE_URL="$TEST_DATABASE_URL" node scripts/smoke-postgres.mjs
+
       # Fails the step but not the job — review output and address via PRs (including Dependabot).
       - name: npm audit (high)
         run: npm audit --audit-level=high
