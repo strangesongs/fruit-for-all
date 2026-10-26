@@ -92,7 +92,7 @@ try {
   assert.match(serverLog, /store=postgres/, 'the [config] line should say store=postgres');
 
   // Accounts
-  const reg = await expect('register', call('POST', '/api/auth/register', { body: { userName: alice, email: `${alice}@example.com`, password: PW } }), 200);
+  const reg = await expect('register', call('POST', '/api/auth/register', { body: { userName: alice, email: `${alice}@example.com`, password: PW } }), 201);
   assert.ok(reg.json.token);
   await expect('same name, other case → 400', call('POST', '/api/auth/register', { body: { userName: alice.toUpperCase(), email: `x${tag}@example.com`, password: PW } }), 400);
   const login = await expect('sign in ignoring case', call('POST', '/api/auth/login', { body: { userName: alice.toUpperCase(), password: PW } }), 200);
@@ -100,7 +100,7 @@ try {
   const token = login.json.token;
   const me = await expect('me', call('GET', '/api/auth/me', { token }), 200);
   assert.equal(me.json.user.userName, alice);
-  const bobToken = (await expect('register a second person', call('POST', '/api/auth/register', { body: { userName: bob, email: `${bob}@example.com`, password: PW } }), 200)).json.token;
+  const bobToken = (await expect('register a second person', call('POST', '/api/auth/register', { body: { userName: bob, email: `${bob}@example.com`, password: PW } }), 201)).json.token;
 
   // A find
   const created = await expect('add a find', call('POST', '/api/pins', { token, body: { coordinates: LA, fruitType: "st. john's wort", notes: 'by the gate' } }), 200);
