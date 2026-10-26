@@ -18,7 +18,7 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 
 function sendPinsError(res, err, logLabel) {
   if (err instanceof PinsQueryError) {
-    console.error(`${logLabel} DynamoDB failure:`, err.cause);
+    console.error(`${logLabel} database failure:`, err.cause);
     return res
       .status(503)
       .json({ success: false, message: 'Map data is temporarily unavailable. Please try again.' });
@@ -66,11 +66,11 @@ export const createPin = async (req, res) => {
         .emails.send({
           from: 'fruit for all <noreply@fruitforall.app>',
           to: adminEmail,
-          subject: `new pin: ${pin.fruitTypeDisplay || fruitType} by ${submittedBy}`,
+          subject: `new pin: ${plainText(pin.fruitTypeDisplay || fruitType)} by ${submittedBy}`,
           html: `
             <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 32px; color: #2a2420;">
               <h2 style="color: #5b3a5e;">new pin submitted</h2>
-              <p><strong>fruit:</strong> ${pin.fruitTypeDisplay || fruitType}</p>
+              <p><strong>fruit:</strong> ${escapeHtml(plainText(pin.fruitTypeDisplay || fruitType))}</p>
               <p><strong>submitted by:</strong> ${escapeHtml(submittedBy)}</p>
               <p><strong>coordinates:</strong> ${coordinates.lat}, ${coordinates.lng}</p>
               ${pin.notes ? `<p><strong>notes:</strong> ${escapeHtml(pin.notes)}</p>` : ''}

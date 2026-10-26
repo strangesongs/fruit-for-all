@@ -5,10 +5,12 @@
 import { DATA_STORE } from '../db/store.js';
 import * as dynamoUsers from './users.js';
 import * as pgUsers from './pg/users.js';
+import * as dynamoPins from './pins.js';
+import * as pgPins from './pg/pins.js';
 
-// Users follow DATA_STORE (server/db/store.js). Pins stay on DynamoDB until
-// their Postgres twin lands (PR 3 of the move).
+// Users and pins follow DATA_STORE (server/db/store.js).
 const users = DATA_STORE === 'postgres' ? pgUsers : dynamoUsers;
+const pins = DATA_STORE === 'postgres' ? pgPins : dynamoPins;
 export const getUser = (...a) => users.getUser(...a);
 export const getUserByEmail = (...a) => users.getUserByEmail(...a);
 export const saveUser = (...a) => users.saveUser(...a);
@@ -16,15 +18,13 @@ export const createUser = (...a) => users.createUser(...a);
 export const verifyUser = (...a) => users.verifyUser(...a);
 export const requestPasswordReset = (...a) => users.requestPasswordReset(...a);
 export const resetPassword = (...a) => users.resetPassword(...a);
-export {
-  createPin,
-  getAllPins,
-  getPinById,
-  deletePin,
-  updatePin,
-  confirmPin,
-  reportPin,
-} from './pins.js';
+export const createPin = (...a) => pins.createPin(...a);
+export const getAllPins = (...a) => pins.getAllPins(...a);
+export const getPinById = (...a) => pins.getPinById(...a);
+export const deletePin = (...a) => pins.deletePin(...a);
+export const updatePin = (...a) => pins.updatePin(...a);
+export const confirmPin = (...a) => pins.confirmPin(...a);
+export const reportPin = (...a) => pins.reportPin(...a);
 export {
   validatePassword,
   validateEmail,
