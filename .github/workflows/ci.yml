@@ -42,8 +42,13 @@ jobs:
       - name: install dependencies
         run: npm ci
 
+      # Same files as npm test; failures also become annotations on the PR.
       - name: run tests
-        run: npm test
+        run: >-
+          node --test
+          --test-reporter=spec --test-reporter-destination=stdout
+          --test-reporter=./tests/reporters/annotate.mjs --test-reporter-destination=stdout
+          tests/server/*.test.js tests/client/*.test.js
 
       # The migration CLI end to end, twice: the second run must find nothing to do.
       - name: migrations apply cleanly
