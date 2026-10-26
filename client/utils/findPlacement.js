@@ -110,6 +110,7 @@ export function saveErrorMessage(status, serverMessage = '') {
   if (status === 403) return 'only the person who added this find can change it.';
   if (status === 404) return 'this find isn’t on the map any more.';
   if (status === 429) return 'that’s a lot of finds at once. wait a minute and try again.';
+  if (status === 503 && msg.includes('moving')) return 'fruit for all is moving to a new home for a few minutes. try again shortly; your find is still here.';
   if (status === 400) {
     if (msg.includes('family-friendly')) return 'please keep notes family-friendly.';
     if (msg.includes('fruit type')) return 'choose what’s there from the list.';
