@@ -133,6 +133,7 @@ async function createAppWithRateLimiters() {
   const publicPinsLimiter = limiter('publicPins');
   const locateLimiter = limiter('locate');
   const reportLimiter = limiter('report');
+  const adminLimiter = limiter('admin');
 
   // Serve static files from dist/ at the root FIRST
   app.use(
@@ -218,6 +219,21 @@ async function createAppWithRateLimiters() {
     reportLimiter,
     wrap(controllers.reportPin),
   );
+
+  // The command center: admins only (anyone else gets the 404 below's answer).
+  const adminOnly = [
+    adminLimiter,
+    // Signed out: the same 404 as any unknown route, not verifyToken's 401.
+    (req, res, next) => (req.headers.authorization ? next() : res.status(404).json({ success: false, message: 'Not found' })),
+    controllers.verifyToken,
+    wrap(controllers.requireAdmin),
+  ];
+  app.get('/api/admin/summary', ...adminOnly, wrap(controllers.getAdminSummary));
+  app.get('/api/admin/overview', ...adminOnly, wrap(controllers.getAdminOverview));
+  app.post('/api/admin/reports/:reportId/handle', ...adminOnly, wrap(controllers.handleReport));
+  app.post('/api/admin/pins/:pinId/hide', ...adminOnly, wrap(controllers.hidePin));
+  app.post('/api/admin/pins/:pinId/restore', ...adminOnly, wrap(controllers.restorePin));
+  app.post('/api/admin/pins/:pinId/still-there', ...adminOnly, wrap(controllers.markStillThere));
 
   // Unknown API routes → JSON 404 (instead of Express's HTML page)
   app.use('/api', (req, res) => {

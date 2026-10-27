@@ -19,6 +19,15 @@ import {
   reportPin,
   makeFindPage,
 } from './pinsController.js';
+import {
+  requireAdmin,
+  getAdminSummary,
+  getAdminOverview,
+  handleReport,
+  hidePin,
+  restorePin,
+  markStillThere,
+} from './adminController.js';
 
 export default {
   registerUser,
@@ -38,4 +47,11 @@ export default {
   reportPin,
   makeFindPage,
   verifyToken,
+  requireAdmin,
+  getAdminSummary,
+  getAdminOverview,
+  handleReport,
+  hidePin,
+  restorePin,
+  markStillThere,
 };

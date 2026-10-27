@@ -122,4 +122,28 @@ describe('postgres schema (migrations)', { skip }, () => {
       await client.query('rollback');
     }
   });
+
+  test('003: a handled report has an outcome; history survives its find and its people', async () => {
+    await client.query('begin');
+    try {
+      const id = '3f2a9c1e-5b7d-4e8a-9c21-7d4e5f6a8b90';
+      await user('alice', 'alice@example.com');
+      await pin(id, 34.06, -118.29);
+      await client.query("insert into pin_reports (pin_id, reason) values ($1, 'gone')", [id]);
+      await fails("update pin_reports set handled_at = now() where pin_id = $1", [id], '23514');
+      await fails("update pin_reports set handled_at = now(), outcome = 'deleted' where pin_id = $1", [id], '23514');
+      await client.query("update pin_reports set handled_at = now(), outcome = 'kept', handled_by = 'alice' where pin_id = $1", [id]);
+      await fails("insert into pin_events (pin_id, kind, fruit_type) values ($1, 'liked', 'fig')", [id], '23514');
+      await client.query("insert into pin_events (pin_id, kind, by_user, fruit_type) values ($1, 'deleted', 'alice', 'fig')", [id]);
+      await client.query('delete from pins where pin_id = $1', [id]);
+      await client.query("update users set user_name = 'alice2' where user_name = 'alice'");
+      let { rows } = await client.query('select by_user from pin_events where pin_id = $1', [id]);
+      assert.deepEqual(rows, [{ by_user: 'alice2' }]);
+      await client.query("delete from users where user_name = 'alice2'");
+      ({ rows } = await client.query('select by_user from pin_events where pin_id = $1', [id]));
+      assert.deepEqual(rows, [{ by_user: null }]);
+    } finally {
+      await client.query('rollback');
+    }
+  });
 });

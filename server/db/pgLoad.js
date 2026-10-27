@@ -5,7 +5,7 @@
  */
 import { SKIPPED_USERS } from './dynamoImport.js';
 
-const TABLES = 'pin_reports, pin_confirmations, pins, password_resets, users';
+const TABLES = 'pin_events, pin_reports, pin_confirmations, pins, password_resets, users';
 
 /**
  * Everything in one transaction: all of it lands, or none of it.

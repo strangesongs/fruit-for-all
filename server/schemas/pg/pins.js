@@ -10,6 +10,10 @@
  * - Kind names are stored as typed (lower case); nothing is HTML-escaped on the
  *   way in. React escapes on render; emails and the share page escape their own output.
  * - Database failures throw PinsQueryError.
+ * - A hidden find (status 'removed', set from the command center) is "no such
+ *   find" everywhere here; only server/schemas/pg/admin.js sees it.
+ * - Adds, edits and deletes also write a pin_events row (the command center's
+ *   "recent activity"), in the same statement or transaction as the change.
  */
 import { v4 as uuidv4 } from 'uuid';
 import { query, withTransaction } from '../../db/postgres.js';
@@ -32,6 +36,9 @@ export function generateGeoHash(lat, lng) {
 }
 
 const iso = (d) => (d ? new Date(d).toISOString() : null);
+
+// The account name as stored (any case in), or null: history never blocks a change.
+const BY_USER = (p) => `(select user_name from users where lower(user_name) = lower(${p}))`;
 
 const SELECT = `
   select p.pin_id, p.created_at, p.updated_at, p.fruit_type, p.fruit_type_display, p.notes,
@@ -116,7 +123,10 @@ export async function createPin(pinData) {
     `with ins as (
        insert into pins (pin_id, created_at, location, fruit_type, fruit_type_display, notes, submitted_by, status, zone)
        values ($1, $2, st_setsrid(st_makepoint($4, $3), 4326)::geography, $5, $6, $7, $8, 'active', $9)
-       returning *)
+       returning *),
+     ev as (
+       insert into pin_events (pin_id, kind, by_user, fruit_type, at)
+       select pin_id, 'added', submitted_by, fruit_type, created_at from ins)
      select ins.pin_id, ins.created_at, ins.updated_at, ins.fruit_type, ins.fruit_type_display, ins.notes,
             ins.submitted_by, ins.status, ins.zone,
             st_y(ins.location::geometry) as lat, st_x(ins.location::geometry) as lng, '{}'::timestamptz[] as confirmed
@@ -143,9 +153,9 @@ export async function getAllPins(options = {}) {
     params.push(v);
     return `$${params.length}`;
   };
-  // Your finds: all of them, as the submittedBy index returned. The map: active ones.
+  // Active finds only: the map, and your own finds (a hidden one is gone for you too).
+  where.push("p.status = 'active'");
   if (submittedBy) where.push(`p.submitted_by = ${param(String(submittedBy))}`);
-  else where.push("p.status = 'active'");
   if (box) {
     where.push(
       `p.location::geometry && st_makeenvelope(${param(box.minLng)}, ${param(box.minLat)}, ${param(box.maxLng)}, ${param(box.maxLat)}, 4326)`,
@@ -164,7 +174,7 @@ export async function getAllPins(options = {}) {
 }
 
 /**
- * One pin, or null when there's no such pin. `withReports` adds `reportCount`.
+ * One pin, or null when there's no such pin (or it's hidden). `withReports` adds `reportCount`.
  * @throws {PinsQueryError}
  */
 export async function getPinById(pinId, { withReports = false } = {}) {
@@ -173,7 +183,7 @@ export async function getPinById(pinId, { withReports = false } = {}) {
     ? ', (select count(*) from pin_reports r where r.pin_id = p.pin_id) as report_count'
     : '';
   const { rows } = await run(
-    `${SELECT.replace('from pins p', `${count} from pins p`)} where p.pin_id = $1`,
+    `${SELECT.replace('from pins p', `${count} from pins p`)} where p.pin_id = $1 and p.status = 'active'`,
     [pinId],
     'read the pin',
   );
@@ -200,13 +210,20 @@ export async function reportPin(pin, report) {
   }
 }
 
-export async function deletePin(pinId) {
+/** `by`: who deleted it, for the history (optional). */
+export async function deletePin(pinId, { by = null } = {}) {
   if (!pinId || typeof pinId !== 'string') throw new Error('Valid pin ID is required');
   const pin = await getPinById(pinId);
   if (!pin) throw new Error('Pin not found');
   try {
-    // Its confirmations and reports go with it (on delete cascade).
-    await query('delete from pins where pin_id = $1', [pinId]);
+    // Its confirmations and reports go with it (on delete cascade); its history stays.
+    await withTransaction(async (client) => {
+      await client.query(
+        `insert into pin_events (pin_id, kind, by_user, fruit_type) values ($1, 'deleted', ${BY_USER('$2')}, $3)`,
+        [pinId, by, pin.fruitType],
+      );
+      await client.query('delete from pins where pin_id = $1', [pinId]);
+    });
     return true;
   } catch (err) {
     console.error('Error deleting pin:', err.message);
@@ -218,16 +235,22 @@ export async function confirmPin(pinId) {
   if (!pinId || typeof pinId !== 'string') throw new Error('Valid pin ID is required');
   if (!isUuid(pinId)) return null;
   try {
-    await query('insert into pin_confirmations (pin_id, confirmed_at) values ($1, $2)', [pinId, new Date().toISOString()]);
+    const { rowCount } = await query(
+      `insert into pin_confirmations (pin_id, confirmed_at)
+       select pin_id, $2 from pins where pin_id = $1 and status = 'active'`,
+      [pinId, new Date().toISOString()],
+    );
+    if (rowCount === 0) return null; // no such find, or hidden
   } catch (err) {
-    if (err?.code === '23503') return null; // no such find
+    if (err?.code === '23503') return null; // deleted meanwhile
     console.error('Error confirming pin:', err.message);
     throw new Error('Failed to confirm pin');
   }
   return getPinById(pinId);
 }
 
-export async function updatePin(pinId, updates) {
+/** `by`: who made the change, for the history (optional). */
+export async function updatePin(pinId, updates, { by = null } = {}) {
   if (!pinId || typeof pinId !== 'string') throw new Error('Valid pin ID is required');
   const pin = await getPinById(pinId);
   if (!pin) throw new Error('Pin not found');
@@ -237,10 +260,17 @@ export async function updatePin(pinId, updates) {
     params.push(v);
     return `$${params.length}`;
   };
-  if (updates.notes !== undefined) sets.push(`notes = ${param(String(updates.notes || ''))}`);
+  const fields = [];
+  let kind = pin.fruitType;
+  if (updates.notes !== undefined) {
+    sets.push(`notes = ${param(String(updates.notes || ''))}`);
+    fields.push('notes');
+  }
   if (updates.fruitType !== undefined) {
     const name = sanitizeString(updates.fruitType);
     sets.push(`fruit_type = ${param(name.toLowerCase())}`, `fruit_type_display = ${param(name)}`);
+    fields.push('kind');
+    kind = name.toLowerCase();
   }
   if (updates.coordinates !== undefined) {
     const lat = parseFloat(updates.coordinates.lat);
@@ -250,12 +280,19 @@ export async function updatePin(pinId, updates) {
     // The season follows the find's spot, so a moved find gets its zone again.
     const zone = await zoneFor(lat, lng);
     sets.push(`location = st_setsrid(st_makepoint(${param(lng)}, ${param(lat)}), 4326)::geography`, `zone = ${param(zone)}`);
+    fields.push('spot');
   }
   if (sets.length === 0) return pin;
+  const at = new Date().toISOString();
   try {
-    await withTransaction((client) =>
-      client.query(`update pins set ${sets.join(', ')}, updated_at = ${param(new Date().toISOString())} where pin_id = $1`, params),
-    );
+    await withTransaction(async (client) => {
+      await client.query(`update pins set ${sets.join(', ')}, updated_at = ${param(at)} where pin_id = $1`, params);
+      await client.query(
+        `insert into pin_events (pin_id, kind, fields, by_user, fruit_type, at)
+         values ($1, 'edited', $2, ${BY_USER('$3')}, $4, $5)`,
+        [pinId, fields, by, kind, at],
+      );
+    });
   } catch (err) {
     console.error('Error updating pin:', err.message);
     throw new Error('Failed to update pin');
