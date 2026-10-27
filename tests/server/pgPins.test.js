@@ -126,12 +126,51 @@ describe('finds on postgres', { skip: skipReason }, () => {
     assert.equal((await pgPins.getAllPins({ limit: 2, cursor: 'garbage' })).pins[0].pinId, uuid(5));
   });
 
-  test("submittedBy lists that person's finds, removed ones too, newest first", async () => {
+  test("submittedBy lists that person's visible finds, newest first (a hidden one is gone for them too)", async () => {
     await addRaw({ id: uuid(1), at: '2026-01-01T00:00:00.000Z' });
     await addRaw({ id: uuid(2), at: '2026-02-01T00:00:00.000Z', status: 'removed' });
     await addRaw({ id: uuid(3), at: '2026-03-01T00:00:00.000Z', by: 'Bob' });
+    await addRaw({ id: uuid(4), at: '2026-04-01T00:00:00.000Z' });
     const { pins } = await pgPins.getAllPins({ submittedBy: 'alice', limit: 100 });
-    assert.deepEqual(pins.map((p) => p.pinId), [uuid(2), uuid(1)]);
+    assert.deepEqual(pins.map((p) => p.pinId), [uuid(4), uuid(1)]);
+  });
+
+  test('a hidden find is "no such find": read, still good, edit, delete', async () => {
+    await addRaw({ id: uuid(1), at: '2026-01-01T00:00:00.000Z', status: 'removed' });
+    assert.equal(await pgPins.getPinById(uuid(1)), null);
+    assert.equal(await pgPins.getPinById(uuid(1), { withReports: true }), null);
+    assert.equal(await pgPins.confirmPin(uuid(1)), null);
+    const { rows } = await t.db.query('select count(*)::int as n from pin_confirmations');
+    assert.equal(rows[0].n, 0);
+    await assert.rejects(pgPins.updatePin(uuid(1), { notes: 'x' }), /Pin not found/);
+    await assert.rejects(pgPins.deletePin(uuid(1)), /Pin not found/);
+  });
+
+  test('history: add, edit (which fields) and delete each write one event, with who', async () => {
+    const pin = await pgPins.createPin({ coordinates: LA, fruitType: 'fig', submittedBy: 'alice' });
+    await pgPins.updatePin(pin.pinId, { notes: 'by the gate', fruitType: 'mulberry' }, { by: 'ALICE' });
+    await pgPins.updatePin(pin.pinId, { coordinates: { lat: 34.0601, lng: -118.2901 } }, { by: 'nobody-by-that-name' });
+    await pgPins.updatePin(pin.pinId, {}, { by: 'alice' }); // nothing changed: no event
+    await pgPins.deletePin(pin.pinId, { by: 'bob' });
+    const { rows } = await t.db.query('select pin_id, kind, fields, by_user, fruit_type from pin_events order by id');
+    assert.deepEqual(rows.map(({ pin_id, ...r }) => (assert.equal(pin_id, pin.pinId), r)), [
+      { kind: 'added', fields: [], by_user: 'alice', fruit_type: 'fig' },
+      { kind: 'edited', fields: ['notes', 'kind'], by_user: 'alice', fruit_type: 'mulberry' },
+      { kind: 'edited', fields: ['spot'], by_user: null, fruit_type: 'mulberry' },
+      { kind: 'deleted', fields: [], by_user: 'Bob', fruit_type: 'mulberry' },
+    ]);
+  });
+
+  test('history is written with the change: a failed edit leaves no event', async () => {
+    await addRaw({ id: uuid(1), at: '2026-01-01T00:00:00.000Z' });
+    await t.db.query("alter table pins add constraint no_secret check (notes <> 'secret')");
+    try {
+      await quiet(() => assert.rejects(pgPins.updatePin(uuid(1), { notes: 'secret' }, { by: 'alice' })));
+    } finally {
+      await t.db.query('alter table pins drop constraint no_secret');
+    }
+    const { rows } = await t.db.query('select count(*)::int as n from pin_events');
+    assert.equal(rows[0].n, 0);
   });
 
   test('confirmPin adds a confirmation and returns the pin; unknown or bad id → null', async () => {

@@ -189,6 +189,7 @@ export const reportPin = async (req, res) => {
     if (resend && adminEmail) {
       const kind = plainText(pin.fruitTypeDisplay || pin.fruitType || 'find').toLowerCase();
       const link = findUrl(emailBaseUrl(), pin.pinId);
+      const commandCenter = `${emailBaseUrl()}/admin#reports`;
       resend.emails
         .send({
           from: 'fruit for all <noreply@fruitforall.app>',
@@ -202,8 +203,8 @@ export const reportPin = async (req, res) => {
               ${note ? `<p><strong>note:</strong> ${escapeHtml(note)}</p>` : ''}
               <p><strong>added by:</strong> ${escapeHtml(pin.submittedBy || 'unknown')}</p>
               <p><strong>reports so far:</strong> ${(pin.reportCount || 0) + (stored ? 1 : 0)}${stored ? '' : ' (list full: this one was not stored)'}</p>
-              <p>the find is still on the map. to remove it, open it and delete it.</p>
-              <p style="margin-top: 24px;"><a href="${escapeHtml(link)}" style="color: #5b3a5e;">open the find</a></p>
+              <p>the find is still on the map. hide it or mark the report handled in the command center.</p>
+              <p style="margin-top: 24px;"><a href="${escapeHtml(commandCenter)}" style="color: #5b3a5e;">open the command center</a> · <a href="${escapeHtml(link)}" style="color: #5b3a5e;">open the find</a></p>
             </div>
           `,
         })
@@ -352,7 +353,7 @@ export const updatePin = async (req, res) => {
     if (notes !== undefined) updates.notes = db.sanitizeString(notes || '');
     if (fruitType !== undefined) updates.fruitType = fruitType.trim().toLowerCase();
     if (coordinates !== undefined) updates.coordinates = { lat: coordinates.lat, lng: coordinates.lng };
-    const updatedPin = await db.updatePin(pinId, updates);
+    const updatedPin = await db.updatePin(pinId, updates, { by: req.user.userName });
     res.json({ success: true, message: 'Pin updated successfully', pin: updatedPin });
   } catch (error) {
     console.error('Error in updatePin controller:', error);
@@ -402,7 +403,7 @@ export const deletePin = async (req, res) => {
         message: 'Only admin or pin owner can delete this pin',
       });
     }
-    await db.deletePin(pinId);
+    await db.deletePin(pinId, { by: req.user.userName });
     res.json({ success: true, message: 'Pin deleted successfully' });
   } catch (error) {
     console.error('Error in deletePin controller:', error);

@@ -33,7 +33,7 @@ export async function openTestSchema(label) {
     db: admin,
     /** Empties every table between tests. */
     async reset() {
-      await admin.query('truncate pin_reports, pin_confirmations, pins, password_resets, users restart identity cascade');
+      await admin.query('truncate pin_events, pin_reports, pin_confirmations, pins, password_resets, users restart identity cascade');
     },
     async close() {
       await closePool();

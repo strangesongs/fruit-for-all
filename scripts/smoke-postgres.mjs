@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // End-to-end check of the API on Postgres: starts the real server with
 // DATA_STORE=postgres against DATABASE_URL and walks sign-up → add a find →
-// map box → share page → still good → report → edit → delete over HTTP.
+// map box → share page → still good → report → edit → command center → delete
+// over HTTP.
 //
 //   DATABASE_URL=… node scripts/smoke-postgres.mjs     (after npm run build + db:migrate)
 //
@@ -33,6 +34,7 @@ const LA = { lat: 34.0601, lng: -118.2901 };
 const db = new pg.Client({ connectionString: withoutSslMode(url), ssl: sslFor(url) });
 let server;
 let step = 'start';
+const createdPins = [];
 
 async function call(method, path, { token, body } = {}) {
   const res = await fetch(BASE + path, {
@@ -74,6 +76,8 @@ async function waitForServer() {
 }
 
 async function cleanUp() {
+  // History rows outlive their finds by design, so they're removed by id.
+  await db.query('delete from pin_events where pin_id = any($1::uuid[])', [createdPins]).catch(() => {});
   await db.query('delete from pins where submitted_by in ($1, $2)', [alice, bob]).catch(() => {});
   await db.query('delete from users where user_name in ($1, $2)', [alice, bob]).catch(() => {});
 }
@@ -109,6 +113,7 @@ try {
   assert.deepEqual(pin.coordinates, LA);
   assert.ok(Number.isInteger(pin.zone));
   const id = pin.pinId;
+  createdPins.push(id);
 
   const box = '?minLat=34.05&maxLat=34.07&minLng=-118.3&maxLng=-118.28';
   const pub = await expect('public map box', call('GET', `/api/pins/public${box}`), 200);
@@ -146,6 +151,30 @@ try {
   await expect("someone else's edit → 403", call('PATCH', `/api/pins/${id}`, { token: bobToken, body: { notes: 'mine now' } }), 403);
   await expect("someone else's delete → 403", call('DELETE', `/api/pins/${id}`, { token: bobToken }), 403);
 
+  // The command center
+  await expect('command center, signed out → 404', call('GET', '/api/admin/summary'), 404);
+  await expect('command center, not an admin → 404', call('GET', '/api/admin/overview', { token: bobToken }), 404);
+  await db.query('update users set is_admin = true where user_name = $1', [alice]);
+  const adminToken = (await expect('sign in as admin', call('POST', '/api/auth/login', { body: { userName: alice, password: PW } }), 200)).json.token;
+  const summary = await expect('admin summary', call('GET', '/api/admin/summary', { token: adminToken }), 200);
+  assert.ok(summary.json.counts.openReports >= 1);
+  const overview = await expect('admin overview', call('GET', '/api/admin/overview', { token: adminToken }), 200);
+  assert.equal(overview.json.success, true);
+  assert.doesNotMatch(overview.text, /@example\.com/, 'the command center never carries an email');
+  const open = overview.json.reports.find((r) => r.pinId === id);
+  assert.equal(open?.reason, 'gone');
+  const edit = overview.json.activity.find((a) => a.pinId === id && a.kind === 'edited');
+  assert.deepEqual(edit?.fields, ['notes', 'spot']);
+  await expect('report handled', call('POST', `/api/admin/reports/${open.id}/handle`, { token: adminToken }), 200);
+  await expect('report handled again → 404', call('POST', `/api/admin/reports/${open.id}/handle`, { token: adminToken }), 404);
+  await expect('hide the find', call('POST', `/api/admin/pins/${id}/hide`, { token: adminToken }), 200);
+  await expect('hidden find → 404', call('GET', `/api/pins/${id}`), 404);
+  await expect('hidden find share page → 404', call('GET', `/find/${id}`), 404);
+  await expect('put it back', call('POST', `/api/admin/pins/${id}/restore`, { token: adminToken }), 200);
+  await expect('back on its link', call('GET', `/api/pins/${id}`), 200);
+  await expect('still there', call('POST', `/api/admin/pins/${id}/still-there`, { token: adminToken }), 200);
+  await expect('hide by a non-admin → 404', call('POST', `/api/admin/pins/${id}/hide`, { token: bobToken }), 404);
+
   // Reset request
   await expect('forgot password', call('POST', '/api/auth/forgot-password', { body: { email: `${alice}@example.com` } }), 200);
   const resets = await db.query('select count(*)::int as n from password_resets where user_name = $1', [alice]);
@@ -156,6 +185,8 @@ try {
   await expect('deleted find → 404', call('GET', `/api/pins/${id}`), 404);
   const left = await db.query('select (select count(*) from pin_confirmations where pin_id = $1)::int as c, (select count(*) from pin_reports where pin_id = $1)::int as r', [id]);
   assert.deepEqual(left.rows[0], { c: 0, r: 0 });
+  const history = await db.query('select kind from pin_events where pin_id = $1 order by id', [id]);
+  assert.deepEqual(history.rows.map((r) => r.kind), ['added', 'edited', 'report-handled', 'hidden', 'restored', 'still-there', 'deleted']);
 
   console.log('[smoke] all good');
 } catch (err) {

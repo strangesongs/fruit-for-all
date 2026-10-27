@@ -50,4 +50,10 @@ export const RATE_LIMITS = {
     max: 200,
     message: 'Too many public map requests, please slow down.',
   },
+  // The command center (admin only; requireAdmin still checks every request).
+  admin: {
+    windowMs: MINUTE,
+    max: 120,
+    message: 'too many requests. please slow down.',
+  },
 };

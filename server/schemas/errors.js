@@ -52,3 +52,14 @@ export class UserError extends Error {
 export function publicMessage(error, fallback) {
   return error instanceof UserError ? error.message : fallback;
 }
+
+/**
+ * The command center needs Postgres (server/schemas/pg/admin.js has no DynamoDB
+ * twin). Thrown on DATA_STORE=dynamo; the admin handlers answer 503.
+ */
+export class AdminUnavailableError extends Error {
+  constructor() {
+    super('The command center needs DATA_STORE=postgres');
+    this.name = 'AdminUnavailableError';
+  }
+}
