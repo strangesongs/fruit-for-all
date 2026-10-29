@@ -40,10 +40,10 @@ server/controllers/           auth.js (register/login/reset, verifyToken), pinsC
 server/db/                    dynamo.js (client + table names), postgres.js (lazy pg pool), migrate.js + migrations/NNN_*.sql, dynamoImport.js (Dynamo item → row, pre-flight check)
 server/schemas/               users.js, pins.js (Dynamo access), validation.js, zone.js, errors.js, schemas.js (barrel)
 server/utils/                 html.js (escapeHtml), profanity.js, confirmDedup.js (Redis 24h per-IP dedup)
-client/index.js               entry: App wires Sidebar ↔ Map via refs; /reset-password renders ResetPassword
+client/index.js               entry: App wires Sidebar ↔ Map via refs; /reset-password renders ResetPassword; /admin renders AdminPage (lazy)
 client/sidebar.jsx            ALL non-map UI (~1.5k lines): auth state + handlers, filters, three layouts (renders AddFind)
 client/map.jsx                Leaflet map, pin loading/merging, clustering, popups, locate-me, "nearest good bet"
-client/components/            AddFind.jsx (add / edit a find: locate → place → details → kinds; see below), PinPopup.jsx (catalog-entry popup), AuthForm.jsx (sign in / register / forgot password for all three layouts; `variant` = bar | panel | desktop, state stays in Sidebar), SeasonStrip.jsx (now unused); AddFruitPopup/GuestBar/MapControls are EMPTY placeholders
+client/components/            AddFind.jsx (add / edit a find: locate → place → details → kinds; see below), PinPopup.jsx (catalog-entry popup), AuthForm.jsx (sign in / register / forgot password for all three layouts; `variant` = bar | panel | desktop, state stays in Sidebar), SeasonStrip.jsx (now unused), AdminPage.jsx (the command center, /admin; styles admin.css); AddFruitPopup/GuestBar/MapControls are EMPTY placeholders
 client/utils/                 auth, cache, network (fetchWithRetry), clustering, fruitList (+ FRUIT_ALIASES), kindSearch, findPlacement (nudge range, shared with server), fruitSeasons, fruitFamilies (marks), pinSummary (ripeness, view summary), zoneFallback (shared with server), breakpoints, …
 client/stylesheets/           sidebar.css (tokens + every non-map layout), map.css (Leaflet overrides, controls, popups)
 client/sw.js                  service worker (production only): network-first navigations, cache-first static assets
@@ -100,6 +100,9 @@ The approved plan is the "Admin command center plan" doc (owner approved Oct 26;
 - Routes (`server.js`, all `...adminOnly`: no token → 404, `verifyToken`, `requireAdmin`): `GET /api/admin/summary` (counts), `GET /api/admin/overview` (open + handled reports, recent activity, finds to review, hidden finds), `POST /api/admin/reports/:id/handle`, `POST /api/admin/pins/:id/hide|restore|still-there`. Anyone who isn't an admin in the users table gets the same 404 as an unknown route. Answers are `no-store`; they name who added a find but never carry an email.
 - "Finds to review" uses the map's stale rule (no add or "still good" for 6 × 30.44 days, `client/utils/timeAgo.js`). Recent activity is `pin_events` plus adds from before history began (`pins.created_at`) and visitors' "still good" taps (`pin_confirmations`).
 - The report email links to `/admin#reports`.
+- **The page** (PR 2): `client/components/AdminPage.jsx`, its own lazy chunk (`index.js` checks `isAdminPath`). Signed out or not an admin (in localStorage, and again by the API's 404) → `location.replace('/')`. Below 768 px: one line ("the command center is for a computer") and back to the map. Sections: reports (handled, it's fine · hide the find · open on the map → `/find/<id>`; a "handled (N)" fold), recent activity, finds to review (still there · hide), hidden (put it back). Actions POST once (never retried) and reload the overview; errors show under the row. Words live in `client/utils/adminView.js` (tested), including short reason tags (`REASON_TAGS`; the reporter's form says "it's gone" etc.). The page scrolls inside `.admin-page` (html/body never scroll) and undoes sidebar.css's global `ul`/`li` rules.
+- **The way in:** the desktop sidebar (signed in, `isAdmin()`) shows a dotted-box link "command center · N open reports" between the filter and logout (`renderAdminEntry`, `GET /api/admin/summary` on mount, sign-in, or widening to desktop; styles at the end of sidebar.css). Signing in still lands on the map.
+- The preview server (`npm run preview`) fakes the admin API with the same shapes, plus two sample reports; sign in as `admin…` and open `/admin`.
 
 ## Postgres (live since Oct 25, 2026)
 

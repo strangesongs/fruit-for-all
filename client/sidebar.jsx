@@ -10,6 +10,7 @@ import { shelfEnabled, shelfHeadText, shelfReachText } from './utils/seasonShelf
 import { fetchWithRetry } from './utils/network.js';
 import AuthForm from './components/AuthForm.jsx';
 import AddFind from './components/AddFind.jsx';
+import { ADMIN_PATH, sidebarCountLabel } from './utils/adminView.js';
 
 import './stylesheets/sidebar.css';
 
@@ -94,6 +95,10 @@ export default class Sidebar extends React.Component {
             shelfView: 'shelf',  // 'shelf' | 'almanac'
             shelfFolded: false,  // folded to the running head while a pin is open
             shelfIntro: readFirstVisit(),
+
+            // Desktop, admins only: the command center's counts for the sidebar link
+            // (GET /api/admin/summary). null until loaded; the link shows regardless.
+            adminCounts: null,
         }
         this._shelfOn = shelfEnabled();
         this._requestControllers = new Set();
@@ -151,7 +156,41 @@ export default class Sidebar extends React.Component {
         window.addEventListener('ffa:edit-find', this.handleEditFindRequest);
         window.addEventListener('ffa:notice', this.handleNoticeEvent);
         window.addEventListener(SESSION_EXPIRED_EVENT, this.handleSessionExpired);
+        this.loadAdminSummary();
     }
+
+    componentDidUpdate(prevProps, prevState) {
+        // Signed in, or widened to desktop: the admin link needs its count.
+        if ((this.state.authenticated && !prevState.authenticated)
+            || (this.isDesktop(this.state) && !this.isDesktop(prevState))) {
+            this.loadAdminSummary();
+        }
+    }
+
+    isDesktop(state) {
+        return !state.isTinyScreen && !state.isStandardMobile;
+    }
+
+    // The sidebar's "command center · N open reports" (desktop, admins only). A
+    // failure just leaves the count off: the link itself still works.
+    loadAdminSummary = async () => {
+        if (!this.state.authenticated || !isAdmin() || !this.isDesktop(this.state)) return;
+        const controller = this.startRequest();
+        try {
+            const response = await fetchWithRetry(`${API_BASE}/api/admin/summary`, {
+                headers: getAuthHeader(),
+                cache: 'no-store',
+                signal: controller.signal,
+            });
+            if (handleUnauthorized(response) || !response.ok) return;
+            const result = await response.json();
+            if (result.success) this.setState({ adminCounts: result.counts });
+        } catch {
+            // offline or aborted: no count
+        } finally {
+            this.finishRequest(controller);
+        }
+    };
 
     componentWillUnmount() {
         window.removeEventListener('ffa:add-find', this.handleAddFindRequest);
@@ -340,6 +379,7 @@ export default class Sidebar extends React.Component {
         if (this.props.onLogout) this.props.onLogout();
         this.setState({ 
             authenticated: false,
+            adminCounts: null,
             addFind: null,
             isMobileBarOpen: false,
             myPinsActive: false,
@@ -653,6 +693,22 @@ export default class Sidebar extends React.Component {
                 {...(label ? {} : { 'aria-hidden': 'true' })}
                 dangerouslySetInnerHTML={{ __html: logoSvg({ size, label }) }}
             />
+        );
+    }
+
+    // The way into the admin command center (desktop sidebar, admins only).
+    renderAdminEntry() {
+        const open = this.state.adminCounts?.openReports;
+        return (
+            <a className="admin-entry" href={ADMIN_PATH}>
+                <span className="admin-entry__text">
+                    <span className="admin-entry__title">command center</span>
+                    <span className={`admin-entry__count${open > 0 ? ' admin-entry__count--open' : ''}`}>
+                        {this.state.adminCounts ? sidebarCountLabel(open) : 'reports, activity, finds to review'}
+                    </span>
+                </span>
+                <span className="admin-entry__arrow" aria-hidden="true">→</span>
+            </a>
         );
     }
 
@@ -1528,6 +1584,8 @@ export default class Sidebar extends React.Component {
                             ))}
                         </select>
                     </div>
+
+                    {isAdmin() && this.renderAdminEntry()}
 
                     <div className="bottom-section">
                         <button
