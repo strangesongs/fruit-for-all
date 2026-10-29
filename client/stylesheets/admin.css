@@ -1,0 +1,230 @@
+/* The admin command center (/admin, components/AdminPage.jsx). Desktop only.
+   The catalog vocabulary of the rest of the app: thick-over-thin rules for section
+   heads, thin meandering rules between entries, dotted boxes for asides, printed
+   fig buttons for the main action and ink outlines for the rest. Tokens only.
+   html/body never scroll (the map), so the page scrolls inside .admin-page. */
+
+.admin-page {
+    position: fixed;
+    inset: 0;
+    overflow-y: auto;
+    background: var(--paper);
+    color: var(--text);
+    font-family: var(--font-sans);
+    text-align: left; /* the app centres text globally */
+}
+
+.admin-wrap {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 36px 48px 64px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+/* ── running head ───────────────────────────────────────────── */
+.admin-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px 24px;
+}
+.admin-logo { display: inline-flex; flex-shrink: 0; }
+.admin-head__text { flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.admin-title {
+    margin: 0;
+    font-family: var(--font);
+    font-size: 34px;
+    line-height: 1.05;
+    font-weight: 700;
+}
+.admin-title span { font-weight: 400; color: var(--fig); }
+.admin-head__line { margin: 0; font-size: 15px; color: var(--text-muted); }
+
+/* ── rules ───────────────────────────────────────────────────── */
+.admin-rule { display: flex; flex-direction: column; gap: 2px; margin: 8px 0 4px; }
+.admin-rule span { display: block; height: 1px; background: var(--text); }
+.admin-rule span:first-child { height: 2px; }
+.admin-rule--thick { gap: 3px; margin: 0; }
+.admin-rule--thick span:first-child { height: 4px; }
+
+.admin-meander { display: block; width: 100%; height: 6px; }
+.admin-meander path { fill: none; stroke: var(--text); stroke-width: 0.9; }
+
+/* ── columns and sections ───────────────────────────────────── */
+.admin-columns { display: flex; flex-wrap: wrap; gap: 40px 56px; align-items: flex-start; }
+.admin-col { flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 44px; }
+.admin-col--wide { flex: 999 1 620px; }
+
+.admin-section { display: flex; flex-direction: column; }
+.admin-section__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.admin-section__title {
+    margin: 0;
+    font-family: var(--font);
+    font-size: 26px;
+    font-weight: 700;
+    scroll-margin-top: 24px;
+}
+.admin-section__note { font-size: 14px; color: var(--text-muted); }
+.admin-subhead {
+    margin: 22px 0 6px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.admin-muted { color: var(--text-muted); }
+.admin-small { font-size: 13px; }
+.admin-aside {
+    margin: 8px 0 0;
+    border: 3px dotted var(--text);
+    padding: 14px 16px;
+    font-family: var(--font);
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1.4;
+}
+.admin-note {
+    margin: 0;
+    font-family: var(--font);
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1.4;
+}
+.admin-error, .admin-row-error {
+    margin: 6px 0 0;
+    font-size: 14px;
+    color: var(--fig);
+    font-weight: 600;
+}
+
+/* ── buttons and links ──────────────────────────────────────── */
+.admin-btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 38px;
+    padding: 0 16px;
+    background: var(--fig);
+    color: var(--paper);
+    border: 0;
+    border-radius: 3px;
+    box-shadow: 3px 3px 0 var(--persimmon);
+    font-family: var(--font);
+    font-size: 16px;
+    text-decoration: none;
+    cursor: pointer;
+    align-self: flex-start;
+}
+.admin-btn:hover { background: var(--fig-dark); color: var(--paper); }
+.admin-btn:active { box-shadow: 0 0 0 var(--persimmon); transform: translate(3px, 3px); }
+.admin-btn:disabled { opacity: 0.6; cursor: default; }
+.admin-btn--outline {
+    background: transparent;
+    color: var(--text);
+    border: 1.5px solid var(--text);
+    box-shadow: none;
+    padding: 0 14px;
+}
+.admin-btn--outline:hover { background: var(--card); color: var(--text); }
+.admin-btn--outline:active { transform: none; }
+.admin-btn--small { min-height: 34px; padding: 0 12px; font-size: 15px; }
+.admin-btn:focus-visible, .admin-link:focus-visible, .admin-fold__toggle:focus-visible {
+    outline: 2px solid var(--fig);
+    outline-offset: 3px;
+}
+.admin-link { font-family: var(--font); font-size: 16px; color: var(--fig); }
+.admin-link:hover { color: var(--text); }
+
+.admin-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 6px; }
+
+/* ── reports ─────────────────────────────────────────────────── */
+.admin-report { display: flex; gap: 16px; padding: 18px 0 16px; }
+.admin-mark { flex-shrink: 0; width: 44px; height: 44px; display: inline-flex; color: var(--text); }
+.admin-report__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.admin-report__top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.admin-report__kind { font-family: var(--font); font-size: 22px; font-weight: 700; line-height: 1.1; }
+.admin-tag {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--paper);
+    background: var(--text);
+    padding: 2px 7px;
+    border-radius: 2px;
+}
+
+.admin-fold { margin: 12px 0 0; font-size: 14px; }
+.admin-fold__toggle {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+.admin-fold__list { margin: 8px 0 0; padding-left: 18px; line-height: 1.7; list-style: disc; }
+
+/* ── recent activity ────────────────────────────────────────── */
+.admin-activity { list-style: none; margin: 0; padding: 0; }
+/* sidebar.css styles every ul/li for the sidebar (centred, small, grey): undo that here. */
+.admin-page ul { text-align: left; }
+.admin-page li { margin: 0; color: inherit; font-size: inherit; }
+.admin-activity__row {
+    display: grid;
+    grid-template-columns: 110px 130px minmax(0, 1fr) 130px 52px;
+    gap: 12px;
+    align-items: baseline;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+}
+.admin-activity__what { font-weight: 600; }
+.admin-activity__kind { font-family: var(--font); font-size: 17px; }
+.admin-activity__kind .admin-small { font-family: var(--font-sans); }
+.admin-activity__who { color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; }
+.admin-activity__row > :last-child { text-align: right; }
+
+/* ── finds to review, hidden ────────────────────────────────── */
+.admin-stale { display: flex; flex-direction: column; gap: 6px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.admin-stale__top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.admin-stale__kind { font-family: var(--font); font-size: 20px; font-weight: 700; }
+
+.admin-hidden {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+.admin-hidden + .admin-hidden { border-top: 0; }
+.admin-hidden__kind { font-family: var(--font); font-size: 18px; color: var(--ink-soft); }
+.admin-hidden__meta { flex: 1 1 160px; }
+
+/* ── below 768px: one line and the way back ─────────────────── */
+.admin-narrow {
+    position: fixed;
+    inset: 0;
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: 48px 28px;
+    background: var(--paper);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    text-align: left;
+}
+.admin-narrow__title {
+    margin: 0;
+    font-family: var(--font);
+    font-size: 28px;
+    line-height: 1.15;
+    font-weight: 700;
+}
+.admin-narrow .admin-btn { min-height: 44px; font-size: 17px; }

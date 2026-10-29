@@ -8,8 +8,11 @@ import ResetPassword from './ResetPassword.jsx';
 import { RESET_PATH, takeResetToken } from './utils/resetToken.js';
 import { registerServiceWorker } from './registerServiceWorker.js';
 import { MOBILE_QUERY } from './utils/breakpoints.js';
+import { isAdminPath } from './utils/adminView.js';
 
 const Map = React.lazy(() => import('./map.jsx'));
+// The admin command center: its own chunk, so visitors never download it.
+const AdminPage = React.lazy(() => import('./components/AdminPage.jsx'));
 
 // Main App component to coordinate between Sidebar and Map
 class App extends Component {
@@ -137,6 +140,12 @@ if (window.location.pathname === RESET_PATH) {
     storage: window.sessionStorage,
   });
   root.render(<ResetPassword token={resetToken} />);
+} else if (isAdminPath(window.location.pathname)) {
+  root.render(
+    <Suspense fallback={<main className="admin-page" aria-busy="true" />}>
+      <AdminPage />
+    </Suspense>,
+  );
 } else {
   root.render(<App />);
 }
