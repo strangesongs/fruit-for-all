@@ -15,8 +15,13 @@ import {
   agoLabel, whenLabel, shortDate, todayLabel, countsLine, reportCountLabel, whoLabel,
   activityWords, reasonTag, hiddenReasonLabel, handledSummary,
 } from '../utils/adminView.js';
+import { seasonCoverage } from '../utils/seasonCoverage.js';
 
 const goToMap = () => window.location.replace('/');
+
+// From the code, not the database: what fruitSeasons.js has, and what was checked.
+let coverage = null;
+const getCoverage = () => (coverage ||= seasonCoverage());
 
 function Rule({ thick }) {
   return (
@@ -352,6 +357,51 @@ export default class AdminPage extends Component {
     );
   }
 
+  renderSeasonData() {
+    const c = getCoverage();
+    const widest = Math.max(...c.families.map((f) => f.checked + f.unchecked + f.none));
+    const missing = c.families.filter((f) => f.none > 0).sort((a, b) => b.none - a.none);
+    return (
+      <section className="admin-section" aria-labelledby="seasons">
+        {this.renderSectionHead('season data', '', 'seasons')}
+        <p className="admin-season__lead">
+          {c.total} kinds: <strong>{c.checked}</strong> with months checked against a source,{' '}
+          <strong>{c.unchecked}</strong> with months not yet checked, <strong>{c.none}</strong> with no months (“season varies”).
+        </p>
+        <div className="admin-season__legend" aria-hidden="true">
+          <span><i className="admin-season__key admin-season__key--checked" />checked</span>
+          <span><i className="admin-season__key admin-season__key--unchecked" />not checked</span>
+          <span><i className="admin-season__key admin-season__key--none" />no months</span>
+        </div>
+        <ul className="admin-season__rows">
+          {c.families.map((f) => (
+            <li
+              key={f.id}
+              className="admin-season__row"
+              aria-label={`${f.label}: ${f.checked} checked, ${f.unchecked} not checked, ${f.none} with no months`}
+            >
+              <span className="admin-season__label">{f.label}</span>
+              <span className="admin-season__bar" aria-hidden="true">
+                <span className="admin-season__seg admin-season__seg--checked" style={{ flexGrow: f.checked }} />
+                <span className="admin-season__seg admin-season__seg--unchecked" style={{ flexGrow: f.unchecked }} />
+                <span className={`admin-season__seg${f.none ? ' admin-season__seg--none' : ''}`} style={{ flexGrow: f.none }} />
+                <span className="admin-season__seg" style={{ flexGrow: widest - f.checked - f.unchecked - f.none }} />
+              </span>
+              <span className="admin-muted admin-small admin-season__nums" aria-hidden="true">{f.checked} · {f.unchecked} · {f.none}</span>
+            </li>
+          ))}
+        </ul>
+        {missing.length > 0 && <h3 className="admin-subhead">no months yet, by family</h3>}
+        {missing.map((f) => (
+          <p className="admin-season__missing" key={f.id}>
+            <strong>{f.label} ({f.none})</strong> <span>{f.noMonths.join(', ')}</span>
+          </p>
+        ))}
+        <p className="admin-muted admin-small">sources and notes: docs/season-sources.md</p>
+      </section>
+    );
+  }
+
   render() {
     const { narrow, status, error, data } = this.state;
     if (narrow) {
@@ -385,6 +435,7 @@ export default class AdminPage extends Component {
               </div>
               <div className="admin-col">
                 {this.renderReview()}
+                {this.renderSeasonData()}
               </div>
             </div>
           )}

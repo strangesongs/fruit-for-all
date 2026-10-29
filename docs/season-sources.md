@@ -38,6 +38,8 @@ Where the months in `client/utils/fruitSeasons.js` come from. The file was first
 
 ## Status by entry
 
+The checked rows (verified, changed, bloom) are mirrored in `client/utils/seasonSources.js`, which the command center's season-data section counts. Change both together: `tests/client/seasonSources.test.js` fails when they disagree, or when an entry with months has no row here.
+
 | Entry | Status |
 |---|---|
 | loquat | verified · S1, S4 (Mar–Jun) |
