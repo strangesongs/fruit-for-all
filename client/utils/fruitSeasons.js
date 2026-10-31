@@ -1549,24 +1549,36 @@ export const FRUIT_SEASONS = {
   },
 };
 
+/** How far (in whole zones) a kind's months may be borrowed from a neighbouring zone. */
+export const BORROW_LIMIT = 1;
+
 /**
- * Months (1–12) a kind is in season in a USDA zone. A zone the kind doesn't list
- * borrows the nearest listed zone's months. Null for a kind with no season data,
- * or for anything that isn't a kind name and a zone number.
+ * A kind's season in a USDA zone: { months, zone, borrowed }, or null.
+ * `zone` is the zone the months are listed for. A zone the kind doesn't list
+ * borrows the nearest listed zone's months when it's at most BORROW_LIMIT away
+ * (`borrowed: true`); further than that the season isn't known (null), and the
+ * popup says "season varies". Null too for a kind with no season data, or for
+ * anything that isn't a kind name and a zone number.
  * @param {string} fruitType
  * @param {number} zone
- * @returns {number[] | null}
  */
-export function getSeasonForZone(fruitType, zone) {
+export function getSeason(fruitType, zone) {
   if (typeof fruitType !== 'string') return null;
   const z = Number(zone);
   if (zone == null || !Number.isFinite(z)) return null;
   const fruit = FRUIT_SEASONS[fruitType.toLowerCase()];
   if (!fruit || !fruit.zones) return null;
-  if (fruit.zones[z]) return fruit.zones[z];
+  if (fruit.zones[z]) return { months: fruit.zones[z], zone: z, borrowed: false };
 
   const listed = Object.keys(fruit.zones).map(Number);
   if (listed.length === 0) return null;
   const closest = listed.reduce((prev, curr) => (Math.abs(curr - z) < Math.abs(prev - z) ? curr : prev));
-  return fruit.zones[closest] || null;
+  if (Math.abs(closest - z) > BORROW_LIMIT) return null;
+  return { months: fruit.zones[closest], zone: closest, borrowed: true };
+}
+
+/** Just the months of getSeason(), or null. */
+export function getSeasonForZone(fruitType, zone) {
+  const season = getSeason(fruitType, zone);
+  return season ? season.months : null;
 }

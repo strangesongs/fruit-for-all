@@ -68,6 +68,12 @@ describe('findSummary', () => {
     assert.match(findSummary(fig, 2).description, /^fig, in season .+ here\./);
     assert.doesNotMatch(findSummary(fig, 2).description, /now/);
   });
+  test('borrowed months say whose zone, not "here"', () => {
+    // a fig in zone 11 (Miami) uses zone 10's months
+    const miami = { ...fig, zone: 11, coordinates: { lat: 25.77, lng: -80.19 } };
+    assert.match(findSummary(miami, 8).description, /^fig, in season now \(jun – oct, zone 10 timing\)\./);
+    assert.match(findSummary(miami, 2).description, /^fig, in season jun – oct \(zone 10 timing\)\./);
+  });
   test('no season data, no notes', () => {
     const s = findSummary({ ...fig, fruitType: 'carob', fruitTypeDisplay: 'carob', notes: '' }, 8);
     assert.equal(s.description, 'carob, season varies. a find on the map of free fruit growing in public.');
