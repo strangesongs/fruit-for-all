@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 
-import { getSeasonDisplay } from '../utils/fruitSeasons.js';
 import { familyOf, familyLabel, markSvg } from '../utils/fruitFamilies.js';
 import { seasonMonthsFor, seasonRangeText, zoneOf } from '../utils/pinSummary.js';
 import { API_BASE } from '../utils/config.js';
@@ -206,11 +205,9 @@ export default function PinPopup({
   const zone = zoneOf(pin);
   const seasonMonths = seasonMonthsFor(pin.fruitType, zone);
   const inSeason = seasonMonths ? seasonMonths.includes(currentMonth) : null;
-  const display = pin.fruitType ? getSeasonDisplay(pin.fruitType) : null;
-  const generalSeason = display && display !== 'Unknown season' ? display.toLowerCase() : null;
   const seasonText = seasonMonths
     ? `${seasonRangeText(seasonMonths)} here${zone ? ` (zone ${zone})` : ''}`
-    : generalSeason || 'season varies';
+    : 'season varies';
   const seasonSet = new Set(seasonMonths || []);
 
   const freshness = freshnessText(confirmations);
