@@ -34,3 +34,6 @@ temp/
 
 # Ignore mockups (UI prototypes, not for commit)
 mockups/
+
+# undo files from scripts/rezone-finds.mjs
+rezone-undo-*.json
