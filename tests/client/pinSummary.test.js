@@ -34,6 +34,14 @@ describe('seasonRangeText', () => {
     assert.equal(seasonRangeText([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]), 'all year');
     assert.equal(seasonRangeText([]), '');
   });
+  test('a season in two parts names both', () => {
+    // oyster mushroom, zone 9: spring and fall flushes
+    assert.equal(seasonRangeText([3, 4, 5, 10, 11]), 'mar – may, oct – nov');
+    // surinam cherry, zone 10: seven months in two crops is not "most of the year"
+    assert.equal(seasonRangeText([3, 4, 5, 6, 9, 10, 11]), 'mar – jun, sep – nov');
+    assert.equal(seasonRangeText([2, 3, 4, 11]), 'feb – apr, nov');
+    assert.equal(seasonRangeText([12, 1, 6, 7]), 'jun – jul, dec – jan');
+  });
 });
 
 describe('distance helpers', () => {

@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { logoSvg } from './utils/logo.js';
 import { getAuthHeader, getUser, clearAuth, saveAuth, isAuthenticated, isAdmin, handleUnauthorized, SESSION_EXPIRED_EVENT } from './utils/auth.js';
-import { FRUIT_SEASONS, getSeasonStatus } from './utils/fruitSeasons.js';
 import { API_BASE } from './utils/config.js';
 import { getTinyScreenGuestAuthState } from './utils/sidebarState.js';
 import { familyLabel, markSvg } from './utils/fruitFamilies.js';
@@ -606,34 +605,6 @@ export default class Sidebar extends React.Component {
 
     collapse = () => {
         this.setState({ isCollapsed: true, guestBarOpen: false, isMobileBarOpen: false, shelfFolded: true });
-    };
-
-    getSeasonLabel = () => {
-        const month = new Date().getMonth() + 1;
-        const inSeason = new Set();
-        for (const [fruit, data] of Object.entries(FRUIT_SEASONS)) {
-            const inAnyZone = Object.values(data.zones || {}).some(months => months.includes(month));
-            if (inAnyZone) inSeason.add(fruit);
-        }
-        if (inSeason.has('loquat')) return 'loquat season';
-        if (inSeason.has('cherry') || inSeason.has('apricot')) return 'stone fruit season';
-        if (inSeason.has('peach') || inSeason.has('plum')) return 'summer harvest';
-        if (inSeason.has('fig') || inSeason.has('blackberry') || inSeason.has('mulberry')) return 'fig & berry season';
-        if (inSeason.has('apple') || inSeason.has('pear')) return 'fall harvest';
-        if (inSeason.has('orange') || inSeason.has('grapefruit') || inSeason.has('tangerine')) return 'citrus season';
-        return 'something is always in season';
-    };
-
-    getInSeasonFruits = () => {
-        const month = new Date().getMonth() + 1;
-        return (this.state.availableFruitTypes || [])
-            .filter(fruit => {
-                const data = FRUIT_SEASONS[fruit.toLowerCase()];
-                if (!data) return false;
-                return Object.values(data.zones || {}).some(months => months.includes(month));
-            })
-            .slice(0, 3)
-            .map(fruit => ({ name: fruit, status: getSeasonStatus(fruit, month) }));
     };
 
     handleNearestGoodBet = () => {
@@ -1241,7 +1212,6 @@ export default class Sidebar extends React.Component {
                 showAbout, isForgotMode, forgotEmail, forgotLoading, forgotError, forgotSuccess,
                 pinCount } = this.state;
         const currentUser = getUser();
-        const inSeasonFruits = this.getInSeasonFruits();
 
         return (
             <>

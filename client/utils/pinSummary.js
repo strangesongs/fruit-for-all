@@ -36,28 +36,29 @@ export function zoneOf(pin) {
  */
 export function ripenessOf(pin, month) {
   const key = String(pin?.fruitType || '').toLowerCase();
-  const data = FRUIT_SEASONS[key];
-  if (!data) return 'unknown';
-  const zone = zoneOf(pin);
-  const months = zone ? getSeasonForZone(key, zone) : null;
-  if (months) return months.includes(month) ? 'ripe' : 'quiet';
-  const anyZone = Object.values(data.zones || {}).some((m) => m.includes(month));
-  return anyZone ? 'ripe' : 'quiet';
+  if (!FRUIT_SEASONS[key]) return 'unknown';
+  const months = getSeasonForZone(key, zoneOf(pin));
+  return months && months.includes(month) ? 'ripe' : 'quiet';
 }
 
-/** "sep – nov", "nov – feb", "most of the year", or '' for a list of months. */
+/**
+ * "sep – nov", "nov – feb", "mar – may, oct – nov", "most of the year", "all year",
+ * or '' for a list of months. A season in two parts names both.
+ */
 export function seasonRangeText(months) {
   if (!Array.isArray(months) || months.length === 0) return '';
   if (months.length >= 10) return 'all year';
-  if (months.length > 6) return 'most of the year';
   const set = new Set(months);
-  // Start = a month whose predecessor isn't in season (handles nov–feb wraparound).
-  const start = months.find((m) => !set.has(m === 1 ? 12 : m - 1)) ?? months[0];
-  let end = start;
-  while (set.has(end === 12 ? 1 : end + 1) && (end === 12 ? 1 : end + 1) !== start) {
-    end = end === 12 ? 1 : end + 1;
-  }
-  return start === end ? MONTH_ABBR[start - 1] : `${MONTH_ABBR[start - 1]} – ${MONTH_ABBR[end - 1]}`;
+  const next = (m) => (m === 12 ? 1 : m + 1);
+  // A run starts at a month whose predecessor isn't in season (handles nov – feb).
+  const starts = [...set].filter((m) => !set.has(m === 1 ? 12 : m - 1)).sort((a, b) => a - b);
+  if (starts.length === 0) return 'all year';
+  if (starts.length === 1 && set.size > 6) return 'most of the year';
+  return starts.map((start) => {
+    let end = start;
+    while (set.has(next(end)) && next(end) !== start) end = next(end);
+    return start === end ? MONTH_ABBR[start - 1] : `${MONTH_ABBR[start - 1]} – ${MONTH_ABBR[end - 1]}`;
+  }).join(', ');
 }
 
 /** Great-circle distance in miles. */
