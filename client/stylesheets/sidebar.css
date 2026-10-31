@@ -166,27 +166,6 @@ html, body {
     transform: translate(3px, 3px) !important;
 }
 
-.saved-pins, .ready-fruit {
-    margin-bottom: 12px;
-    flex: 0 0 auto;
-    text-align: center;
-}
-
-.saved-pins h4, .ready-fruit h4 {
-    margin-bottom: 6px;
-    font-size: 0.9rem;
-    color: var(--red);
-}
-
-.dropdown-header {
-    cursor: pointer;
-    user-select: none;
-}
-
-.dropdown-header:hover {
-    color: var(--red-dark);
-}
-
 ul {
     padding-left: 0;
     margin: 0;
@@ -337,13 +316,6 @@ button.auth-submit-btn:disabled {
     align-items: center;
     gap: 4px;
     line-height: 1.3;
-}
-
-.auth-card-divider {
-    width: 60%;
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 8px auto;
 }
 
 /* Primary action link — register / login toggle */
@@ -605,215 +577,6 @@ button.toggle-link {
     font-size: 0.9rem;
 }
 
-.notes-popup-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1100;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.notes-popup {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    border: 2px solid #ccc;
-    max-width: 400px;
-    width: 90%;
-    max-height: min(80dvh, calc(var(--app-viewport-height) - 24px));
-    overflow-y: auto;
-}
-
-.notes-popup h4 {
-    margin-top: 0;
-    color: var(--red);
-    font-size: 0.9rem;
-}
-
-.notes-popup textarea {
-    width: 100%;
-    min-height: 120px;
-    padding: 8px;
-    border: 2px inset var(--border);
-    font-size: 0.8rem;
-    resize: vertical;
-    box-sizing: border-box;
-}
-
-.popup-buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-    justify-content: flex-end;
-}
-
-.popup-buttons button {
-    width: auto;
-    min-width: 60px;
-}
-
-/* Add Fruit Popup Styles */
-.add-fruit-popup-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6);
-    z-index: 1100;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.add-fruit-popup {
-    background-color: white;
-    padding: 0;
-    border-radius: 8px;
-    border: 2px solid #e0e0e0;
-    max-width: 400px;
-    width: 90%;
-    max-height: min(80dvh, calc(var(--app-viewport-height) - 24px));
-    overflow-y: auto;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.popup-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 5px 12px;
-    border-bottom: 1px solid var(--border);
-    background-color: var(--card);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
-    border-radius: 6px 6px 0 0;
-}
-
-.popup-header h4 {
-    margin: 0;
-    color: var(--red);
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-button.close-btn {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: var(--text-muted);
-    padding: 0;
-    width: auto;
-    margin: 0;
-    line-height: 1;
-}
-
-button.close-btn:hover {
-    color: var(--text);
-}
-
-.popup-content {
-    padding: 6px 12px;
-}
-
-.popup-section {
-    margin-bottom: 4px;
-}
-
-.popup-section label {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--red);
-    margin-bottom: 4px;
-    font-weight: 600;
-    text-align: left;
-}
-
-.popup-section input,
-.popup-section textarea {
-    width: 100%;
-    padding: 8px 10px;
-    border: 2px solid var(--border);
-    font-family: inherit;
-    font-size: 0.9rem;
-    box-sizing: border-box;
-    border-radius: 4px;
-    background: #fafafa;
-    transition: all 0.2s ease;
-}
-
-.popup-section input:focus,
-.popup-section textarea:focus {
-    outline: none;
-    border-color: var(--red);
-    background-color: white;
-}
-
-.popup-section textarea {
-    resize: vertical;
-    min-height: 80px;
-}
-
-.location-btn {
-    display: block;
-    width: 100% !important;
-    margin: 0 0 6px !important;
-}
-
-.location-display {
-    background-color: #fafafa;
-    padding: 8px 10px;
-    border: 2px solid #e0e0e0;
-    border-radius: 4px;
-    text-align: left;
-    margin-top: 6px;
-}
-
-.location-display small {
-    color: var(--text);
-    font-weight: normal;
-}
-
-.popup-footer {
-    display: flex;
-    gap: 8px;
-    padding: 5px 12px;
-    border-top: 1px solid var(--border);
-    background-color: var(--card);
-    border-radius: 0 0 6px 6px;
-    justify-content: flex-end;
-}
-
-/* Secondary actions: ink outline on paper, like "still good?" (no fill, no block) */
-.popup-footer .btn.cancel-btn {
-    background: transparent;
-    color: var(--text);
-    border: 1.5px solid var(--text);
-    border-radius: 2px;
-    box-shadow: none;
-    padding: 10px 14px;
-    font-family: inherit;
-    font-size: 0.9rem;
-    cursor: pointer;
-}
-
-.popup-footer .btn.cancel-btn:hover {
-    background: var(--card-hover);
-    color: var(--text);
-    box-shadow: none;
-}
-
-.popup-footer .btn.cancel-btn:active {
-    background: var(--card-press);
-    box-shadow: none;
-    transform: none;
-}
-
 /* Hamburger menu button */
 .hamburger-btn {
     position: absolute;
@@ -914,111 +677,23 @@ button.close-btn:hover {
         width: 48px;
         height: 48px;
     }
-    
-    .add-fruit-popup {
-        max-width: 90%;
-        width: 90%;
-    }
-    
-    .popup-header h4 {
-        font-size: 0.9rem;
-    }
-    
+
     .popup-content {
         padding: 10px 12px;
     }
-    
-    .popup-section label {
-        font-size: 0.75rem;
-    }
-    
-    .popup-section input,
-    .popup-section textarea {
-        font-size: 0.85rem;
-        padding: 6px 8px;
-    }
-    
-    .popup-footer {
-        padding: 6px 12px;
-    }
-    
+
     .header-section p:first-child {
         font-size: 1rem;
     }
-    
+
     .header-section p:nth-child(2) {
         font-size: 0.8rem;
     }
-    
+
     .btn {
         font-size: 0.8rem;
         padding: 6px 10px;
     }
-}
-
-/* Fruit type autocomplete */
-.fruit-autocomplete-wrapper {
-    position: relative;
-}
-
-.fruit-suggestions {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: white;
-    border: 1px solid #ddd;
-    border-top: none;
-    border-radius: 0 0 4px 4px;
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 10;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    text-align: left;
-}
-
-.fruit-suggestions li {
-    border-bottom: 1px solid #f0f0f0;
-    margin: 0;
-}
-
-.fruit-suggestions li:last-child {
-    border-bottom: none;
-}
-
-.fruit-suggestion-btn {
-    width: 100%;
-    background: transparent;
-    border: none;
-    padding: 8px 12px;
-    font-size: 0.85rem;
-    color: var(--text);
-    cursor: pointer;
-    text-align: left;
-    font-family: inherit;
-}
-
-.fruit-suggestion-btn:hover,
-.fruit-suggestion-btn:focus-visible,
-.fruit-suggestion-active {
-    background-color: var(--card-hover);
-    color: var(--red);
-}
-
-.fruit-suggestion-btn:focus-visible {
-    outline: 2px solid var(--red);
-    outline-offset: -2px;
-}
-
-.fruit-not-found {
-    font-size: 0.75rem;
-    color: #aaa;
-    font-style: italic;
-    margin: 4px 0 0 0;
-    text-align: left;
 }
 
 @media (max-width: 480px) {
@@ -1027,7 +702,7 @@ button.close-btn:hover {
         top: 10px;
         left: 10px;
     }
-    
+
     .sidebar.collapsed {
         width: 50px;
         height: 50px;
@@ -1042,11 +717,7 @@ button.close-btn:hover {
         width: 44px;
         height: 44px;
     }
-    
-    .add-fruit-popup {
-        max-width: 95%;
-        width: 95%;
-    }
+
 }
 
 /* ── Jelly Star / sub-360px: bottom-sheet sidebar ────────────────────────── */
@@ -1135,28 +806,6 @@ button.close-btn:hover {
     .fruit-filter-select {
         font-size: 0.75rem;
         padding: 5px 6px;
-    }
-
-    .fruit-suggestions {
-        max-height: 140px;
-    }
-
-    .fruit-suggestions li {
-        margin: 0;
-    }
-
-    .fruit-suggestion-btn {
-        padding: 5px 8px;
-        font-size: 0.75rem;
-    }
-
-    /* Popups fit full width and full available height */
-    .add-fruit-popup,
-    .notes-popup {
-        width: calc(100% - 16px);
-        max-width: calc(100% - 16px);
-        max-height: min(92dvh, calc(var(--app-viewport-height) - 16px));
-        border-radius: 8px;
     }
 }
 
@@ -1385,22 +1034,6 @@ button.close-btn:hover {
     font-family: var(--font);
 }
 
-.guest-bar-sub {
-    font-size: 0.82rem;
-    color: var(--text-muted);
-    margin: 2px 0 0;
-    line-height: 1.3;
-    font-family: var(--font);
-    animation: subtextFadeIn 0.5s ease;
-}
-
-.guest-bar-inline-kicker {
-    margin: 4px 0 0;
-    font-size: 0.76rem;
-    line-height: 1.35;
-    color: var(--text-muted);
-}
-
 @keyframes subtextFadeIn {
     from { opacity: 0; transform: translateY(2px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -1538,12 +1171,6 @@ button.auth-submit-btn.guest-bar-btn {
     padding: 6px 18px 22px;
 }
 
-.auth-bar-actions {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-}
-
 button.auth-bar-action-btn {
     flex: 1;
     background: var(--fig);
@@ -1580,65 +1207,11 @@ button.auth-bar-action-btn.btn-active {
     transform: translate(3px, 3px);
 }
 
-.auth-bar-filter {
-    margin-bottom: 10px;
-}
-
 /* ── Guest bar landing card ──────────────────────────────────────────────── */
 
 .guest-bar-landing {
     padding: 0 16px 6px;
 }
-
-.guest-bar-landing-kicker {
-    color: var(--text-muted);
-    display: block;
-    font-family: var(--font);
-    font-size: 0.75rem;
-    font-style: italic;
-    letter-spacing: 0.02em;
-    margin-bottom: 2px;
-}
-
-.guest-bar-landing-count {
-    color: var(--red-dark);
-    font-size: 0.88rem;
-    font-weight: 600;
-    line-height: 1.2;
-    margin: 0 0 7px;
-}
-
-.guest-bar-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-bottom: 8px;
-}
-
-.guest-bar-chip {
-    align-items: center;
-    background: rgba(247, 242, 228, 0.92);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    color: var(--text);
-    display: inline-flex;
-    font-family: var(--font);
-    font-size: 0.72rem;
-    gap: 5px;
-    padding: 3px 7px;
-    white-space: nowrap;
-}
-
-.guest-bar-chip-dot {
-    border-radius: 50%;
-    display: inline-block;
-    flex-shrink: 0;
-    height: 6px;
-    width: 6px;
-}
-
-.guest-bar-chip-dot--green { background: var(--olive); }
-.guest-bar-chip-dot--amber { background: var(--citron); }
 
 button.guest-bar-bet-btn {
     background: var(--fig); /* same ink as the popup's "directions" */
@@ -1666,14 +1239,6 @@ button.guest-bar-bet-btn:hover  {
 button.guest-bar-bet-btn:active {
     box-shadow: 0 0 0 var(--persimmon);
     transform: translate(3px, 3px); /* pressed onto the block */
-}
-
-.guest-bar-orchard {
-    color: var(--text-muted);
-    font-size: 0.72rem;
-    font-style: italic;
-    margin: 5px 0 8px;
-    text-align: center;
 }
 
 /* ── Jelly Star compact count stat ───────────────────────────────────────── */
@@ -1705,32 +1270,6 @@ button.guest-bar-bet-btn:active {
     font-weight: 600;
     line-height: 1.2;
     margin: 0 0 8px;
-}
-
-/* ── "in this view" live viewport ticker (standard mobile guest bar) ─────── */
-
-.guest-bar-view-ticker {
-    color: var(--red-dark);
-    font-size: 0.88rem;
-    font-weight: 600;
-    line-height: 1.3;
-    margin: 0 0 7px;
-    animation: viewTickerFade 0.45s ease;
-}
-
-.guest-bar-view-label {
-    color: var(--text-muted);
-    font-size: 0.68rem;
-    font-style: italic;
-    font-weight: 400;
-    letter-spacing: 0.02em;
-    margin-right: 2px;
-    text-transform: lowercase;
-}
-
-@keyframes viewTickerFade {
-    from { opacity: 0.2; transform: translateY(1px); }
-    to   { opacity: 1;   transform: translateY(0); }
 }
 
 /* ── Standard mobile bar: grab handle, actions row, readability ──────────── */
@@ -1805,15 +1344,10 @@ button.bar-handle:focus-visible {
 /* Standard phones only (361–768px): readable text and no iOS focus-zoom */
 @media (min-width: 361px) and (max-width: 768px) {
     .guest-bar-form .form-group input,
-    .add-fruit-popup input,
-    .add-fruit-popup textarea,
     .guest-bar .fruit-filter-select {
         font-size: 16px; /* iOS Safari zooms the page on focus below 16px */
     }
 
-    .guest-bar-chip,
-    .guest-bar-orchard,
-    .guest-bar-view-label,
     .guest-bar-expanded-kicker {
         font-size: 0.75rem; /* 12px floor */
     }
@@ -1825,12 +1359,6 @@ button.bar-handle:focus-visible {
 }
 
 /* Short landscape phones: keep the bar to a single row */
-@media (min-width: 361px) and (max-width: 768px) and (max-height: 500px) {
-    .guest-bar-landing .guest-bar-chips,
-    .guest-bar-landing .guest-bar-orchard {
-        display: none;
-    }
-}
 
 /* ══ WEC redesign (Oct 2026): standard-mobile bar header + tabs ══════════════ */
 
