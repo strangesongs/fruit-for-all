@@ -23,7 +23,7 @@ import { FRUIT_LIST } from '../client/utils/fruitList.js';
 import { withinNudge, NUDGE_LIMIT_M } from '../client/utils/findPlacement.js';
 import { validatePinInput, validatePinUpdate } from '../server/schemas/validation.js';
 import { containsProfanity } from '../server/utils/profanity.js';
-import { detectZoneFallback } from '../client/utils/zoneFallback.js';
+import { zoneAt } from '../server/schemas/zone.js';
 import { isPinId, validateReport, reportReasonLabel } from '../client/utils/findLinks.js';
 import { findPageHtml } from '../server/utils/findPage.js';
 
@@ -78,7 +78,7 @@ function addPin(data) {
     submittedBy: data.submittedBy,
     geoHash: '',
     status: 'active',
-    zone: detectZoneFallback(data.coordinates.lat, data.coordinates.lng),
+    zone: zoneAt(data.coordinates.lat, data.coordinates.lng),
     confirmations: data.confirmations || [],
   };
   pins.set(pin.pinId, pin);
@@ -214,7 +214,7 @@ app.patch('/api/pins/:pinId', (req, res) => {
   if (fruitType !== undefined) { pin.fruitType = fruitType.trim().toLowerCase(); pin.fruitTypeDisplay = pin.fruitType; }
   if (coordinates !== undefined) {
     pin.coordinates = { lat: coordinates.lat, lng: coordinates.lng };
-    pin.zone = detectZoneFallback(coordinates.lat, coordinates.lng);
+    pin.zone = zoneAt(coordinates.lat, coordinates.lng);
   }
   pin.updatedAt = new Date().toISOString();
   record(pin, 'edited', user.userName, [notes !== undefined && 'notes', fruitType !== undefined && 'kind', coordinates !== undefined && 'spot'].filter(Boolean));

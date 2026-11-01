@@ -24,7 +24,7 @@ import { PinsQueryError } from '../errors.js';
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const isUuid = (id) => typeof id === 'string' && UUID_RE.test(id);
 
-// Tests swap this to keep phzmapi.com out of them.
+// Tests swap this to pin a zone without the ZIP table.
 let zoneFor = detectZone;
 export function setZoneDetectorForTests(fn) {
   zoneFor = fn || detectZone;
