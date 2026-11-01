@@ -9,6 +9,8 @@ import {
   buildViewSummary,
   lookForHints,
   zoneOf,
+  seasonInfoFor,
+  seasonLine,
 } from '../../client/utils/pinSummary.js';
 
 const pin = (fruitType, lat, lng, extra = {}) => ({
@@ -22,6 +24,25 @@ describe('ripenessOf', () => {
   });
   test('fruit without season data is unknown, not quiet', () => {
     assert.equal(ripenessOf(pin('plutonium', 34, -118), 10), 'unknown');
+  });
+  test('a zone too far from any listed one is unknown too', () => {
+    // loquat lists zones 7–10; zone 5 is two away
+    assert.equal(ripenessOf(pin('loquat', 44, -93, { zone: 5 }), 5), 'unknown');
+    // zone 11 borrows zone 10 (mar – jun)
+    assert.equal(ripenessOf(pin('loquat', 25.7, -80.2, { zone: 11 }), 4), 'ripe');
+  });
+});
+
+describe('seasonLine', () => {
+  test('local months say "here" and the zone', () => {
+    assert.equal(seasonLine(seasonInfoFor('loquat', 10), 10), 'mar – jun here (zone 10)');
+  });
+  test('borrowed months name the zone they come from, never "here"', () => {
+    assert.equal(seasonLine(seasonInfoFor('loquat', 11), 11), 'mar – jun (zone 10 timing)');
+  });
+  test('nothing known → empty', () => {
+    assert.equal(seasonInfoFor('loquat', 5), null);
+    assert.equal(seasonLine(null, 5), '');
   });
 });
 

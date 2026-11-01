@@ -1,16 +1,21 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { FRUIT_SEASONS, getSeasonForZone } from '../../client/utils/fruitSeasons.js';
+import { FRUIT_SEASONS, getSeason, getSeasonForZone, BORROW_LIMIT } from '../../client/utils/fruitSeasons.js';
 
 describe('getSeasonForZone', () => {
   test('a listed zone gives its own months', () => {
     assert.deepEqual(getSeasonForZone('loquat', 10), FRUIT_SEASONS.loquat.zones[10]);
     assert.deepEqual(getSeasonForZone('Loquat', 9), FRUIT_SEASONS.loquat.zones[9]);
   });
-  test('an unlisted zone borrows the nearest listed one', () => {
+  test('an unlisted zone borrows from one zone away, and says so', () => {
     // loquat lists zones 7–10
-    assert.deepEqual(getSeasonForZone('loquat', 11), FRUIT_SEASONS.loquat.zones[10]);
-    assert.deepEqual(getSeasonForZone('loquat', 5), FRUIT_SEASONS.loquat.zones[7]);
+    assert.deepEqual(getSeason('loquat', 11), { months: FRUIT_SEASONS.loquat.zones[10], zone: 10, borrowed: true });
+    assert.deepEqual(getSeason('loquat', 6), { months: FRUIT_SEASONS.loquat.zones[7], zone: 7, borrowed: true });
+    assert.deepEqual(getSeason('loquat', 9), { months: FRUIT_SEASONS.loquat.zones[9], zone: 9, borrowed: false });
+  });
+  test(`further than ${BORROW_LIMIT} zone away the season isn't known`, () => {
+    assert.equal(getSeason('loquat', 5), null);
+    assert.equal(getSeasonForZone('loquat', 13), null);
   });
   test('a zone given as a string still works', () => {
     assert.deepEqual(getSeasonForZone('loquat', '10'), FRUIT_SEASONS.loquat.zones[10]);

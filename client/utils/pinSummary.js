@@ -1,6 +1,6 @@
 // Pure helpers behind the bar's "in season / almanac / nearest" tabs, the pin rings
 // and the catalog-entry popup. No DOM, no React — unit-tested in tests/client.
-import { FRUIT_SEASONS, getSeasonForZone } from './fruitSeasons.js';
+import { FRUIT_SEASONS, getSeason, getSeasonForZone } from './fruitSeasons.js';
 import { familyOf } from './fruitFamilies.js';
 import { detectZoneFallback } from './zoneFallback.js';
 
@@ -12,10 +12,24 @@ export const MONTH_NAMES = [
 
 /** Season months (1–12) for a pin: its zone's months, else null. */
 export function seasonMonthsFor(fruitType, zone) {
+  const info = seasonInfoFor(fruitType, zone);
+  return info ? info.months : null;
+}
+
+/**
+ * { months, zone, borrowed } for a kind at a zone (see getSeason), else null.
+ * `borrowed` means the months are a neighbouring zone's: say so ("zone 10 timing").
+ */
+export function seasonInfoFor(fruitType, zone) {
   if (!fruitType || !zone) return null;
-  const key = String(fruitType).toLowerCase();
-  if (!FRUIT_SEASONS[key]) return null;
-  return getSeasonForZone(key, zone);
+  return getSeason(String(fruitType).toLowerCase(), zone);
+}
+
+/** "mar – jun here (zone 10)" or, for borrowed months, "mar – jun (zone 10 timing)". */
+export function seasonLine(info, zone) {
+  if (!info || !info.months || !info.months.length) return '';
+  const range = seasonRangeText(info.months);
+  return info.borrowed ? `${range} (zone ${info.zone} timing)` : `${range} here${zone ? ` (zone ${zone})` : ''}`;
 }
 
 /**
@@ -31,14 +45,16 @@ export function zoneOf(pin) {
 
 /**
  * 'ripe' (in season) | 'quiet' | 'unknown' for a pin this month, using zoneOf(pin).
- * Kinds with no season data (many herbs and greens) are 'unknown' and drawn like
- * in season — we don't know they aren't.
+ * 'unknown' = no months for this kind at this zone (no season data, or only for
+ * zones too far away to borrow). The map draws it like 'quiet' and the counts,
+ * shelf and nearest leave it out: we don't claim a season we don't know.
  */
 export function ripenessOf(pin, month) {
   const key = String(pin?.fruitType || '').toLowerCase();
   if (!FRUIT_SEASONS[key]) return 'unknown';
   const months = getSeasonForZone(key, zoneOf(pin));
-  return months && months.includes(month) ? 'ripe' : 'quiet';
+  if (!months) return 'unknown';
+  return months.includes(month) ? 'ripe' : 'quiet';
 }
 
 /**

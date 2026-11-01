@@ -1460,7 +1460,7 @@ class Map extends Component {
                                     (t, c) => (c.timestamp && c.timestamp > t ? c.timestamp : t), pin.createdAt || '');
                                 const isStale = isOlderThanMonths(lastSeen, 6);
                                 const ripeness = ripenessOf(pin, month);
-                                const state = isMyPin ? 'mine' : (ripeness === 'quiet' ? 'quiet' : 'ripe');
+                                const state = isMyPin ? 'mine' : (ripeness === 'ripe' ? 'ripe' : 'quiet'); // no known season = quiet
                                 const markerIcon = pinIcon(familyOf(pin.fruitType), state, isStale);
                                 return (
                                     <Marker 
