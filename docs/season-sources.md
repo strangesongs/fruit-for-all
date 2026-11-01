@@ -34,7 +34,23 @@ Where the months in `client/utils/fruitSeasons.js` come from. The file was first
 
 - Stone fruit, apples, pears, cherries and grapes. Dave Wilson's harvest charts (Fresno/Hickman) are images and didn't extract, so each crop still needs a text source.
 - Berries, nuts (other than macadamia and olive), mushrooms, wild greens, and the 13 leaf-harvest medicinal plants.
-- Zones 3–9 for everything.
+- Zones 3–9 for everything; zones 12–13 (Hawaii, Puerto Rico) have nothing yet.
+
+## Zone 11 (Nov 2026)
+
+On the 2023 USDA map, zone 11a is a thin strip: Santa Monica, Venice, downtown San Diego and Point Loma in California, and Miami in Florida. The places next to it are 10b: Culver City, Torrance, Long Beach, Encinitas, Mission Valley, and Homestead, where UF/IFAS TREC (S8) is. Neighbours a few miles apart fruit at the same time, so zone 11 uses zone 10's months **only for entries whose zone-10 source covers those places**:
+
+- Southern California coast or coastal counties: S1/S4 (CRFG; Tom Spellman, a Southern California nurseryman), S2 (cherimoya: "coastal and foothill areas of southern California"), S6 (UCCE Ventura County), S7 + S16 (citrus: UCCE Riverside, corroborated by Food Forward's LA, Ventura and Santa Barbara harvest seasons), S11 (macadamia: San Diego County), S12 + S16 (persimmon), S13 + S16 (pomegranate), S14 (Long Beach).
+- Miami-Dade: S8 (UF/IFAS, Homestead), S9 (Morton, Miami).
+
+Zone 11 months: <!-- zone11:start -->avocado, banana, cherimoya, clementine, coconut, dragon fruit, feijoa, fig, grapefruit, guava, jackfruit, kumquat, lemon, longan, loquat, lychee, macadamia, mandarin, mango, orange, papaya, passion fruit, persimmon, pomegranate, sapote, soursop, starfruit, surinam cherry<!-- zone11:end -->.
+
+Everything else still borrows zone 10's months and is labelled "(zone 10 timing)":
+- unchecked entries (their zone-10 months have no source yet);
+- checked entries whose source is statewide or inland only: mulberry (S15), olive (S10);
+- crops that need winter chill and barely fruit on the immediate coast: pawpaw, pluot (S4).
+
+Caveat: the Californian sources stand for California's 11a, and S8/S9 for Miami's. Where they would differ (for example figs or citrus in Miami), California wins, as it does for zone 10 (see "Scope and method").
 
 ## Status by entry
 

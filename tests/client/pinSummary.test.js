@@ -28,8 +28,8 @@ describe('ripenessOf', () => {
   test('a zone too far from any listed one is unknown too', () => {
     // loquat lists zones 7–10; zone 5 is two away
     assert.equal(ripenessOf(pin('loquat', 44, -93, { zone: 5 }), 5), 'unknown');
-    // zone 11 borrows zone 10 (mar – jun)
-    assert.equal(ripenessOf(pin('loquat', 25.7, -80.2, { zone: 11 }), 4), 'ripe');
+    // mulberry has no zone 11 months: it borrows zone 10's (apr – jul)
+    assert.equal(ripenessOf(pin('mulberry', 25.7, -80.2, { zone: 11 }), 5), 'ripe');
   });
 });
 
@@ -38,7 +38,7 @@ describe('seasonLine', () => {
     assert.equal(seasonLine(seasonInfoFor('loquat', 10), 10), 'mar – jun here (zone 10)');
   });
   test('borrowed months name the zone they come from, never "here"', () => {
-    assert.equal(seasonLine(seasonInfoFor('loquat', 11), 11), 'mar – jun (zone 10 timing)');
+    assert.equal(seasonLine(seasonInfoFor('mulberry', 11), 11), 'apr – jul (zone 10 timing)');
   });
   test('nothing known → empty', () => {
     assert.equal(seasonInfoFor('loquat', 5), null);

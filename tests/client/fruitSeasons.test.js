@@ -9,9 +9,10 @@ describe('getSeasonForZone', () => {
   });
   test('an unlisted zone borrows from one zone away, and says so', () => {
     // loquat lists zones 7–10
-    assert.deepEqual(getSeason('loquat', 11), { months: FRUIT_SEASONS.loquat.zones[10], zone: 10, borrowed: true });
+    assert.deepEqual(getSeason('mulberry', 11), { months: FRUIT_SEASONS.mulberry.zones[10], zone: 10, borrowed: true });
     assert.deepEqual(getSeason('loquat', 6), { months: FRUIT_SEASONS.loquat.zones[7], zone: 7, borrowed: true });
     assert.deepEqual(getSeason('loquat', 9), { months: FRUIT_SEASONS.loquat.zones[9], zone: 9, borrowed: false });
+    assert.deepEqual(getSeason('loquat', 11), { months: FRUIT_SEASONS.loquat.zones[11], zone: 11, borrowed: false });
   });
   test(`further than ${BORROW_LIMIT} zone away the season isn't known`, () => {
     assert.equal(getSeason('loquat', 5), null);
