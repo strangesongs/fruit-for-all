@@ -85,7 +85,7 @@ export default class Sidebar extends React.Component {
             // Standard-mobile bar tab: 'ripe' | 'almanac' | 'nearest'
             barTab: 'ripe',
 
-            // Season shelf (landing b2, behind ?landing=shelf, signed out only).
+            // Season shelf (landing b2): the default for signed-out phones; ?landing=bar opts out.
             // The map sends it (ffa:shelf): see utils/seasonShelf.js.
             shelf: null,
             shelfAnchor: { kind: 'none', city: null },
@@ -1359,7 +1359,7 @@ export default class Sidebar extends React.Component {
         const { authenticated, guestAddAttempted, isLoginMode, authUserName, authPassword, authEmail, authLoading, authError, isTinyScreen, isStandardMobile } = this.state;
         const currentUser = getUser();
 
-        // Season shelf (?landing=shelf): the signed-out landing on phones and the Jelly.
+        // Season shelf: the signed-out landing on phones and the Jelly (?landing=bar opts out).
         const shelf = this._shelfOn && !authenticated;
 
         // Tiny screen (Jelly Star ≤360px): always use the mobile panel layout

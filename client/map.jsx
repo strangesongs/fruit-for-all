@@ -436,7 +436,7 @@ class Map extends Component {
             pinFlySeq: 0,        // Increments on each pin click to reliably trigger pan
             spotlightPin: null,  // Coords of pin whose popup should open after pan
             spotlightSeq: 0,     // Increments to trigger OpenPopupOnPin
-            // Season shelf (?landing=shelf, signed out): where it's measured from.
+            // Season shelf (signed-out phones and Jelly; ?landing=bar turns it off): where it's measured from.
             // { lat, lng, kind: 'approx' | 'precise' | 'area', city }
             shelfAnchor: null,
             showSearchArea: false,
@@ -1333,7 +1333,9 @@ class Map extends Component {
         const inViewCount = vb ? filteredPins.filter(p => p.coordinates
             && p.coordinates.lat >= vb.minLat && p.coordinates.lat <= vb.maxLat
             && p.coordinates.lng >= vb.minLng && p.coordinates.lng <= vb.maxLng).length : filteredPins.length;
-        const shelfMode = this._shelfOn && !currentUsername;
+        // The shelf only exists on phones and the Jelly; desktop keeps its empty-area card.
+        const shelfMode = this._shelfOn && !currentUsername
+            && (typeof window === 'undefined' || window.innerWidth <= MOBILE_MAX);
         const showEmpty = !adding && !shelfMode && !loading && !error && !showMyPinsOnly && vb && inViewCount === 0 && fruitFilter === 'all';
         let emptyHints = [];
         if (showEmpty) {

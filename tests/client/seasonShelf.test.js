@@ -102,20 +102,26 @@ describe('readShelfFlag', () => {
     const m = new Map();
     return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, v), removeItem: (k) => m.delete(k) };
   };
-  test('?landing=shelf turns it on and remembers; ?landing=bar turns it off', () => {
+  test('on by default; ?landing=bar turns it off and remembers; ?landing=shelf undoes that', () => {
     const s = mem();
-    assert.equal(readShelfFlag('', s), false);
-    assert.equal(readShelfFlag('?landing=shelf', s), true);
-    assert.equal(s.getItem(SHELF_FLAG_KEY), 'shelf');
     assert.equal(readShelfFlag('', s), true);
     assert.equal(readShelfFlag('?landing=bar', s), false);
+    assert.equal(s.getItem(SHELF_FLAG_KEY), 'bar');
     assert.equal(readShelfFlag('', s), false);
+    assert.equal(readShelfFlag('?landing=shelf', s), true);
+    assert.equal(s.getItem(SHELF_FLAG_KEY), null);
+    assert.equal(readShelfFlag('', s), true);
+  });
+  test('a "shelf" stored from the opt-in days still reads as on', () => {
+    const s = mem();
+    s.setItem(SHELF_FLAG_KEY, 'shelf');
+    assert.equal(readShelfFlag('', s), true);
   });
   test('works without storage', () => {
-    assert.equal(readShelfFlag('?landing=shelf', null), true);
-    assert.equal(readShelfFlag('', null), false);
+    assert.equal(readShelfFlag('?landing=bar', null), false);
+    assert.equal(readShelfFlag('', null), true);
     const throwing = { getItem() { throw new Error('blocked'); }, setItem() { throw new Error('blocked'); }, removeItem() {} };
-    assert.equal(readShelfFlag('?landing=shelf', throwing), true);
-    assert.equal(readShelfFlag('', throwing), false);
+    assert.equal(readShelfFlag('?landing=bar', throwing), false);
+    assert.equal(readShelfFlag('', throwing), true);
   });
 });
