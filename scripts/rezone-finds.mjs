@@ -32,7 +32,7 @@ const target = describeDatabaseUrl(url);
 console.log(`[rezone] database ${target}`);
 const writing = has('--write') || has('--undo');
 if (writing && valueOf('--to') !== target) {
-  console.error(`[rezone] to write, repeat the target: --to ${target}`);
+  console.error(`[rezone] to write, repeat the target:\n  node scripts/rezone-finds.mjs ${has('--undo') ? `--undo ${valueOf('--undo')}` : '--write'} --to ${target}`);
   process.exit(2);
 }
 
@@ -67,7 +67,7 @@ try {
     for (const u of unknown) console.log(`  ${u.pinId}  ${String(u.kind).padEnd(16)}  zone ${u.from ?? '–'}: no ZIP centre nearby, unchanged`);
 
     if (!has('--write')) {
-      console.log(changes.length ? `[rezone] dry run. To apply: --write --to ${target}` : '[rezone] nothing to do');
+      console.log(changes.length ? `[rezone] dry run. To apply, run:\n  node scripts/rezone-finds.mjs --write --to ${target}` : '[rezone] nothing to do');
     } else if (changes.length) {
       const undoFile = `rezone-undo-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
       writeFileSync(undoFile, JSON.stringify({ database: target, at: new Date().toISOString(), changes }, null, 2));
