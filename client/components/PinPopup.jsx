@@ -42,6 +42,14 @@ function storageKey(pinId) {
   return `loquat_confirmed_${pinId}`;
 }
 
+// The nearest ancestor that scrolls (the card on phones, or Leaflet's wrapper), or null.
+function scrollBoxOf(el) {
+  let box = el.parentElement;
+  while (box && box !== document.body && !(box.scrollHeight > box.clientHeight + 1
+    && /(auto|scroll)/.test(getComputedStyle(box).overflowY))) box = box.parentElement;
+  return box && box !== document.body ? box : null;
+}
+
 export default function PinPopup({
   pin,
   isMyPin,
@@ -139,13 +147,27 @@ export default function PinPopup({
   useEffect(() => {
     if (reportState !== 'open' || !reportRef.current) return;
     const form = reportRef.current;
-    let box = form.parentElement;
-    while (box && box !== document.body && !(box.scrollHeight > box.clientHeight + 1
-      && /(auto|scroll)/.test(getComputedStyle(box).overflowY))) box = box.parentElement;
-    if (!box || box === document.body) return;
+    const box = scrollBoxOf(form);
+    if (!box) return;
     const top = form.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop - 8;
     box.scrollTo({ top, behavior: 'smooth' });
   }, [reportState === 'open']);
+
+  // "delete this … for good?" replaces the edit/delete row at the very bottom of the
+  // card; on a phone that's below the card's max-height, so its buttons were cut off.
+  // Scroll the card until the whole question and its buttons (and any error) show.
+  const deleteAskRef = useRef(null);
+  useEffect(() => {
+    if (deleteState !== 'ask' || !deleteAskRef.current) return undefined;
+    const frame = requestAnimationFrame(() => {
+      const ask = deleteAskRef.current;
+      const box = ask && scrollBoxOf(ask);
+      if (!box) return;
+      const over = ask.getBoundingClientRect().bottom - box.getBoundingClientRect().bottom + 8;
+      if (over > 0) box.scrollTo({ top: box.scrollTop + over, behavior: 'smooth' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [deleteState, deleteError]);
 
   const handleShare = useCallback(async () => {
     if (!pin) return;
@@ -356,7 +378,7 @@ export default function PinPopup({
             <button type="button" className="btn delete-pin-btn" onClick={() => setTimeout(() => setDeleteState('ask'), 0)}>delete</button>
           </div>
         ) : (
-          <div className="pin-actions pin-actions--confirm" role="group" aria-label="delete this find?">
+          <div className="pin-actions pin-actions--confirm" role="group" aria-label="delete this find?" ref={deleteAskRef}>
             <p className="pin-delete-ask">delete this {fruit} for good?</p>
             <button type="button" className="btn delete-pin-btn delete-pin-btn--confirm" disabled={deleteState === 'busy'}
               onClick={async () => {
