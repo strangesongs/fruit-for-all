@@ -6,6 +6,7 @@ export const FRUIT_SEASONS = {
   // Stone Fruits
   loquat: {
     zones: {
+      11: [3, 4, 5, 6],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [3, 4, 5, 6],           // Southern California, South Florida
       9: [4, 5, 6, 7],            // Northern California, Gulf Coast
       8: [5, 6, 7],               // Pacific Northwest, Mid-Atlantic
@@ -15,6 +16,7 @@ export const FRUIT_SEASONS = {
   
   fig: {
     zones: {
+      11: [6, 7, 8, 9, 10],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [6, 7, 8, 9, 10],       // Two crops in warm zones
       9: [7, 8, 9],               
       8: [7, 8, 9],
@@ -65,6 +67,7 @@ export const FRUIT_SEASONS = {
   // Citrus (mostly warm zones)
   orange: {
     zones: {
+      11: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], // navels Jan–Apr, then Valencias
       9: [12, 1, 2, 3, 4],
       8: [1, 2, 3],               // Limited areas
@@ -73,6 +76,7 @@ export const FRUIT_SEASONS = {
   
   lemon: {
     zones: {
+      11: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],  // Year-round
       9: [1, 2, 3, 4, 10, 11, 12],
       8: [1, 2, 11, 12],
@@ -81,6 +85,7 @@ export const FRUIT_SEASONS = {
   
   grapefruit: {
     zones: {
+      11: [12, 1, 2, 3, 4, 5, 6],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [12, 1, 2, 3, 4, 5, 6],
       9: [1, 2, 3, 4],
     }
@@ -102,6 +107,7 @@ export const FRUIT_SEASONS = {
   
   kumquat: {
     zones: {
+      11: [10, 11, 12, 1, 2, 3],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [10, 11, 12, 1, 2, 3],
       9: [12, 1, 2, 3],
       8: [1, 2],
@@ -186,6 +192,7 @@ export const FRUIT_SEASONS = {
   // Tropical/Subtropical
   avocado: {
     zones: {
+      11: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], // Hass Jan–Oct; Fuerte, Bacon, Zutano Nov–Mar
       9: [3, 4, 5, 6, 7, 8],
     }
@@ -193,6 +200,7 @@ export const FRUIT_SEASONS = {
   
   guava: {
     zones: {
+      11: [8, 9, 10, 11],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [8, 9, 10, 11],
       9: [9, 10],
     }
@@ -200,12 +208,14 @@ export const FRUIT_SEASONS = {
   
   mango: {
     zones: {
+      11: [5, 6, 7, 8, 9, 10],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [5, 6, 7, 8, 9, 10],           // Tropical zones only
     }
   },
   
   pomegranate: {
     zones: {
+      11: [9, 10, 11],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [9, 10, 11],
       9: [9, 10, 11],
       8: [9, 10],
@@ -214,6 +224,7 @@ export const FRUIT_SEASONS = {
   
   persimmon: {
     zones: {
+      11: [10, 11, 12],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [10, 11, 12],
       9: [10, 11, 12],
       8: [10, 11],
@@ -269,6 +280,7 @@ export const FRUIT_SEASONS = {
   
   'passion fruit': {
     zones: {
+      11: [5, 6, 7, 8, 9, 10, 11, 12],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [5, 6, 7, 8, 9, 10, 11, 12],
       9: [7, 8, 9],
     }
@@ -395,6 +407,7 @@ export const FRUIT_SEASONS = {
 
   clementine: {
     zones: {
+      11: [12, 1, 2],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [12, 1, 2],
       9: [12, 1, 2, 3],
     }
@@ -402,6 +415,7 @@ export const FRUIT_SEASONS = {
 
   mandarin: {
     zones: {
+      11: [11, 12, 1, 2, 3, 4, 5],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [11, 12, 1, 2, 3, 4, 5],
       9: [12, 1, 2, 3],
       8: [1, 2],
@@ -426,6 +440,7 @@ export const FRUIT_SEASONS = {
   // Tropical / subtropical (extended)
   banana: {
     zones: {
+      11: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
       9: [6, 7, 8, 9, 10],
     }
@@ -439,6 +454,7 @@ export const FRUIT_SEASONS = {
 
   cherimoya: {
     zones: {
+      11: [10, 11, 12, 1, 2, 3, 4, 5],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [10, 11, 12, 1, 2, 3, 4, 5],
       9: [12, 1, 2],
     }
@@ -446,12 +462,14 @@ export const FRUIT_SEASONS = {
 
   'dragon fruit': {
     zones: {
+      11: [6, 7, 8, 9, 10, 11],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [6, 7, 8, 9, 10, 11],
     }
   },
 
   feijoa: {
     zones: {
+      11: [10, 11, 12],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [10, 11, 12],
       9: [10, 11],
       8: [10, 11],
@@ -460,6 +478,7 @@ export const FRUIT_SEASONS = {
 
   jackfruit: {
     zones: {
+      11: [5, 6, 7, 8, 9, 10],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [5, 6, 7, 8, 9, 10],
     }
   },
@@ -472,18 +491,21 @@ export const FRUIT_SEASONS = {
 
   longan: {
     zones: {
+      11: [7, 8],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [7, 8],
     }
   },
 
   lychee: {
     zones: {
+      11: [5, 6, 7],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [5, 6, 7],
     }
   },
 
   papaya: {
     zones: {
+      11: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
     }
   },
@@ -496,24 +518,28 @@ export const FRUIT_SEASONS = {
 
   sapote: {
     zones: {
+      11: [10, 11, 12, 1, 2, 3],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [10, 11, 12, 1, 2, 3],
     }
   },
 
   soursop: {
     zones: {
+      11: [6, 7, 8, 9],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [6, 7, 8, 9],
     }
   },
 
   starfruit: {
     zones: {
+      11: [6, 7, 8, 9, 10, 11, 12, 1, 2, 3],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [6, 7, 8, 9, 10, 11, 12, 1, 2, 3],
     }
   },
 
   'surinam cherry': {
     zones: {
+      11: [3, 4, 5, 6, 9, 10, 11],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [3, 4, 5, 6, 9, 10, 11],       // Two crops per year
     }
   },
@@ -546,6 +572,7 @@ export const FRUIT_SEASONS = {
 
   macadamia: {
     zones: {
+      11: [11, 12, 1, 2, 3, 4, 5],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [11, 12, 1, 2, 3, 4, 5],
     }
   },
@@ -647,6 +674,7 @@ export const FRUIT_SEASONS = {
   // Other (extended)
   coconut: {
     zones: {
+      11: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],  // = zone 10: its source covers 11a places (docs/season-sources.md, zone 11)
       10: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
     }
   },

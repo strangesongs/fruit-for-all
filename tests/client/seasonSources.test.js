@@ -31,6 +31,17 @@ describe('season sources', () => {
     assert.deepEqual(SEASON_CHECKS, fromDoc);
   });
 
+  test('zone 11 months: exactly the entries the doc lists, each a copy of zone 10, each checked', () => {
+    const listed = doc.slice(doc.indexOf('<!-- zone11:start -->') + 21, doc.indexOf('<!-- zone11:end -->'))
+      .split(',').map((k) => k.trim()).sort();
+    const withEleven = Object.keys(FRUIT_SEASONS).filter((k) => FRUIT_SEASONS[k].zones[11]).sort();
+    assert.deepEqual(withEleven, listed);
+    for (const k of listed) {
+      assert.deepEqual(FRUIT_SEASONS[k].zones[11], FRUIT_SEASONS[k].zones[10], k);
+      assert.ok(SEASON_CHECKS[k] && SEASON_CHECKS[k].how !== 'bloom', `${k} must be checked`);
+    }
+  });
+
   test('every checked entry has months; every status is one of three', () => {
     for (const [kind, c] of Object.entries(SEASON_CHECKS)) {
       assert.ok(FRUIT_SEASONS[kind], kind);
