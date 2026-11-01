@@ -31,12 +31,54 @@ Where the months in `client/utils/fruitSeasons.js` come from. The file was first
 | S16 | Food Forward (LA gleaning nonprofit): best fruit trees for a SoCal backyard harvest — <https://foodforward.org/blog/best-fruit-trees-southern-california-backyard-harvest/> |
 | S17 | Philadelphia Orchard Project: harvest guide 2025 (public community orchards, Philadelphia, zone 7b) — <https://www.phillyorchards.org/wp-content/uploads/2025/09/POP-Harvest-Guide-2025.pdf> |
 | S18 | Penn State Extension: harvest calendar (Pennsylvania, zones 6a–7b) — <https://extension.psu.edu/harvest-calendar> |
+| S19 | Hertz, *Growing Stone Fruits*, AG-FS-1125, University of Minnesota Extension (1987) — <https://conservancy.umn.edu/server/api/core/bitstreams/8820a245-27b6-404d-a8cb-ac7126d74630/content> |
+| S20 | Craig R. Miller, *Fabulous Fruits for Front Range Gardeners* (Cherry Creek Valley / Denver metro, zone 6a; variety ripening times, 2019) — <https://cpnmd.specialdistrict.org/files/2a25c76de/FabulousFruitsforFrontRangeGardeners2019.pdf> |
+| S21 | University of Illinois Extension: What's in Season (northern Illinois farmers market calendar) — <https://extension.illinois.edu/sites/default/files/cjmmwhatsinseason.pdf> |
+| S22 | Iowa State University Extension: harvesting and storing tree fruit — <https://yardandgarden.extension.iastate.edu/how-to/harvesting-and-storing-tree-fruit> |
+| S23 | Hertz & Brown, *Minnesota's Wild and Edible Fruits*, FS-1133-A, University of Minnesota Extension (2000) — <https://conservancy.umn.edu/server/api/core/bitstreams/ff9feee6-de42-45c2-92ff-88bc8730b34c/content> |
 
 ## Still to do
 
 - Stone fruit, apples, pears, cherries and grapes. Dave Wilson's harvest charts (Fresno/Hickman) are images and didn't extract, so each crop still needs a text source.
 - Berries, nuts (other than macadamia and olive), mushrooms, wild greens, and the 13 leaf-harvest medicinal plants.
-- Zones 3–6 and 8–9 for everything (zone 7: 21 entries done, see below); zones 12–13 (Hawaii, Puerto Rico) have nothing yet.
+- Zones 3–4 and 8–9 for everything (zones 5–7: done for the common fruit, see below); zones 12–13 (Hawaii, Puerto Rico) have nothing yet.
+
+## Zone 5 (Nov 2026)
+
+University of Minnesota Extension (S19, S23) and Iowa State (S22). Minneapolis–St Paul and most of Iowa are 5a–5b on the 2023 map. S23 covers wild fruit; it's used where street trees and shrubs are the same species or close kin (wild plum, juneberry/serviceberry, gooseberry, grape). Zone 4 is not changed: northern Minnesota fruits a week or two later, and no source gives months for it.
+
+| Entry | Zone 5 months | Source |
+|---|---|---|
+| apple | 9, 10 | S22 · Jonathan mid–late Sep, Red Delicious late Sep–early Oct |
+| apricot | 7, 8 | S19 · Jul–Aug (new) |
+| sour cherry | 7, 8 | S19 · Jul–Aug (was Jul) |
+| plum | 8, 9 | S19 · Aug–Sep, wild plum too (S23) (new) |
+| gooseberry | 7, 8 | S23 · Jul–Aug |
+| serviceberry | 6, 7 | S23 · juneberry, late Jun–Jul (new) |
+| grape | 9, 10 | S23 · wild grape Sep–Oct (new) |
+
+Zone 5 checked: <!-- zone5:start -->apple, apricot, sour cherry, plum, gooseberry, serviceberry, grape<!-- zone5:end -->.
+
+## Zone 6 (Nov 2026)
+
+Two sources from 6a cities that agree with each other: S20, variety ripening times for the Denver metro (Front Range), and S21, University of Illinois Extension's northern Illinois market calendar (Chicago is 6a–6b). Months follow the varieties people plant, early to late; "(new)" means the entry had no zone 6 months before. Not checked: currant and gooseberry (no months given), and anything neither source covers.
+
+| Entry | Zone 6 months | Source |
+|---|---|---|
+| apple | 9, 10 | S20, S21 · Denver Gala Sep – Red Delicious early Oct; northern Illinois Aug–early Nov |
+| apricot | 7, 8 | S20 · Moongold mid Jul, Moorpark Jul–Aug, Sungold Aug (new) |
+| cherry | 7 | S20 · Stella late Jul |
+| sour cherry | 6, 7 | S20, S21 · Northstar end of Jun, Montmorency Jun–early Jul; Illinois late Jun (was Jul) |
+| plum | 8, 9 | S20 · Mount Royal mid Aug – Stanley late Sep |
+| pear | 8, 9, 10 | S20, S21 · Summercrisp early Aug – Anjou Sep; Illinois Aug–mid Oct (was Sep–Oct) |
+| peach | 7, 8 | S20 · Reliance late Jul – Elberta mid Aug |
+| grape | 8, 9 | S20, S21 · Reliance Aug – Concord late Sep; Illinois late Aug–late Sep (new) |
+| raspberry | 7, 8, 9, 10 | S20, S21 · summer Jul; fall-bearing Aug to frost (was Jul–Aug) |
+| blackberry | 7, 8 | S20, S21 · Denver mid Jul; Illinois late Jul–mid Aug |
+| blueberry | 7, 8 | S21 · late Jun–late Aug |
+| strawberry | 6 | S20, S21 · June-bearing; Illinois late May–Jun (new) |
+
+Zone 6 checked: <!-- zone6:start -->apple, apricot, cherry, sour cherry, plum, pear, peach, grape, raspberry, blackberry, blueberry, strawberry<!-- zone6:end -->.
 
 ## Zone 7 (Nov 2026)
 

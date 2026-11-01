@@ -30,7 +30,7 @@ export const FRUIT_SEASONS = {
       9: [6, 7, 8],
       8: [7, 8],
       7: [7, 8],  // Philadelphia 7b (docs/season-sources.md, zone 7)
-      6: [7, 8],
+      6: [7, 8],  // Denver, northern Illinois (docs/season-sources.md, zone 6)
     }
   },
   
@@ -40,7 +40,8 @@ export const FRUIT_SEASONS = {
       9: [6, 7, 8],
       8: [7, 8],
       7: [8, 9],  // Philadelphia 7b (docs/season-sources.md, zone 7)
-      6: [8, 9],
+      6: [8, 9],  // Denver, northern Illinois (docs/season-sources.md, zone 6)
+      5: [8, 9],  // Minnesota, Iowa (docs/season-sources.md, zone 5)
     }
   },
   
@@ -50,7 +51,7 @@ export const FRUIT_SEASONS = {
       9: [5, 6, 7],
       8: [6, 7],
       7: [6, 7],  // Philadelphia 7b (docs/season-sources.md, zone 7)
-      6: [7],
+      6: [7],  // Denver, northern Illinois (docs/season-sources.md, zone 6)
       5: [6, 7],                 // Door County WI, Traverse City MI area
     }
   },
@@ -61,6 +62,8 @@ export const FRUIT_SEASONS = {
       9: [6, 7],
       8: [6, 7],
       7: [7],  // Philadelphia 7b (docs/season-sources.md, zone 7)
+      6: [7, 8],  // Denver, northern Illinois (docs/season-sources.md, zone 6)
+      5: [7, 8],  // Minnesota, Iowa (docs/season-sources.md, zone 5)
     }
   },
   
@@ -121,8 +124,8 @@ export const FRUIT_SEASONS = {
       9: [8, 9, 10],
       8: [9, 10],
       7: [9, 10],  // Philadelphia 7b (docs/season-sources.md, zone 7)
-      6: [9, 10],
-      5: [9, 10],
+      6: [9, 10],  // Denver, northern Illinois (docs/season-sources.md, zone 6)
+      5: [9, 10],  // Minnesota, Iowa (docs/season-sources.md, zone 5)
     }
   },
   
@@ -132,7 +135,7 @@ export const FRUIT_SEASONS = {
       9: [8, 9, 10],
       8: [8, 9, 10],
       7: [9, 10],  // Philadelphia 7b (docs/season-sources.md, zone 7)
-      6: [9, 10],
+      6: [8, 9, 10],  // Denver, northern Illinois (docs/season-sources.md, zone 6)
       5: [9, 10],
     }
   },
@@ -144,7 +147,7 @@ export const FRUIT_SEASONS = {
       9: [6, 7, 8],
       8: [6, 7, 8],
       7: [7, 8],  // Philadelphia 7b (docs/season-sources.md, zone 7)
-      6: [7, 8],
+      6: [7, 8],  // Denver, northern Illinois (docs/season-sources.md, zone 6)
       5: [7, 8],
     }
   },
@@ -155,7 +158,7 @@ export const FRUIT_SEASONS = {
       9: [6, 7, 8],
       8: [6, 7, 8],
       7: [6, 7, 9, 10],  // Philadelphia 7b (docs/season-sources.md, zone 7)
-      6: [7, 8],
+      6: [7, 8, 9, 10],  // Denver, northern Illinois (docs/season-sources.md, zone 6)
       5: [7, 8],
     }
   },
@@ -166,6 +169,7 @@ export const FRUIT_SEASONS = {
       9: [4, 5, 6],
       8: [5, 6, 7],
       7: [6, 7],
+      6: [6],  // Denver, northern Illinois (docs/season-sources.md, zone 6)
     }
   },
   
@@ -175,7 +179,7 @@ export const FRUIT_SEASONS = {
       9: [6, 7, 8],
       8: [6, 7, 8],
       7: [7, 8],  // Philadelphia 7b (docs/season-sources.md, zone 7)
-      6: [7, 8],
+      6: [7, 8],  // Denver, northern Illinois (docs/season-sources.md, zone 6)
       5: [7, 8, 9],              // Michigan, Maine highbush blueberry
     }
   },
@@ -266,6 +270,8 @@ export const FRUIT_SEASONS = {
       9: [8, 9, 10],
       8: [9, 10],
       7: [9, 10],  // Philadelphia 7b (docs/season-sources.md, zone 7)
+      6: [8, 9],  // Denver, northern Illinois (docs/season-sources.md, zone 6)
+      5: [9, 10],  // Minnesota, Iowa (docs/season-sources.md, zone 5)
     }
   },
   
@@ -361,6 +367,7 @@ export const FRUIT_SEASONS = {
       8: [6, 7],
       7: [6, 7],
       6: [6, 7],
+      5: [6, 7],  // Minnesota, Iowa (docs/season-sources.md, zone 5)
     }
   },
 
@@ -370,8 +377,8 @@ export const FRUIT_SEASONS = {
       9: [6, 7],
       8: [6, 7],
       7: [6, 7],
-      6: [7],
-      5: [7],                    // Traverse City MI, Wisconsin
+      6: [6, 7],  // Denver, northern Illinois (docs/season-sources.md, zone 6)
+      5: [7, 8],  // Minnesota, Iowa (docs/season-sources.md, zone 5)
     }
   },
 
@@ -650,7 +657,7 @@ export const FRUIT_SEASONS = {
       8: [7, 8],
       7: [7],  // Philadelphia 7b (docs/season-sources.md, zone 7)
       6: [7, 8],
-      5: [7, 8],
+      5: [7, 8],  // Minnesota, Iowa (docs/season-sources.md, zone 5)
     }
   },
 
