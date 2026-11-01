@@ -20,7 +20,7 @@ export const FRUIT_SEASONS = {
       10: [6, 7, 8, 9, 10],       // Two crops in warm zones
       9: [7, 8, 9],               
       8: [7, 8, 9],
-      7: [8, 9],
+      7: [8, 9],  // Philadelphia 7b (docs/season-sources.md, zone 7)
     }
   },
   
@@ -29,7 +29,7 @@ export const FRUIT_SEASONS = {
       10: [5, 6, 7],
       9: [6, 7, 8],
       8: [7, 8],
-      7: [7, 8],
+      7: [7, 8],  // Philadelphia 7b (docs/season-sources.md, zone 7)
       6: [7, 8],
     }
   },
@@ -39,7 +39,7 @@ export const FRUIT_SEASONS = {
       10: [5, 6, 7],
       9: [6, 7, 8],
       8: [7, 8],
-      7: [7, 8, 9],
+      7: [8, 9],  // Philadelphia 7b (docs/season-sources.md, zone 7)
       6: [8, 9],
     }
   },
@@ -49,7 +49,7 @@ export const FRUIT_SEASONS = {
       10: [5, 6],                 // Early in warm zones
       9: [5, 6, 7],
       8: [6, 7],
-      7: [6, 7],
+      7: [6, 7],  // Philadelphia 7b (docs/season-sources.md, zone 7)
       6: [7],
       5: [6, 7],                 // Door County WI, Traverse City MI area
     }
@@ -60,7 +60,7 @@ export const FRUIT_SEASONS = {
       10: [5, 6],
       9: [6, 7],
       8: [6, 7],
-      7: [7],
+      7: [7],  // Philadelphia 7b (docs/season-sources.md, zone 7)
     }
   },
   
@@ -120,7 +120,7 @@ export const FRUIT_SEASONS = {
       10: [7, 8, 9],              // Early varieties in warm zones
       9: [8, 9, 10],
       8: [9, 10],
-      7: [9, 10],
+      7: [9, 10],  // Philadelphia 7b (docs/season-sources.md, zone 7)
       6: [9, 10],
       5: [9, 10],
     }
@@ -131,7 +131,7 @@ export const FRUIT_SEASONS = {
       10: [7, 8, 9],
       9: [8, 9, 10],
       8: [8, 9, 10],
-      7: [9, 10],
+      7: [9, 10],  // Philadelphia 7b (docs/season-sources.md, zone 7)
       6: [9, 10],
       5: [9, 10],
     }
@@ -143,7 +143,7 @@ export const FRUIT_SEASONS = {
       10: [5, 6, 7],
       9: [6, 7, 8],
       8: [6, 7, 8],
-      7: [7, 8],
+      7: [7, 8],  // Philadelphia 7b (docs/season-sources.md, zone 7)
       6: [7, 8],
       5: [7, 8],
     }
@@ -154,7 +154,7 @@ export const FRUIT_SEASONS = {
       10: [5, 6, 7],
       9: [6, 7, 8],
       8: [6, 7, 8],
-      7: [7, 8],
+      7: [6, 7, 9, 10],  // Philadelphia 7b (docs/season-sources.md, zone 7)
       6: [7, 8],
       5: [7, 8],
     }
@@ -174,7 +174,7 @@ export const FRUIT_SEASONS = {
       10: [5, 6, 7],
       9: [6, 7, 8],
       8: [6, 7, 8],
-      7: [7, 8],
+      7: [7, 8],  // Philadelphia 7b (docs/season-sources.md, zone 7)
       6: [7, 8],
       5: [7, 8, 9],              // Michigan, Maine highbush blueberry
     }
@@ -185,7 +185,7 @@ export const FRUIT_SEASONS = {
       10: [4, 5, 6, 7],
       9: [5, 6, 7],
       8: [6, 7],
-      7: [6, 7],
+      7: [7],  // Philadelphia 7b (docs/season-sources.md, zone 7)
     }
   },
   
@@ -228,7 +228,7 @@ export const FRUIT_SEASONS = {
       10: [10, 11, 12],
       9: [10, 11, 12],
       8: [10, 11],
-      7: [10, 11],
+      7: [10, 11],  // Philadelphia 7b (docs/season-sources.md, zone 7)
     }
   },
   
@@ -265,7 +265,7 @@ export const FRUIT_SEASONS = {
       10: [7, 8, 9],
       9: [8, 9, 10],
       8: [9, 10],
-      7: [9, 10],
+      7: [9, 10],  // Philadelphia 7b (docs/season-sources.md, zone 7)
     }
   },
   
@@ -274,7 +274,7 @@ export const FRUIT_SEASONS = {
       10: [10, 11],
       9: [10, 11],
       8: [10, 11],
-      7: [10, 11],
+      7: [9, 10],  // Philadelphia 7b (docs/season-sources.md, zone 7)
     }
   },
   
@@ -292,7 +292,7 @@ export const FRUIT_SEASONS = {
       10: [7, 8],
       9: [8, 9],
       8: [8, 9],
-      7: [9, 10],
+      7: [8, 9],  // Philadelphia 7b (docs/season-sources.md, zone 7)
       6: [9, 10],
     }
   },
@@ -331,7 +331,7 @@ export const FRUIT_SEASONS = {
       10: [9, 10],
       9: [9, 10],
       8: [9, 10],
-      7: [9, 10],
+      7: [9],  // Philadelphia 7b (docs/season-sources.md, zone 7)
       6: [9, 10],
     }
   },
@@ -350,7 +350,7 @@ export const FRUIT_SEASONS = {
       10: [9, 10],
       9: [10, 11],
       8: [10, 11],
-      7: [10, 11],
+      7: [9, 10],  // Philadelphia 7b (docs/season-sources.md, zone 7)
     }
   },
 
@@ -619,7 +619,7 @@ export const FRUIT_SEASONS = {
       10: [6, 7],
       9: [6, 7],
       8: [7, 8],
-      7: [7, 8],
+      7: [7],  // Philadelphia 7b (docs/season-sources.md, zone 7)
       6: [7, 8],
       5: [7, 8],
     }
@@ -638,7 +638,7 @@ export const FRUIT_SEASONS = {
       10: [8, 9],
       9: [8, 9],
       8: [8, 9],
-      7: [8, 9],
+      7: [8],  // Philadelphia 7b (docs/season-sources.md, zone 7)
       6: [8, 9],
     }
   },
@@ -648,7 +648,7 @@ export const FRUIT_SEASONS = {
       10: [6, 7],
       9: [6, 7],
       8: [7, 8],
-      7: [7, 8],
+      7: [7],  // Philadelphia 7b (docs/season-sources.md, zone 7)
       6: [7, 8],
       5: [7, 8],
     }
@@ -690,7 +690,7 @@ export const FRUIT_SEASONS = {
       10: [9, 10],
       9: [9, 10],
       8: [9, 10],
-      7: [10],
+      7: [8, 9],  // Philadelphia 7b (docs/season-sources.md, zone 7)
     }
   },
 
