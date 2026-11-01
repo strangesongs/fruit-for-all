@@ -1,7 +1,7 @@
 // A link per find (/find/<pinId>) and reports about a find. Shared by the client
 // (popup, map) and the server (the page's preview tags, the report route), so it
 // stays dependency-free apart from the pure season helpers. Unit-tested.
-import { seasonMonthsFor, seasonRangeText, zoneOf } from './pinSummary.js';
+import { seasonInfoFor, seasonRangeText, zoneOf } from './pinSummary.js';
 
 export const FIND_PATH_PREFIX = '/find/';
 const PIN_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -98,11 +98,15 @@ export function findSummary(pin, month) {
   if (!pin) return null;
   const kind = kindOf(pin);
   const zone = zoneOf(pin);
-  const months = seasonMonthsFor(plainText(pin.fruitType || ''), zone);
+  const info = seasonInfoFor(plainText(pin.fruitType || ''), zone);
+  const months = info ? info.months : null;
   let season;
   if (months && months.length) {
     const range = seasonRangeText(months);
-    season = months.includes(month) ? `in season now (${range} here)` : `in season ${range} here`;
+    // Borrowed months are a neighbouring zone's: say whose, never "here".
+    const timing = `zone ${info.zone} timing`;
+    if (months.includes(month)) season = info.borrowed ? `in season now (${range}, ${timing})` : `in season now (${range} here)`;
+    else season = info.borrowed ? `in season ${range} (${timing})` : `in season ${range} here`;
   } else {
     season = 'season varies';
   }
