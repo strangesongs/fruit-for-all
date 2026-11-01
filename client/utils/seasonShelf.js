@@ -110,8 +110,9 @@ export function shelfHeadText(anchor, monthName) {
   return `in season this ${monthName}`;
 }
 
-// ── The flag: ?landing=shelf turns the shelf on (and remembers it on this device);
-// ?landing=bar turns it back off. Signed-out visitors only.
+// ── The landing (owner, Oct 31): the shelf is the default for signed-out visitors on
+// phones and the Jelly. ?landing=bar switches this device back to the old bar (remembered);
+// ?landing=shelf undoes that. Signed-in views and desktop never show the shelf.
 export const SHELF_FLAG_KEY = 'ffa_landing';
 
 export function readShelfFlag(search, storage) {
@@ -119,19 +120,20 @@ export function readShelfFlag(search, storage) {
   try { param = new URLSearchParams(search || '').get('landing'); } catch { /* bad query */ }
   if (param === 'shelf' || param === 'bar') {
     try {
-      if (param === 'shelf') storage && storage.setItem(SHELF_FLAG_KEY, 'shelf');
+      if (param === 'bar') storage && storage.setItem(SHELF_FLAG_KEY, 'bar');
       else storage && storage.removeItem(SHELF_FLAG_KEY);
     } catch { /* private mode */ }
     return param === 'shelf';
   }
-  try { return !!storage && storage.getItem(SHELF_FLAG_KEY) === 'shelf'; } catch { return false; }
+  // 'shelf' left over from the opt-in days reads as on, like nothing stored.
+  try { return !(storage && storage.getItem(SHELF_FLAG_KEY) === 'bar'); } catch { return true; }
 }
 
 let cachedFlag = null;
 /** The flag for this page load (reads the URL and localStorage once). */
 export function shelfEnabled() {
   if (cachedFlag !== null) return cachedFlag;
-  if (typeof window === 'undefined') return false;
+  if (typeof window === 'undefined') return true;
   let storage = null;
   try { storage = window.localStorage; } catch { /* blocked */ }
   cachedFlag = readShelfFlag(window.location.search, storage);
