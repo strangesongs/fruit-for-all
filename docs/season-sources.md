@@ -29,12 +29,46 @@ Where the months in `client/utils/fruitSeasons.js` come from. The file was first
 | S14 | Pacific Horticulture: orchard trees of Rancho Los Cerritos, guavas — <https://pacifichorticulture.org/articles/orchard-trees-of-rancho-los-cerritos-guavas/> |
 | S15 | Dave Wilson Nursery: mulberries — <https://www.wheretobuy.davewilson.com/product-information/product/mulberries> |
 | S16 | Food Forward (LA gleaning nonprofit): best fruit trees for a SoCal backyard harvest — <https://foodforward.org/blog/best-fruit-trees-southern-california-backyard-harvest/> |
+| S17 | Philadelphia Orchard Project: harvest guide 2025 (public community orchards, Philadelphia, zone 7b) — <https://www.phillyorchards.org/wp-content/uploads/2025/09/POP-Harvest-Guide-2025.pdf> |
+| S18 | Penn State Extension: harvest calendar (Pennsylvania, zones 6a–7b) — <https://extension.psu.edu/harvest-calendar> |
 
 ## Still to do
 
 - Stone fruit, apples, pears, cherries and grapes. Dave Wilson's harvest charts (Fresno/Hickman) are images and didn't extract, so each crop still needs a text source.
 - Berries, nuts (other than macadamia and olive), mushrooms, wild greens, and the 13 leaf-harvest medicinal plants.
-- Zones 3–9 for everything; zones 12–13 (Hawaii, Puerto Rico) have nothing yet.
+- Zones 3–6 and 8–9 for everything (zone 7: 21 entries done, see below); zones 12–13 (Hawaii, Puerto Rico) have nothing yet.
+
+## Zone 7 (Nov 2026)
+
+The first zone checked outside Southern California. S17 is the main source: the Philadelphia Orchard Project's harvest guide. It's public community orchards in a 7b city, which is close to what the map's finds are. S18 (Penn State, statewide) agrees where it covers the same fruit; its windows are wider because they include early and late varieties. Each entry's zone 7 months below are set to S17's.
+
+Caveat: zone 7 also covers Nashville, Albuquerque and Salt Lake City, whose summers differ from Philadelphia's. Hardiness zones measure winter cold, not summer heat, so harvest timing within one zone can vary (see the seasonality review).
+
+| Entry | Zone 7 months | Source |
+|---|---|---|
+| apple | 9, 10 | S17, S18 · POP Sep–Oct; PSU late Jul–Oct (early kinds) |
+| apricot | 7 | S17 · Jul |
+| asian pear | 8, 9 | S17 · Aug–Sep (was Sep–Oct) |
+| blackberry | 7, 8 | S17 · Jul–Aug |
+| blueberry | 7, 8 | S17, S18 · POP Jul; PSU late Jul–mid Sep |
+| cherry | 6, 7 | S17, S18 · Jun–Jul |
+| currant | 7 | S17 · Jul (was Jul–Aug) |
+| elderberry | 8 | S17 · Aug (was Aug–Sep) |
+| fig | 8, 9 | S17 · Aug–Sep |
+| gooseberry | 7 | S17 · Jul (was Jul–Aug) |
+| grape | 9, 10 | S17, S18 · POP Sep–Oct; PSU mid Aug–Oct |
+| jujube | 8, 9 | S17 · Aug–Sep (was Oct) |
+| kiwi | 9, 10 | S17 · "kiwiberry" (hardy kiwi), Sep–Oct (was Oct–Nov) |
+| mulberry | 7 | S17 · Jul (was Jun–Jul) |
+| pawpaw | 9 | S17 · Sep (was Sep–Oct) |
+| peach | 7, 8 | S17, S18 · POP Jul–Aug; PSU mid Jul–mid Sep |
+| pear | 9, 10 | S17, S18 · POP Sep–Oct; PSU mid Aug–Oct |
+| persimmon | 10, 11 | S17 · Oct–Nov |
+| plum | 8, 9 | S17, S18 · POP Aug; PSU mid Aug–Sep (was Jul–Sep) |
+| quince | 9, 10 | S17 · Sep–Oct (was Oct–Nov) |
+| raspberry | 6, 7, 9, 10 | S17, S18 · summer crop Jun–Jul, fall crop Sep–Oct (was Jul–Aug) |
+
+Zone 7 checked: <!-- zone7:start -->apple, apricot, asian pear, blackberry, blueberry, cherry, currant, elderberry, fig, gooseberry, grape, jujube, kiwi, mulberry, pawpaw, peach, pear, persimmon, plum, quince, raspberry<!-- zone7:end -->.
 
 ## Zone 11 (Nov 2026)
 
