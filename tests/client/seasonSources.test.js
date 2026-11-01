@@ -42,13 +42,18 @@ describe('season sources', () => {
     }
   });
 
-  test('zone 7: the doc table and the data agree, and the marker list names the same entries', () => {
-    const sec = doc.slice(doc.indexOf('## Zone 7 ('), doc.indexOf('## Zone 11 ('));
-    const table = [...sec.matchAll(/^\| ([a-z' .-]+?) \| ([\d, ]+) \| /gm)].map(([, k, m]) => [k, m.split(',').map(Number)]);
-    const listed = sec.slice(sec.indexOf('<!-- zone7:start -->') + 20, sec.indexOf('<!-- zone7:end -->')).split(',').map((k) => k.trim());
-    assert.deepEqual(table.map(([k]) => k).sort(), listed.sort());
-    for (const [k, months] of table) assert.deepEqual(FRUIT_SEASONS[k].zones[7], months, k);
-  });
+  for (const zone of [5, 6, 7]) {
+    test(`zone ${zone}: the doc table and the data agree, and the marker list names the same entries`, () => {
+      const start = doc.indexOf(`## Zone ${zone} (`);
+      const sec = doc.slice(start, doc.indexOf('\n## ', start + 1));
+      const table = [...sec.matchAll(/^\| ([a-z' .-]+?) \| ([\d, ]+) \| /gm)].map(([, k, m]) => [k, m.split(',').map(Number)]);
+      const open = `<!-- zone${zone}:start -->`;
+      const listed = sec.slice(sec.indexOf(open) + open.length, sec.indexOf(`<!-- zone${zone}:end -->`)).split(',').map((k) => k.trim());
+      assert.ok(table.length > 0);
+      assert.deepEqual(table.map(([k]) => k).sort(), listed.sort());
+      for (const [k, months] of table) assert.deepEqual(FRUIT_SEASONS[k].zones[zone], months, k);
+    });
+  }
 
   test('every checked entry has months; every status is one of three', () => {
     for (const [kind, c] of Object.entries(SEASON_CHECKS)) {
