@@ -59,8 +59,8 @@
   },
   "devDependencies": {
     "@types/leaflet": "^1.9.12",
-    "concurrently": "^8.2.2",
-    "esbuild": "^0.20.2",
+    "concurrently": "^9.2.5",
+    "esbuild": "^0.28.2",
     "husky": "^9.1.7",
     "nodemon": "^3.1.10",
     "playwright": "1.63.0",
