@@ -7,7 +7,7 @@ Where the months in `client/utils/fruitSeasons.js` come from. The file was first
 - **Zone 10 first.** Most finds are in the LA basin (zone 10), so each plant's zone-10 months were checked against a source. Other zones were left alone in this pass unless noted.
 - Zone 10 covers both coastal Southern California and South Florida, and their seasons differ. California sources were used where they exist. For tropicals that are rare in California, the UF/IFAS Florida harvest seasons (S8) were used.
 - Where a source gave a season but no months (for example "fall"), the existing months were kept if they matched.
-- Progress: **32 of 157** entries checked in this pass (21 changed), plus 17 medicinal plants checked earlier. **108** entries are still unverified.
+- Progress: **36 of 157** entries checked in this pass (24 changed), plus 17 medicinal plants checked earlier. **104** entries are still unverified.
 
 ## Sources
 
@@ -36,10 +36,12 @@ Where the months in `client/utils/fruitSeasons.js` come from. The file was first
 | S21 | University of Illinois Extension: What's in Season (northern Illinois farmers market calendar) — <https://extension.illinois.edu/sites/default/files/cjmmwhatsinseason.pdf> |
 | S22 | Iowa State University Extension: harvesting and storing tree fruit — <https://yardandgarden.extension.iastate.edu/how-to/harvesting-and-storing-tree-fruit> |
 | S23 | Hertz & Brown, *Minnesota's Wild and Edible Fruits*, FS-1133-A, University of Minnesota Extension (2000) — <https://conservancy.umn.edu/server/api/core/bitstreams/ff9feee6-de42-45c2-92ff-88bc8730b34c/content> |
+| S24 | Tom Spellman (Dave Wilson Nursery), *Tom's Picks: winners for the low-chill Southwest* (Southern California coastal and inland valleys, plus the low deserts) — <https://www.davewilson.com/home-garden/fruit-variety-recommendations/toms-picks-winners-low-chill-southwest/>. The same list is mirrored as "Tom's Top 21" on UC ANR (<https://ucanr.edu/media/244366>) |
 
 ## Still to do
 
-- Stone fruit, apples, pears, cherries and grapes. Dave Wilson's harvest charts (Fresno/Hickman) are images and didn't extract, so each crop still needs a text source.
+- Plum, apricot, pear, asian pear, grape, quince, sour cherry, crabapple and medlar (zone 10). Dave Wilson's harvest charts (Fresno/Hickman) are images and didn't extract, and UCCE Ventura's deciduous variety table gives seasons, not months ("summer", "fall"). S24 names only one plum (Burgundy, mid Jul–Sep), against the Santa Rosa and Satsuma common in LA, so plum is left unchecked; it has apriums but no apricots.
+- Peach, nectarine, cherry and apple zone 10: done (Nov 2026, S24).
 - Berries, nuts (other than macadamia and olive), mushrooms, wild greens, and the 13 leaf-harvest medicinal plants.
 - Zones 3–4 and 8–9 for everything (zones 5–7: done for the common fruit, see below); zones 12–13 (Hawaii, Puerto Rico) have nothing yet.
 
@@ -124,7 +126,7 @@ Zone 11 months: <!-- zone11:start -->avocado, banana, cherimoya, clementine, coc
 Everything else still borrows zone 10's months and is labelled "(zone 10 timing)":
 - unchecked entries (their zone-10 months have no source yet);
 - checked entries whose source is statewide or inland only: mulberry (S15), olive (S10);
-- crops that need winter chill and barely fruit on the immediate coast: pawpaw, pluot (S4).
+- crops that need winter chill and barely fruit on the immediate coast: pawpaw, pluot (S4); peach, nectarine, cherry, apple (S24, low-chill varieties for the inland valleys).
 
 Caveat: the Californian sources stand for California's 11a, and S8/S9 for Miami's. Where they would differ (for example figs or citrus in Miami), California wins, as it does for zone 10 (see "Scope and method").
 
@@ -136,9 +138,9 @@ The checked rows (verified, changed, bloom) are mirrored in `client/utils/season
 |---|---|
 | loquat | verified · S1, S4 (Mar–Jun) |
 | fig | verified · S5 (breba early summer, main crop late summer–early fall), S4 (Kadota Aug–Nov) |
-| peach | unverified |
+| peach | **changed** → May–Aug · S24 (Eva's Pride late May–late Jun; Donut late Jun–Jul; Mid Pride Jul; Red Baron mid Jul–early Aug; August Pride late Jul–Aug) |
 | plum | unverified |
-| cherry | unverified |
+| cherry | verified · S24 (low-chill Minnie Royal early May into Jun; Royal Lee to mid Jun) |
 | apricot | unverified |
 | orange | **changed** → Jan–Oct · S7 (Washington navel Jan–Apr in home gardens; Valencia early summer through fall) |
 | lemon | verified · S7 (Improved Meyer year-round; Lisbon fall–winter) |
@@ -146,7 +148,7 @@ The checked rows (verified, changed, bloom) are mirrored in `client/utils/season
 | lime | unverified |
 | tangerine | unverified |
 | kumquat | **changed** → Oct–Mar · S8; S16 says winter into summer in LA |
-| apple | unverified |
+| apple | **changed** → Jun–Nov · S24 (Dorsett Golden Jun–Jul; Fuji late Aug–Oct; Pink Lady early Sep through fall). Was Jul–Sep |
 | pear | unverified |
 | blackberry | unverified |
 | raspberry | unverified |
@@ -167,7 +169,7 @@ The checked rows (verified, changed, bloom) are mirrored in `client/utils/season
 | asian pear | unverified |
 | crabapple | unverified |
 | medlar | unverified |
-| nectarine | unverified |
+| nectarine | **changed** → Jun–Jul · S24 (Arctic Star Jun; Snow Queen late Jun–early Jul; Double Delight Jul). Was May–Jul |
 | pawpaw | **changed** → Sep–Oct · S4 (Sep–early Nov) |
 | pluot | **changed** → Jun–Sep · S4 (Dave Wilson varieties, Jun to early Sep; Central Valley) |
 | quince | unverified |
