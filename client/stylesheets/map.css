@@ -873,6 +873,13 @@
         right: 12px;
     }
 
+    /* A popup fitted to the top of the map lands its × under the stamp (seen at
+       393×852 and 375×667). Hide the stamp while a popup is open, as on the Jelly;
+       it comes back when the popup closes. */
+    .leaflet-container:has(.leaflet-popup-pane .leaflet-popup) .locate-me-btn {
+        visibility: hidden;
+    }
+
     /* The bar already shows the count */
     .pin-count-badge {
         display: none;
