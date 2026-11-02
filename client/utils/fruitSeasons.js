@@ -143,7 +143,7 @@ export const FRUIT_SEASONS = {
   // Berries
   blackberry: {
     zones: {
-      10: [5, 6, 7],
+      10: [5, 6, 7],  // coastal California: Olallie and Boysen May–Jun, later kinds after (S26)
       9: [6, 7, 8],
       8: [6, 7, 8],
       7: [7, 8],  // Philadelphia 7b (docs/season-sources.md, zone 7)
@@ -175,7 +175,7 @@ export const FRUIT_SEASONS = {
   
   blueberry: {
     zones: {
-      10: [5, 6, 7],
+      10: [5, 6, 7, 8],  // Southern California, late May to Aug (S25)
       9: [6, 7, 8],
       8: [6, 7, 8],
       7: [7, 8],  // Philadelphia 7b (docs/season-sources.md, zone 7)
@@ -604,7 +604,7 @@ export const FRUIT_SEASONS = {
   // Berries / vines (extended)
   boysenberry: {
     zones: {
-      10: [5, 6, 7],
+      10: [5, 6],  // coastal California, May–Jun (S26)
       9: [6, 7],
       8: [6, 7, 8],
       7: [7, 8],

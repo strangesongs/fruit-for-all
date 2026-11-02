@@ -7,6 +7,7 @@
 // Used by the command center's season-data section (utils/seasonCoverage.js).
 export const SEASON_CHECKS = {
   banana: { how: 'verified', sources: ['S8'] },
+  blackberry: { how: 'verified', sources: ['S26'] },
   cherry: { how: 'verified', sources: ['S24'] },
   coconut: { how: 'verified', sources: ['S8'] },
   'dragon fruit': { how: 'verified', sources: ['S8'] },
@@ -20,6 +21,8 @@ export const SEASON_CHECKS = {
   pomegranate: { how: 'verified', sources: ['S13', 'S16'] },
   apple: { how: 'changed', sources: ['S24'] },
   avocado: { how: 'changed', sources: ['S6'] },
+  blueberry: { how: 'changed', sources: ['S25'] },
+  boysenberry: { how: 'changed', sources: ['S26'] },
   cherimoya: { how: 'changed', sources: ['S2'] },
   clementine: { how: 'changed', sources: ['S7'] },
   feijoa: { how: 'changed', sources: ['S4'] },

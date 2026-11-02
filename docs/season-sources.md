@@ -7,7 +7,7 @@ Where the months in `client/utils/fruitSeasons.js` come from. The file was first
 - **Zone 10 first.** Most finds are in the LA basin (zone 10), so each plant's zone-10 months were checked against a source. Other zones were left alone in this pass unless noted.
 - Zone 10 covers both coastal Southern California and South Florida, and their seasons differ. California sources were used where they exist. For tropicals that are rare in California, the UF/IFAS Florida harvest seasons (S8) were used.
 - Where a source gave a season but no months (for example "fall"), the existing months were kept if they matched.
-- Progress: **36 of 157** entries checked in this pass (24 changed), plus 17 medicinal plants checked earlier. **104** entries are still unverified.
+- Progress: **39 of 157** entries checked in this pass (26 changed), plus 17 medicinal plants checked earlier. **101** entries are still unverified.
 
 ## Sources
 
@@ -37,11 +37,14 @@ Where the months in `client/utils/fruitSeasons.js` come from. The file was first
 | S22 | Iowa State University Extension: harvesting and storing tree fruit — <https://yardandgarden.extension.iastate.edu/how-to/harvesting-and-storing-tree-fruit> |
 | S23 | Hertz & Brown, *Minnesota's Wild and Edible Fruits*, FS-1133-A, University of Minnesota Extension (2000) — <https://conservancy.umn.edu/server/api/core/bitstreams/ff9feee6-de42-45c2-92ff-88bc8730b34c/content> |
 | S24 | Tom Spellman (Dave Wilson Nursery), *Tom's Picks: winners for the low-chill Southwest* (Southern California coastal and inland valleys, plus the low deserts) — <https://www.davewilson.com/home-garden/fruit-variety-recommendations/toms-picks-winners-low-chill-southwest/>. The same list is mirrored as "Tom's Top 21" on UC ANR (<https://ucanr.edu/media/244366>) |
+| S25 | Robert Vieth (Master Gardener), Blueberries, UC Cooperative Extension Ventura County: "Blueberries in Southern California ripen from late May to August", with a ripening table by variety — <https://ucanr.edu/sites/ucceventura/Com_Ag/Subtropical/Minor_Subtropicals/Blueberries> |
+| S26 | Mark Gaskell (UC farm advisor, Santa Maria), *Raspberry and Blackberry Production and Marketing* — <https://ucanr.edu/sites/default/files/2011-02/75261.pdf> |
 
 ## Still to do
 
 - Plum, apricot, pear, asian pear, grape, quince, sour cherry, crabapple and medlar (zone 10). Dave Wilson's harvest charts (Fresno/Hickman) are images and didn't extract, and UCCE Ventura's deciduous variety table gives seasons, not months ("summer", "fall"). S24 names only one plum (Burgundy, mid Jul–Sep), against the Santa Rosa and Satsuma common in LA, so plum is left unchecked; it has apriums but no apricots.
-- Peach, nectarine, cherry and apple zone 10: done (Nov 2026, S24).
+- Peach, nectarine, cherry and apple zone 10: done (Nov 2026, S24). Blueberry, blackberry and boysenberry zone 10: done (S25, S26).
+- Strawberry and raspberry (zone 10): no Southern California source with months yet. S26 says well-managed primocane raspberries crop "Apr/May to Nov/Dec", but that's a commercial field, not a backyard or street cane; UCCE Ventura's table says only "spring".
 - Berries, nuts (other than macadamia and olive), mushrooms, wild greens, and the 13 leaf-harvest medicinal plants.
 - Zones 3–4 and 8–9 for everything (zones 5–7: done for the common fruit, see below); zones 12–13 (Hawaii, Puerto Rico) have nothing yet.
 
@@ -126,7 +129,7 @@ Zone 11 months: <!-- zone11:start -->avocado, banana, cherimoya, clementine, coc
 Everything else still borrows zone 10's months and is labelled "(zone 10 timing)":
 - unchecked entries (their zone-10 months have no source yet);
 - checked entries whose source is statewide or inland only: mulberry (S15), olive (S10);
-- crops that need winter chill and barely fruit on the immediate coast: pawpaw, pluot (S4); peach, nectarine, cherry, apple (S24, low-chill varieties for the inland valleys).
+- crops that need winter chill and barely fruit on the immediate coast: pawpaw, pluot (S4); peach, nectarine, cherry, apple (S24, low-chill varieties for the inland valleys). Blueberry (S25) and the caneberries (S26) aren't copied either: their sources are Ventura and Santa Maria, not the 11a strip.
 
 Caveat: the Californian sources stand for California's 11a, and S8/S9 for Miami's. Where they would differ (for example figs or citrus in Miami), California wins, as it does for zone 10 (see "Scope and method").
 
@@ -150,10 +153,10 @@ The checked rows (verified, changed, bloom) are mirrored in `client/utils/season
 | kumquat | **changed** → Oct–Mar · S8; S16 says winter into summer in LA |
 | apple | **changed** → Jun–Nov · S24 (Dorsett Golden Jun–Jul; Fuji late Aug–Oct; Pink Lady early Sep through fall). Was Jul–Sep |
 | pear | unverified |
-| blackberry | unverified |
+| blackberry | verified · S26 (Olallie and Boysen May–Jun; later Chester and Black Satin) |
 | raspberry | unverified |
 | strawberry | unverified |
-| blueberry | unverified |
+| blueberry | **changed** → May–Aug · S25 (late May to Aug; varieties May to Jul). Was May–Jul |
 | mulberry | **changed** → Apr–Jul · S15 (spring–early summer; Cooke's Pakistan from early Jul) |
 | avocado | **changed** → all year · S6 (Hass Jan–Oct; Zutano Nov–Feb; Bacon Nov–Mar; Fuerte Nov–Jun) |
 | guava | verified · S14 (autumn crop, Long Beach) |
@@ -204,7 +207,7 @@ The checked rows (verified, changed, bloom) are mirrored in `client/utils/season
 | macadamia | **changed** → Nov–May · S11 (nuts drop late fall through spring) |
 | pine nut | unverified |
 | pistachio | unverified |
-| boysenberry | unverified |
+| boysenberry | **changed** → May–Jun · S26. Was May–Jul |
 | cranberry | unverified |
 | currant | unverified |
 | dewberry | unverified |
