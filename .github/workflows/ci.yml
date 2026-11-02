@@ -64,6 +64,25 @@ jobs:
       - name: api smoke test on postgres
         run: DATABASE_URL="$TEST_DATABASE_URL" node scripts/smoke-postgres.mjs
 
+      # The built app in headless Chromium at 240×427, 375×667, 393×852 and 1280×800
+      # against the preview server's fake API: the right layout tree, no sideways
+      # scroll, no console errors, a find's popup on screen and clear of the map
+      # controls, the add-a-find card on screen. Screenshots are kept either way.
+      - name: install chromium for the width matrix
+        run: npx playwright install --with-deps chromium
+
+      - name: width matrix
+        run: npm run test:widths -- --out width-shots
+
+      - name: keep the width-matrix screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: width-shots
+          path: width-shots/
+          if-no-files-found: ignore
+          retention-days: 14
+
       # Fails the step but not the job — review output and address via PRs (including Dependabot).
       - name: npm audit (high)
         run: npm audit --audit-level=high

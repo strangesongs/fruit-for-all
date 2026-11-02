@@ -15,7 +15,8 @@ npm test         # node --test tests/server/*.test.js tests/client/*.test.js
 
 - **Trying a branch on a phone without production:** `npm run build && npm run preview` serves `dist/` on :4173 with a fake in-memory API (`scripts/preview-server.mjs`): any username signs in (`admin…` = admin), sample finds appear near you, the real validation runs, nothing reaches DynamoDB. iPhone Safari only shares location over https: tunnel it (`cloudflared tunnel --url http://localhost:4173`). Tiles go through the preview server: Stadia with `STADIA_API_KEY` from `.env`, else OpenStreetMap's tiles (it logs Stadia's status once if the key is refused).
 
-- The pre-commit hook (husky) runs `npm test`. CI runs tests, a build, and `npm audit` (warn only).
+- **Width matrix:** `npm run build && npm run test:widths` (`scripts/width-matrix.mjs`; `-- --out dir/` keeps screenshots) drives the built app in headless Chromium at 240×427, 375×667, 393×852 and 1280×800 against the preview server: the right layout tree signed out and in, no sideways scroll, no console errors, a find's popup (`/find/<id>`) on screen, above the bar and clear of the map controls, the add-a-find card on screen. CI runs it after the build and keeps the screenshots as the `width-shots` artifact. Locally it needs Chromium for Playwright (`npx playwright install chromium`).
+- The pre-commit hook (husky) runs `npm test`. CI runs tests, a build, the width matrix, and `npm audit` (warn only).
 - Node 22 (pinned: `.nvmrc`, `engines`, CI). ESM throughout (`"type": "module"`).
 - **Do not "simplify" the `NODE_ENV` quoting in package.json** (`\\\"production\\\"`). esbuild needs a JS string literal; without it React crashes with `development is not defined`.
 - `dist/` is gitignored. `npm run build` wipes and rebuilds it. In dev, esbuild serves on :3000 with `--serve-fallback`, so app routes like `/reset-password` work locally too.
