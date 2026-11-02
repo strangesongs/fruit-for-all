@@ -37,3 +37,4 @@ mockups/
 
 # undo files from scripts/rezone-finds.mjs
 rezone-undo-*.json
+width-shots/
