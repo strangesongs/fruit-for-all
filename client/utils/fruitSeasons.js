@@ -26,7 +26,7 @@ export const FRUIT_SEASONS = {
   
   peach: {
     zones: {
-      10: [5, 6, 7],
+      10: [5, 6, 7, 8],  // low-chill Southwest, Eva's Pride late May – August Pride Aug (S24)
       9: [6, 7, 8],
       8: [7, 8],
       7: [7, 8],  // Philadelphia 7b (docs/season-sources.md, zone 7)
@@ -47,7 +47,7 @@ export const FRUIT_SEASONS = {
   
   cherry: {
     zones: {
-      10: [5, 6],                 // Early in warm zones
+      10: [5, 6],  // low-chill Southwest, Minnie Royal early May – Royal Lee mid Jun (S24)
       9: [5, 6, 7],
       8: [6, 7],
       7: [6, 7],  // Philadelphia 7b (docs/season-sources.md, zone 7)
@@ -120,7 +120,7 @@ export const FRUIT_SEASONS = {
   // Pome Fruits
   apple: {
     zones: {
-      10: [7, 8, 9],              // Early varieties in warm zones
+      10: [6, 7, 8, 9, 10, 11],  // low-chill Southwest, Dorsett Golden Jun – Pink Lady through fall (S24)
       9: [8, 9, 10],
       8: [9, 10],
       7: [9, 10],  // Philadelphia 7b (docs/season-sources.md, zone 7)
@@ -143,7 +143,7 @@ export const FRUIT_SEASONS = {
   // Berries
   blackberry: {
     zones: {
-      10: [5, 6, 7],
+      10: [5, 6, 7],  // coastal California: Olallie and Boysen May–Jun, later kinds after (S26)
       9: [6, 7, 8],
       8: [6, 7, 8],
       7: [7, 8],  // Philadelphia 7b (docs/season-sources.md, zone 7)
@@ -175,7 +175,7 @@ export const FRUIT_SEASONS = {
   
   blueberry: {
     zones: {
-      10: [5, 6, 7],
+      10: [5, 6, 7, 8],  // Southern California, late May to Aug (S25)
       9: [6, 7, 8],
       8: [6, 7, 8],
       7: [7, 8],  // Philadelphia 7b (docs/season-sources.md, zone 7)
@@ -324,7 +324,7 @@ export const FRUIT_SEASONS = {
 
   nectarine: {
     zones: {
-      10: [5, 6, 7],
+      10: [6, 7],  // low-chill Southwest, Arctic Star Jun – Double Delight Jul (S24)
       9: [6, 7, 8],
       8: [7, 8],
       7: [7, 8],
@@ -604,7 +604,7 @@ export const FRUIT_SEASONS = {
   // Berries / vines (extended)
   boysenberry: {
     zones: {
-      10: [5, 6, 7],
+      10: [5, 6],  // coastal California, May–Jun (S26)
       9: [6, 7],
       8: [6, 7, 8],
       7: [7, 8],
