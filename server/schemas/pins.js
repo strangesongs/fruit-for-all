@@ -4,7 +4,7 @@ import {
   QueryCommand,
   UpdateItemCommand,
 } from '@aws-sdk/client-dynamodb';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'node:crypto';
 import { dynamoClient, PINS_TABLE } from '../db/dynamo.js';
 import { detectZone } from './zone.js';
 import { sanitizeString, validateCoordinates } from './validation.js';
@@ -47,7 +47,7 @@ export async function createPin(pinData) {
     throw new Error(coordValidation.message);
   }
   const now = new Date().toISOString();
-  const pinId = uuidv4();
+  const pinId = randomUUID();
   const lat = parseFloat(pinData.coordinates.lat);
   const lng = parseFloat(pinData.coordinates.lng);
   const zone = await detectZone(lat, lng);

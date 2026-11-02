@@ -15,7 +15,7 @@
  * - Adds, edits and deletes also write a pin_events row (the command center's
  *   "recent activity"), in the same statement or transaction as the change.
  */
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'node:crypto';
 import { query, withTransaction } from '../../db/postgres.js';
 import { detectZone } from '../zone.js';
 import { sanitizeString, validateCoordinates } from '../validation.js';
@@ -131,7 +131,7 @@ export async function createPin(pinData) {
             ins.submitted_by, ins.status, ins.zone,
             st_y(ins.location::geometry) as lat, st_x(ins.location::geometry) as lng, '{}'::timestamptz[] as confirmed
        from ins`,
-    [uuidv4(), new Date().toISOString(), lat, lng, name.toLowerCase(), name, sanitizeString(pinData.notes || ''),
+    [randomUUID(), new Date().toISOString(), lat, lng, name.toLowerCase(), name, sanitizeString(pinData.notes || ''),
       sanitizeString(pinData.submittedBy), zone],
     'create pin',
   );
