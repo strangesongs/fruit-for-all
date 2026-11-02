@@ -43,7 +43,7 @@ app.use(
           'https://*.tile.openstreetmap.org',
           'https://tiles.stadiamaps.com',
         ],
-        connectSrc: ["'self'", 'https://cloudflareinsights.com'],
+        connectSrc: ["'self'", 'https://cloudflareinsights.com', 'https://static.cloudflareinsights.com'],
       },
     },
     crossOriginEmbedderPolicy: false, // Leaflet map tiles require this off
